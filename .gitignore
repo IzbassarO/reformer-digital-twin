@@ -18,3 +18,6 @@ venv/
 
 # Large data
 data/lhs_runs/*.csv
+
+# Downloaded literature (PDFs must never be committed)
+literature/
