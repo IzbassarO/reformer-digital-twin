@@ -1,0 +1,113 @@
+# Industrial steam-reformer simulation case of Xu & Froment (1989), Part II
+#
+# Source: J. Xu, G. F. Froment, "Methane Steam Reforming: II. Diffusional Limitations and
+#         Reactor Simulation", AIChE J. 35(1), 97-103 (1989). doi:10.1002/aic.690350110
+#         BibTeX key: xu1989b. Local copy: literature/xu1989-2.pdf (scan; PDF page = journal page - 96).
+# Transcribed 2026-09-04; Table 2 verified from the page image. Values not in the source are null.
+# This is a SIMULATION case (one tube, 1-D heterogeneous model with a zone-method firebox by
+# Rao et al. 1988). It is not measured plant data. Conditions are "similar to those dealt with
+# previously by De Deken et al. (1982)" (p. 99).
+
+metadata:
+  citation_key: xu1989b
+  doi: 10.1002/aic.690350110
+  case_type: simulation_single_tube
+  page_convention: "journal pages 97-103; PDF page = journal page - 96"
+
+# ---------------------------------------------------------------------------
+# Table 2, p. 100: Input data for the simulation of a commercial reformer
+# ---------------------------------------------------------------------------
+inlet:
+  source: "Table 2, p. 100"
+  T0_K: 793.15
+  T0_C: 520.0                       # derived: 793.15 - 273.15
+  p_t0_bar: 29
+feed_per_tube:
+  source: "Table 2, p. 100"
+  natural_gas_Nm3_per_h: 135.00
+  steam_Nm3_per_h: 399.17
+  Nm3_reference_conditions: null    # not stated in the paper (see README ambiguity)
+natural_gas_composition_vol_pct:
+  source: "Table 2, p. 100"
+  CH4: 81.5
+  N2: 14.1
+  C2H6: 2.8
+  CO2: 1.0
+  C3H8: 0.4
+  C4H10: 0.1
+  C5H12: 0.2
+equivalent_CH4_feed_kmol_per_h: 5.168        # Table 2, p. 100 (as printed; see README)
+molar_ratios_to_CH4:
+  source: "Table 2, p. 100"
+  H2O_over_CH4: 3.358
+  CO2_over_CH4: 0.056
+  H2_over_CH4: 0.122                # H2 is not in the natural-gas analysis; presumably recycle
+  N2_over_CH4: 0.164
+tube:
+  source: "Table 2, p. 100"
+  internal_diameter_m: 0.1016
+  external_diameter_m: 0.1322
+  wall_thickness_m: 0.0153          # derived: (0.1322 - 0.1016)/2
+  total_length_m: 12
+  heated_length_m: 11.12
+  material: null                    # not stated
+catalyst_ring:
+  source: "Table 2, p. 100 and p. 100 text"
+  d_pe_m: 0.0173                    # external diameter of ring
+  d_pi_m: 0.0084                    # internal diameter of ring
+  H_m: 0.010                        # height
+  rho_s_kg_per_m3: 2355.2           # catalyst solid density
+  active_layer_thickness_m: 0.002   # active Ni layer on external and internal surfaces (p. 100)
+  type: "Ni on MgAl2O4, ring, inert core (Part II p. 98); same catalyst as Part I kinetics"
+  bed_porosity: null                # "calculated according to Reichelt and Blasz (1971)" (p. 100), value not given
+  equivalent_diameter: null         # "calculated according to Brauer (1957)" (p. 100), value not given
+  tortuosity_factor: 3.54           # fitted from reverse-WGS runs on 1.0-1.2 mm particles (p. 99)
+  active_volume_equivalent_slab_area_factor: 1.071   # eta_slab / 1.071 = eta_ring (p. 100)
+model_used:
+  source: "pp. 99-100"
+  process_side: "1-D heterogeneous (Froment & Bischoff 1979), Eqs. 10a-10d; effectiveness factors from spline collocation in a planar slab (Eq. 11)"
+  heat_transfer: "overall U from alpha_w and lambda_er (De Wasch & Froment 1972; Kunii & Smith 1960), Eqs. 10e-10g"
+  pressure_drop: "Ergun (1952) friction factor"
+  furnace: "zone model of Rao, Plehiers & Froment (1988) adapted from an ethylene furnace; provides external tube-skin temperature"
+  kinetics: "Xu & Froment Part I (xu1989a), reference activity"
+
+# ---------------------------------------------------------------------------
+# Results available only as figures (need digitising)
+# ---------------------------------------------------------------------------
+results_available:
+  note: "All results are plots; no tabulated profile data. Digitise from literature/xu1989-2.pdf if needed."
+  figure_3:
+    page: 101
+    content: >
+      Axial profiles (z = 0-12 m) of total CH4 conversion and conversion to CO2 (left axis, x/(1-eps)
+      scale 0-0.8), total pressure p_t (bar, approx. 24-29), process-gas temperature T, internal
+      tube-skin temperature T_i and external tube-skin temperature T_w (K, axis 800-1150).
+    digitising_needed: true
+  figure_4:
+    page: 101
+    content: "Axial profiles of the intrinsic rates r1, r2, r3."
+    digitising_needed: true
+    stated_feature: "r2 changes sign from positive to negative at a reactor length of about 4 m (p. 100)."
+  figure_5:
+    page: 101
+    content: >
+      Approach to equilibrium V(1), V(2), V(3) (0-1) and delta_T (K) vs z. V(2) close to 1 beyond
+      3 m; V(1), V(3) exceed 0.7 in the second half and rise slowly to about 0.8 (p. 101).
+    digitising_needed: true
+    stated_feature: "delta_T (actual process-gas T minus equilibrium T) is about 10 degC at the end of the heated part of the tube (p. 101)."
+  figure_6:
+    page: 101
+    content: >
+      Effectiveness factors eta_1, eta_2, eta_3 vs z. eta_2 has a discontinuity at 3.4 m where the
+      surface direction of reaction II reverses and switches back from negative to positive at 9 m;
+      eta_1 and eta_3 decrease along the reactor (p. 101).
+    digitising_needed: true
+  figure_7:
+    page: 102
+    content: "Partial-pressure profiles inside the catalyst pellet at z = 4.00 m."
+    digitising_needed: true
+  qualitative_statements:
+    - "Temperature drop over the film around the particle is negligible (p. 100)."
+    - "Surface partial pressures are very close to equilibrium for z > 6 m; rates stay finite because rising T shifts equilibrium (p. 101)."
+    - "Low effectiveness factors explain why many authors found apparent activation energies of about half the intrinsic values (p. 101)."
+    - "Conversion is limited mainly by the heat flux supplied per unit weight of catalyst (p. 101)."

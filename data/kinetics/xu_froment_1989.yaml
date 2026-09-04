@@ -1,0 +1,190 @@
+# Xu & Froment (1989) intrinsic kinetics for methane steam reforming on Ni/MgAl2O4
+#
+# Source: J. Xu, G. F. Froment, "Methane Steam Reforming, Methanation and Water-Gas Shift:
+#         I. Intrinsic Kinetics", AIChE J. 35(1), 88-96 (1989). doi:10.1002/aic.690350109
+#         BibTeX key: xu1989a. Local copy: literature/xu1989.pdf (scan; PDF page n = journal page 87+n).
+# Transcribed 2026-09-04 from the page images (tables verified visually, not from OCR text).
+# Every numerical block cites its table / equation / journal page. Values not given in the
+# source are null with a comment. Nothing here is fitted or inferred by us.
+#
+# Catalyst: 15.2 wt% Ni on MgAl2O4 spinel, BET 58 m2/g, Ni surface 9.3 m2/g_cat (fresh),
+#           void fraction 0.528; original 10 mm OD rings crushed to 0.18-0.25 mm for the
+#           kinetic experiments (p. 88, "Pretreatment of the catalyst").
+# Experimental range (Table 1, p. 89): steam reforming 3-15 bar, H2O/CH4 = 3 and 5,
+#           H2/CH4 = 1.25, T = 773-848 K; reverse WGS + methanation 3-10 bar,
+#           H2/CO2 = 0.5 and 1.0, T = 573-673 K.
+
+metadata:
+  citation_key: xu1989a
+  doi: 10.1002/aic.690350109
+  transcribed_by: rdt project, 2026-09-04
+  page_convention: "journal page numbers (88-96); PDF page = journal page - 87"
+  activity_basis: >
+    All rate coefficients below refer to the *reference activity* of the partially deactivated
+    catalyst used for the steam-reforming runs (Table 5 and Table 6 footnote "Reference activity",
+    p. 94). See activity_factors for the fresh-catalyst and reverse-WGS multipliers.
+
+# ---------------------------------------------------------------------------
+# Global reactions (Table 2, p. 90; triangular scheme p. 92)
+# ---------------------------------------------------------------------------
+reactions:
+  I:
+    equation: "CH4 + H2O <=> CO + 3 H2"
+    dH298_kJ_per_mol: 206.1        # Table 2 / Table 7 (p. 90, p. 95)
+  II:
+    equation: "CO + H2O <=> CO2 + H2"
+    dH298_kJ_per_mol: -41.15
+  III:
+    equation: "CH4 + 2 H2O <=> CO2 + 4 H2"
+    dH298_kJ_per_mol: 164.9
+
+# ---------------------------------------------------------------------------
+# Rate equations, Eqs. (3) and (4), p. 92. Partial pressures p_j in bar.
+# ---------------------------------------------------------------------------
+rate_equations:
+  source: "Eq. (3) and Eq. (4), p. 92"
+  r1: "r1 = (k1 / p_H2^2.5) * (p_CH4 * p_H2O - p_H2^3 * p_CO / K1) / DEN^2"
+  r2: "r2 = (k2 / p_H2)     * (p_CO  * p_H2O - p_H2   * p_CO2 / K2) / DEN^2"
+  r3: "r3 = (k3 / p_H2^3.5) * (p_CH4 * p_H2O^2 - p_H2^4 * p_CO2 / K3) / DEN^2"
+  DEN: "DEN = 1 + K_CO * p_CO + K_H2 * p_H2 + K_CH4 * p_CH4 + K_H2O * p_H2O / p_H2"
+  net_rates:                      # Eq. (4), p. 92 (steam-reforming direction)
+    r_CO: "r_CO  = r1 - r2"
+    r_CO2: "r_CO2 = r2 + r3"
+    r_CH4: "r_CH4 = r1 + r3"       # rate of methane disappearance
+  units:
+    r_i: "kmol / (kg_cat h)"                     # Notation, p. 95
+    k1: "kmol bar^0.5 / (kg_cat h)"              # Notation, p. 95
+    k3: "kmol bar^0.5 / (kg_cat h)"
+    k2: "kmol / (kg_cat h bar)"
+    K_CO: "bar^-1"                               # Notation, p. 95
+    K_H2: "bar^-1"
+    K_CH4: "bar^-1"
+    K_H2O: "dimensionless (dissociative adsorption constant of H2O)"
+    K1: "bar^2"                                  # equilibrium constant of reaction I
+    K2: "dimensionless"                          # equilibrium constant of reaction II
+    K3: "bar^2"                                  # equilibrium constant of reaction III
+    p_j: "bar"
+  remarks:
+    - "The three reactions share the same active sites, hence the same DEN (p. 91)."
+    - "No K_CO2 term: no statistically significant value could be estimated (p. 93)."
+    - "Rates become infinite at p_H2 = 0 because H2 adsorption is assumed at equilibrium; a
+       feed with some H2 or higher hydrocarbons avoids this in practice (p. 95, Discussion)."
+
+# ---------------------------------------------------------------------------
+# Reparameterised temperature dependence, Eqs. (6)-(7), p. 93
+# ---------------------------------------------------------------------------
+reparameterised_forms:
+  source: "Eqs. (6) and (7), p. 93; reference temperatures from Table 5 footnote **, p. 94"
+  k_i: "k_i(T) = k_i,Tr * exp( -E_i / R * (1/T - 1/Tr) ),   i = 1, 2, 3;  Tr = 648 K"
+  K_j: "K_j(T) = K_j,Tr * exp( -dH_j / R * (1/T - 1/Tr) ),  j = CO, H2 (Tr = 648 K); CH4, H2O (Tr = 823 K)"
+  T_ref_K:
+    k1: 648
+    k2: 648
+    k3: 648
+    K_CO: 648
+    K_H2: 648
+    K_CH4: 823
+    K_H2O: 823
+  R_kJ_per_mol_K: 8.314e-3
+  pre_exponential_definition:       # p. 93, just above "They are listed in Table 6."
+    A_k_i: "A(k_i) = k_i,Tr * exp( E_i / (R Tr) )"
+    A_K_j: "A(K_j) = K_j,Tr * exp( dH_j / (R Tr) )"
+
+# ---------------------------------------------------------------------------
+# Table 5, p. 94: simultaneous regression of all data, all temperatures.
+# UL / LL = upper / lower limit of the approximate 95 % confidence interval.
+# t = t-value of the estimate. Units as in rate_equations.units.
+# ---------------------------------------------------------------------------
+table5_reference_temperature_values:
+  source: "Table 5, p. 94"
+  k1_648:  {value: 1.842e-4, UL: 2.05e-4, LL: 1.64e-4, t: 17.94, units: "kmol bar^0.5/(kg_cat h)"}
+  k2_648:  {value: 7.558,    UL: 8.200,   LL: 6.915,   t: 23.53, units: "kmol/(kg_cat h bar)"}
+  k3_648:  {value: 2.193e-5, UL: 2.60e-5, LL: 1.78e-5, t: 10.69, units: "kmol bar^0.5/(kg_cat h)"}
+  K_CO_648:  {value: 40.91,   UL: 44.65,  LL: 37.17,  t: 21.87, units: "bar^-1"}
+  K_H2_648:  {value: 0.02960, UL: 0.0533, LL: 0.0059, t: 2.501, units: "bar^-1"}
+  K_CH4_823: {value: 0.1791,  UL: 0.2211, LL: 0.1371, t: 8.535, units: "bar^-1"}
+  K_H2O_823:
+    value: 0.4152
+    UL: 0.5032
+    LL: 0.0317      # AS PRINTED in Table 5. Every other interval in the table is symmetric
+                    # about the estimate (which would give LL = 0.3272 here); 0.0317 may be a
+                    # typesetting error in the original. Recorded as printed - see README.
+    t: 9.445
+    units: "dimensionless"
+
+table5_activation_energies_and_adsorption_enthalpies:
+  source: "Table 5, p. 94 (lower block), kJ/mol"
+  units: "kJ/mol"
+  E1:     {value: 240.1,  UL: 244.5,  LL: 235.7,  t: 108.0}
+  E2:     {value: 67.13,  UL: 72.06,  LL: 62.19,  t: 27.21}
+  E3:     {value: 243.9,  UL: 255.0,  LL: 232.7,  t: 43.83}
+  dH_CO:  {value: -70.65, UL: -64.61, LL: -76.66, t: -23.47}
+  dH_H2:  {value: -82.90, UL: -52.61, LL: -113.2, t: -5.473}
+  dH_CH4: {value: -38.28, UL: -20.89, LL: -55.66, t: -4.403}
+  dH_H2O: {value: 88.68,  UL: 96.06,  LL: 81.26,  t: 23.97}
+  remarks:
+    - "dH_H2O is positive: the dissociative adsorption of water is endothermic in this model.
+       The authors note dH_H2O does not satisfy the van't Hoff plot as well as the others (p. 93)."
+    - "Thermodynamic consistency checks on A(K_j) are on pp. 94-95 (criteria i-iv)."
+
+# ---------------------------------------------------------------------------
+# Table 6, p. 94: pre-exponential factors (reference activity)
+# ---------------------------------------------------------------------------
+table6_pre_exponential_factors:
+  source: "Table 6, p. 94"
+  A_k1:   {value: 4.225e+15, units: "kmol bar^0.5/(kg_cat h)"}
+  A_k2:   {value: 1.955e+6,  units: "kmol/(kg_cat h bar)"}
+  A_k3:   {value: 1.020e+15, units: "kmol bar^0.5/(kg_cat h)"}
+  A_K_CO: {value: 8.23e-5,  units: "bar^-1"}
+  A_K_H2: {value: 6.12e-9,  units: "bar^-1"}
+  A_K_CH4: {value: 6.65e-4, units: "bar^-1"}
+  A_K_H2O: {value: 1.77e+5,  units: "dimensionless"}
+
+# ---------------------------------------------------------------------------
+# Activity multipliers
+# ---------------------------------------------------------------------------
+activity_factors:
+  fresh_catalyst:
+    value: 2.246
+    source: "p. 94, 'Parameters for the fresh catalyst'"
+    quote: >
+      "All the reaction rate coefficients listed in Table 5 have to be multiplied by a factor
+      of 2.246 when the rate equation and the parameters are to be used with fresh catalyst."
+    applies_to: "k1, k2, k3 (rate coefficients). Not stated for the adsorption constants K_j."
+  reverse_wgs_and_methanation_reference_level:
+    value: 1.225
+    source: "p. 89 (Experimental Study) and p. 93"
+    quote: >
+      "Because of this, the reference activity level of the reverse of the water-gas shift and
+      methanation is 1.225 times that of steam reforming." (p. 89)
+      "The curves in Figures 4 and 5 on reverse water-gas shift and methanation were obtained
+      after multiplication of the rate parameters of Table 6 by 1.225, as explained earlier." (p. 93)
+    applies_to: >
+      Only when reproducing the reverse-WGS / methanation experiments (CO2 + H2 feed at
+      573-673 K, no deactivation). Not to be applied in steam-reforming simulations.
+
+# ---------------------------------------------------------------------------
+# Table 7, p. 95: activation energies vs reaction enthalpies
+# ---------------------------------------------------------------------------
+table7_activation_energy_vs_reaction_enthalpy:
+  source: "Table 7, p. 95"
+  units: "kJ/mol"
+  activation_energy: {E1: 240.1, E2: 67.13, E3: 243.9}
+  reaction_enthalpy_948K: {dH1: 224.0, dH2: -37.3, dH3: 187.5}
+  reaction_enthalpy_298K: {dH1: 206.1, dH2: -41.15, dH3: 164.9}
+  remark: >
+    Thermodynamic consistency requires E_forward - E_reverse = dH, so E for the endothermic
+    reactions I and III must exceed dH (p. 94, Eq. 8). Most earlier authors reported E < 170 kJ/mol
+    because of diffusion limitations (p. 95).
+
+# ---------------------------------------------------------------------------
+# Equilibrium constants
+# ---------------------------------------------------------------------------
+equilibrium_constants:
+  K1: {units: "bar^2", value: null}   # not tabulated in Part I
+  K2: {units: "dimensionless", value: null}
+  K3: {units: "bar^2", value: null}
+  project_note: >
+    K1, K3 [bar^2] and K2 [-] are thermodynamic equilibrium constants. In this project they are
+    computed from Gibbs free energies of formation via Cantera (GRI-Mech 3.0 / NASA polynomials),
+    not from empirical correlations, so no fitted values are recorded here. Note K3 = K1 * K2.

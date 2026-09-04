@@ -1,0 +1,283 @@
+# Latham, McAuley, Peppley & Raybold (2011): industrial top-fired SMR, validation cases
+#
+# Source: Fuel Processing Technology 92(8), 1574-1586. doi:10.1016/j.fuproc.2011.04.001
+#         BibTeX key: latham2011. Local copy: literature/ (Fuel Processing Technology ... .pdf),
+#         PDF page n = journal page 1573 + n.
+# Companion: Latham (2008) M.Sc.E. thesis, key latham2008, literature/latham2008_msce_thesis.pdf,
+#         summarised in paper/notes/latham2008_thesis.md.
+# Transcribed 2026-09-04. Values not in the source are null with a comment.
+#
+# !!! IMPORTANT: every tube-wall temperature in this paper is SHIFTED by an undisclosed constant.
+#     See temperature_shift_warning. The thesis (Appendix H) gives absolute values; see cross_check.
+
+metadata:
+  citation_key: latham2011
+  doi: 10.1016/j.fuproc.2011.04.001
+  page_convention: "journal pages 1574-1586; PDF page = journal page - 1573"
+
+temperature_shift_warning:
+  page: 1579
+  quote: >
+    "All temperatures in the publication have been vertically shifted to show the shape of the
+    temperature profiles without indicating the true value of the temperatures."
+  consequence: >
+    Tables 5 and 9 and all temperature profiles in Figs. 7-15 are relative, not absolute. The
+    shift constant is not disclosed. Outlet-temperature DIFFERENCES (Table 10) are unaffected.
+
+# ---------------------------------------------------------------------------
+# Reformer description
+# ---------------------------------------------------------------------------
+reformer:
+  table1_specifications:
+    source: "Table 1, p. 1576"
+    maximum_plant_rate_Nm3_per_h_H2: 112000
+    steam_to_carbon_ratio_range: [2.7, 3.0]
+    process_side_feed: "Natural gas"
+    catalyst_type: "NiO2 on Al2O3 support"    # as printed ("NiO 2 on Al 2O3")
+    number_of_tubes: 336
+    tubes_per_row: 48
+    number_of_burners: 96
+    burners_per_row: 12
+  furnace_description:
+    source: "p. 1574 (Introduction) and p. 1577"
+    type: "top-fired, co-current 'box' reformer"
+    tube_rows: 7
+    burner_rows: 8
+    burner_location: "ceiling of the furnace"
+    inlet_temperature_C_approx: 600       # "a temperature near 600 degC" (p. 1574)
+    inlet_pressure_kPa_approx: 2700       # "a pressure of 2700 kPa" (p. 1574)
+    flame_length: "less than half the height of the furnace" # p. 1574
+    flue_gas_tunnels: "rectangular protrusions on the floor between tube rows with side openings (p. 1574)"
+    vertical_sections: "15 sections: 10 in the top half, 5 in the bottom half (p. 1579); 226 equations (p. 1582)"
+    tube_outer_diameter_m: null           # not in the paper; thesis p. 6 gives 14.6 cm (see cross_check)
+    tube_inner_diameter_m: null           # not in paper or thesis
+    tube_wall_thickness_m: null           # not in paper or thesis
+    heated_length_m: null                 # not in the paper; thesis p. 6 gives 12.5 m (see cross_check)
+    elevation_normalisation: "measurement elevations quoted as fractions 0.29 and 0.68 of the tube length from the top (Tables 5, 9)"
+
+# ---------------------------------------------------------------------------
+# Table 8, p. 1583: simulation input data (validation cases, "two new data sets")
+# ---------------------------------------------------------------------------
+table8_simulation_inputs:
+  source: "Table 8, p. 1583"
+  note: "These are the two NEW validation data sets at 99 % and 75 % capacity (p. 1582), not the four fitting sets."
+  cases:
+    rate_99pct:
+      plant_capacity_pct: 99
+      furnace:
+        heat_of_combustion_MW: 202.9
+        excess_air_pct: 9.2
+        flue_gas_flow_kmol_per_h: 12350
+      tubes:
+        inlet_temperature_C: 604
+        inlet_pressure_kPa: 3013
+        mixed_feed_flow_kmol_per_h: 7381
+        mixed_feed_flow_per_tube_kmol_per_h: 21.97    # derived: 7381/336
+        mixed_feed_composition_mol_pct:
+          H2: 0.39
+          CO: 0.00
+          C1: 24.44
+          C2: 0.58
+          C3: 0.09
+          C4: 0.04
+          C5: 0.01
+          C6plus: 0.02
+          N2: 0.13
+          CO2: 0.35
+          H2O: 73.96
+        steam_to_carbon_derived: 2.88     # derived: H2O / (C1 + 2 C2 + 3 C3 + 4 C4 + 5 C5 + 6 C6+)
+    rate_75pct:
+      plant_capacity_pct: 75
+      furnace:
+        heat_of_combustion_MW: 145.0
+        excess_air_pct: 9.6
+        flue_gas_flow_kmol_per_h: 8820
+      tubes:
+        inlet_temperature_C: 591
+        inlet_pressure_kPa: 2770
+        mixed_feed_flow_kmol_per_h: 5487
+        mixed_feed_flow_per_tube_kmol_per_h: 16.33    # derived: 5487/336
+        mixed_feed_composition_mol_pct:
+          H2: 0.38
+          CO: 0.00
+          C1: 24.55
+          C2: 0.52
+          C3: 0.09
+          C4: 0.04
+          C5: 0.01
+          C6plus: 0.02
+          N2: 0.13
+          CO2: 0.36
+          H2O: 73.91
+        steam_to_carbon_derived: 2.87
+
+# ---------------------------------------------------------------------------
+# Tables 5 and 9: measured tube-wall temperature statistics (SHIFTED)
+# ---------------------------------------------------------------------------
+tube_wall_temperature_statistics:
+  WARNING: "ALL 'average_shifted_temperature' VALUES ARE SHIFTED BY AN UNDISCLOSED CONSTANT (p. 1579 quote above). They are NOT absolute temperatures."
+  measurement_method: "infrared pyrometer at two heights; average over tubes at different locations, corrected for background radiation (p. 1579)"
+  table5_fitting_data:
+    source: "Table 5, p. 1579 (data used for parameter fitting)"
+    rate_91pct:
+      elevation_0_29: {average_shifted_temperature_C: 284, standard_deviation_C: 17.4, number_of_measurements: 218}
+      elevation_0_68: {average_shifted_temperature_C: 333, standard_deviation_C: 15.3, number_of_measurements: 279}
+    rate_75pct:
+      elevation_0_29: {average_shifted_temperature_C: 278, standard_deviation_C: 13.9, number_of_measurements: 146}
+      elevation_0_68: {average_shifted_temperature_C: 328, standard_deviation_C: 12.2, number_of_measurements: 164}
+  table9_validation_data:
+    source: "Table 9, p. 1584 (data used for model verification)"
+    rate_99pct:
+      elevation_0_29: {average_shifted_temperature_C: 326, standard_deviation_C: 22.3, number_of_measurements: 42}
+      elevation_0_68: {average_shifted_temperature_C: 350, standard_deviation_C: 22.1, number_of_measurements: 30}
+    rate_75pct:
+      elevation_0_29: {average_shifted_temperature_C: 291, standard_deviation_C: 19.9, number_of_measurements: 42}
+      elevation_0_68: {average_shifted_temperature_C: 321, standard_deviation_C: 19.0, number_of_measurements: 30}
+  usable_absolute_quantities: "differences between the two elevations: 49 (91%), 50 (75% fit), 24 (99%), 30 (75% validation) degC"
+
+# ---------------------------------------------------------------------------
+# Tables 7 and 10: simulated minus measured outlet data
+# ---------------------------------------------------------------------------
+simulated_minus_measured:
+  table7_after_fitting:
+    source: "Table 7, p. 1583; sign convention X_sim - X_data, wet mol %"
+    rate_91pct: {H2: -0.5, CO: -0.2, CH4: 0.2, CO2: 0.2, H2O: 0.3}
+    rate_75pct: {H2: -0.8, CO: -0.3, CH4: 0.4, CO2: 0.1, H2O: 0.6}
+    absolute_value_revealed:
+      quote: "H2  -0.5 (i.e 45.8-46.3)"
+      wet_H2_outlet_measured_mol_pct: 46.3
+      wet_H2_outlet_simulated_mol_pct: 45.8
+      case: "91 % plant rate"
+    also_stated: "process-gas outlet temperature differs by 7 degC in the 75 % fitting case (p. 1582)"
+  table10_validation:
+    source: "Table 10, p. 1584; y_sim - y_data"
+    rate_99pct:
+      process_gas_outlet_temperature_C: "<1"     # printed as 'b1' (i.e. < 1)
+      process_gas_outlet_pressure_kPa: 6
+      process_gas_flow_kmol_per_h: 150
+      tube_temperature_at_0_29_C: -22
+      tube_temperature_at_0_68_C: 4
+      furnace_outlet_temperature_C: -21
+      composition_wet_mol_pct: {H2: -0.5, CO: -0.1, CH4: 0.2, CO2: 0.1, H2O: 0.4}
+    rate_75pct:
+      process_gas_outlet_temperature_C: -4
+      process_gas_outlet_pressure_kPa: 14
+      process_gas_flow_kmol_per_h: 178
+      tube_temperature_at_0_29_C: 3
+      tube_temperature_at_0_68_C: 14
+      furnace_outlet_temperature_C: 1     # text p. 1582 says measured furnace gas is 11 degC cooler than simulated; Table 10 prints 1
+      composition_wet_mol_pct: {H2: -0.7, CO: -0.2, CH4: 0.4, CO2: 0.1, H2O: 0.5}
+  initial_guess_misfit_91pct:
+    source: "p. 1579, Fig. 7 with Table 4 initial guesses"
+    upper_TWT_sim_minus_meas_C: 113
+    lower_TWT_sim_minus_meas_C: 28
+    process_gas_outlet_C: 7
+    furnace_gas_outlet_C: 26
+
+# ---------------------------------------------------------------------------
+# Tables 4 and 6: adjustable parameters
+# ---------------------------------------------------------------------------
+adjustable_parameters:
+  source: "Table 4, p. 1579 (initial guess, standard deviation, bounds) and Table 6, p. 1582 (best fit)"
+  fitting_data: "four data sets at 99 %, 94 %, 91 % and 75 % of maximum rate (p. 1579); reconciled by the industrial sponsor; 'provided in a recent thesis [29]'"
+  method: "multivariate Levenberg-Marquardt, objective Eq. (21), p. 1582"
+  Lq:        {initial: 0.29, std: 0.14, bounds: "0.29 <= Lq <= 0.48 (scaled length, visible flame range)", best_fit: 0.48, description: "heat-release (flame) length, fraction of furnace height", note: "best fit at upper bound; not extended for lack of data (p. 1582)"}
+  alpha_top: {initial: 0.18, std: 0.18, bounds: "parabola opens down, heat release >= 0 in each zone", best_fit: 0.182, description: "fraction of combustion heat released in top furnace zone"}
+  f_htg:     {initial: 1, std: 1, bounds: "f_htg >= 0", best_fit: 1.68, description: "multiplier on Leva-Grummer tube-to-process-gas h, Eq. (20)"}
+  phi:       {initial: 0.7, std: 0.1, bounds: "0.5 <= phi <= 1.0", best_fit: 0.607, description: "catalyst bed porosity"}
+  f_prx:     {initial: 1, std: 1, bounds: "f_prx >= 0", best_fit: 0.20, description: "multiplier on Xu-Froment rates of reactions (1) and (2) for catalyst activity"}
+  f_nOffGas: {initial: 0.9, std: 0.1, bounds: "0.90 <= f <= 1.10", best_fit: 0.963, description: "multiplier on PSA off-gas flow to furnace"}
+  f_nCombAir: {initial: 0.9, std: 0.1, bounds: "0.90 <= f <= 1.10", best_fit: 1.05, description: "multiplier on combustion air flow"}
+  f_ctube:   {initial: 1.0, std: 0.8, bounds: "f_ctube >= 0", best_fit: 0.38, description: "multiplier on furnace-gas-to-tube convective h"}
+  flow_uncertainty_note: "reconciled off-gas and air flows have an estimated uncertainty of approximately 10 % (p. 1580)"
+
+# ---------------------------------------------------------------------------
+# Model assumptions to reuse
+# ---------------------------------------------------------------------------
+model_assumptions:
+  kinetics: "Xu & Froment [30] rates (p. 1578); rates of CH4-consuming reactions (1) and (2) multiplied by f_prx (p. 1578)"
+  effectiveness_factors:
+    source: "p. 1578"
+    default: 0.1
+    top_section: 0.05
+    quote: "The effectiveness factors for the reforming reactions and the water-gas shift are assumed to be 0.1, except in the top tube section where the effectiveness factors are set to 0.05 to reduce the rate of the reforming reactions [28]."
+  pseudo_homogeneous: "catalyst and process gas at the same temperature; uniform T, P, X within a section (p. 1578)"
+  tube_to_process_gas_heat_transfer:
+    source: "Eq. (20), p. 1578; Leva & Grummer [27]"
+    equation: "h_tg = f_htg * 0.813 * (lambda_pg / (2 r_in)) * exp(-3 D_p / r_in) * (D_p G_s / mu_pg)^0.9,   Re = D_p G_s / mu_pg"
+  pressure_drop:
+    source: "Eq. (14), p. 1578 (Ergun-type)"
+    equation: "0 = P_seg_abv - P_seg - f * rho_pg * v_s^2 / D_p * dy / 1000,   f = (1-phi)/phi^3 * [1.75 + 150 (1-phi)/Re]"
+    units_note: "P in kPa (hence /1000); v_s superficial velocity"
+  higher_alkane_rule:
+    source: "Eqs. (15)-(16), p. 1578"
+    equation: "C_k H_(2k+2) + (k-1)/3 H2O -> (k-1)/3 CO + (2k+1)/3 CH4"
+    ethane_example: "C2H6 + 1/3 H2O -> 1/3 CO + 5/3 CH4, dH ~ 3.7 kJ/gmol (p. 1578)"
+    note: "instantaneous at the top section; no net H2 production or consumption; enthalpy added to the top tube section energy balance"
+  emissivities:
+    source: "p. 1578"
+    tube: 0.85
+    refractory: 0.60
+  furnace_gas_model: "one clear + three gray gases (Taylor & Foster [23]), CO2/H2O ratio near 1, non-luminous, non-scattering, plug flow; parabolic heat release [21] (p. 1577)"
+  furnace_convection: "Dittus-Boelter [24] times f_ctube (p. 1578)"
+  exchange_areas: "RADEX Monte Carlo ray tracing [22] (p. 1578)"
+  catalyst_life:
+    source: "p. 1584"
+    quote: "the catalyst is crushed and deactivated over its four year life"
+    value_years: 4
+  tube_life_rule_of_thumb:
+    source: "p. 1576, citing [6] American Petroleum Institute, API Standard 530 (2003)"
+    quote: "Reformer tubes are designed with an expected life of 100,000 h. The tube life is very sensitive to changes in operating temperature. A general rule of thumb is that an increase in tube-wall temperature of 20 degC will decrease tube life by half [6]."
+    design_life_h: 100000
+    delta_T_halving_life_C: 20
+  runtime:
+    source: "p. 1582"
+    equations: 226
+    seconds_from_poor_guess: 245
+    seconds_from_previous_solution: 60
+    hardware: "2.8 GHz processor, 2 GB RAM"
+  limitations_stated:
+    - "average-tube model; cannot resolve hot tubes caused by recirculation, burner location, flame pattern, uneven tube flow, localised deactivation (p. 1584)"
+    - "poorer fit at 75 % capacity; adjustable parameters may be rate specific (pp. 1582, 1584)"
+    - "3:1 ratio of high-rate to low-rate fitting data biases the fit to high rates (p. 1582)"
+
+# ---------------------------------------------------------------------------
+# Cross-check against the 2008 thesis (Appendix H, Tables 29-31, pp. 239-242)
+# ---------------------------------------------------------------------------
+cross_check_with_thesis:
+  thesis_source: "Latham (2008) M.Sc.E. thesis, Appendix H, Table 29 (pp. 239-241), Table 30 (p. 241), Table 31 (p. 242); PDF pages 262-265"
+  do_thesis_inlet_states_match_paper_table8: false
+  explanation: >
+    No. Table 8 of the paper contains the two NEW validation sets (99 % and 75 %, p. 1582), which are
+    not in the thesis. The thesis Table 30 process inlet states are: Plant A 7886 kmol/h, 611.4 degC,
+    3006.0 kPa; Plant B 7073 kmol/h, 613.9 degC, 2944.0 kPa; Plant C1 9654 kmol/h, 617.8 degC,
+    3026.7 kPa; Plant C2 5355 kmol/h, 606.7 degC, 2808.5 kPa. Paper Table 8 has 7381 kmol/h,
+    604 degC, 3013 kPa (99 %) and 5487 kmol/h, 591 degC, 2770 kPa (75 %). None coincide.
+    The paper's FOUR FITTING sets are stated to be in the thesis (p. 1579, "[29]") at plant rates
+    99/94/91/75 %, whereas the thesis (p. 125) quotes 99/92/96/71 % for Plants A/B/C1/C2.
+  are_thesis_temperatures_absolute: true
+  evidence:
+    - "The thesis nowhere states that temperatures are shifted; the word 'shift' occurs only for the water-gas shift and for qualitative profile movements (pp. 108, 112-113)."
+    - "Thesis Table 31 (p. 242) values are physically plausible absolutes: T_proc,out 832.4-848.9 degC, T_upper 802.5-838.0 degC, T_lower 853.1-878.4 degC, T_fur,out 940.9-1012.3 degC."
+    - "Paper Table 7 reveals one absolute: measured wet H2 outlet 46.3 mol% at 91 % rate. Thesis Table 31 Plant B has X_H2,proc,out = 0.463134, i.e. 46.3 %. So paper '91 %' = thesis Plant B (thesis calls it 92 %)."
+    - "Elevation differences agree: paper 91 % case 333-284 = 49 degC vs thesis Plant B 857.7-809.2 = 48.5 degC; paper 75 % fitting case 328-278 = 50 degC vs thesis Plant C2 853.1-802.5 = 50.6 degC."
+    - "Implied shift constant (thesis minus paper): Plant B upper 809.2-284 = 525.2, lower 857.7-333 = 524.7; Plant C2 upper 802.5-278 = 524.5, lower 853.1-328 = 525.1 degC. A single constant of ~525 degC reconciles all four numbers, consistent with a uniform vertical shift of absolute data."
+  decision: >
+    Absolute tube-wall temperature validation IS possible using the thesis Appendix H data
+    (Plants A, B, C1, C2: two elevations each, 3.66 m and 8.53 m from the top, thesis p. 9) but
+    NOT using the paper's Tables 5 and 9. The paper's 99 % and 75 % validation sets (Table 8) have
+    no absolute temperatures anywhere.
+  thesis_geometry_for_reuse:
+    tube_outer_diameter_m: 0.146          # thesis p. 6
+    heated_length_m: 12.5                 # thesis p. 6 ("exposed length")
+    equivalent_particle_diameter_m: 0.00540   # thesis Table 17, p. 93 (Twigg 1989)
+    catalyst_packing_density_kg_per_m3: 1100  # thesis Table 17, p. 94 (Katalco 23-4Q)
+    tube_thermal_conductivity_W_per_m_K: 29.6 # thesis Table 17, p. 93: 106 500 J/(m h K)
+    tube_wall_thickness_m: null
+    wall_thickness_comment: >
+      Not given anywhere in the thesis or the paper (only r_in, r_out symbols). Documented
+      reference value from Xu & Froment Part II Table 2 (p. 100): ID 0.1016 m, OD 0.1322 m,
+      i.e. wall = 0.0153 m (~15 mm), for a similar-size industrial tube. Must be confirmed
+      with the chemical engineer before use.
+    peep_hole_elevations_m: [3.66, 8.53]  # thesis p. 9 (upper, lower)
+    peep_hole_elevation_fractions_derived: [0.293, 0.682]  # 3.66/12.5, 8.53/12.5 - match the paper's 0.29 and 0.68
