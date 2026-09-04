@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = ["pytest", "jupyter", "nbconvert"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

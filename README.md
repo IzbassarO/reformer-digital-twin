@@ -36,3 +36,20 @@ pip install -e ".[dev]"
 ```
 
 ## Sanity check
+
+Running `notebooks/00_sanity_check.ipynb` verifies the Cantera installation
+by computing the SMR equilibrium composition (GRI-Mech 3.0) at 850 °C, 25 bar,
+S/C = 3 and should reproduce the following output:
+
+```
+Equilibrium at 850 °C, 25 bar, S/C = 3 (GRI-Mech 3.0)
+Species    Wet basis / %
+H2                 48.54
+CO                  8.77
+CO2                 5.56
+CH4                 3.51
+H2O                33.62
+
+Dry-basis H2 fraction : 73.13 %
+CH4 conversion        : 80.34 %
+```
