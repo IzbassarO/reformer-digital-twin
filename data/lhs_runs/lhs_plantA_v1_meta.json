@@ -1,0 +1,93 @@
+{
+  "name": "lhs_plantA_v1",
+  "n_samples": 2000,
+  "seed": 0,
+  "sampler": "scipy.stats.qmc.LatinHypercube",
+  "git_commit": "311241ccd5c30b8c417632564676c7748bfdaf13",
+  "created": "2026-09-05 09:43:50",
+  "wall_time_s": 66.69449141699442,
+  "n_jobs": -1,
+  "n_converged": 2000,
+  "n_failed": 0,
+  "convergence_rate": 1.0,
+  "ranges": {
+    "steam_to_carbon": {
+      "min": 2.5,
+      "max": 4.0,
+      "unit": "-"
+    },
+    "feed_per_tube_fraction": {
+      "min": 0.6,
+      "max": 1.1,
+      "unit": "-"
+    },
+    "specific_firing_factor": {
+      "min": 0.85,
+      "max": 1.15,
+      "unit": "-"
+    },
+    "inlet_T": {
+      "min": 800.0,
+      "max": 900.0,
+      "unit": "K"
+    },
+    "inlet_P": {
+      "min": 25.0,
+      "max": 33.0,
+      "unit": "bar"
+    },
+    "catalyst_activity": {
+      "min": 0.1,
+      "max": 0.3,
+      "unit": "-"
+    },
+    "excess_air": {
+      "min": 5.0,
+      "max": 20.0,
+      "unit": "%"
+    }
+  },
+  "base_case": {
+    "steam_to_carbon": 2.892248062015504,
+    "feed_per_tube_fraction": 1.0,
+    "specific_firing_factor": 1.0,
+    "inlet_T": 884.55,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.2,
+    "excess_air": 21.64128020288727,
+    "Q_comb_W": 218996949.3832803,
+    "life_consumption_rate_per_h": 1.2709749076357638e-08,
+    "T_wo_max_K": 1146.712500081438,
+    "T_out_K": 1109.196026902705
+  },
+  "life_curve": "Yeh 2021 Manaurite XM minimum curve, PLACEHOLDER",
+  "outputs": [
+    "converged",
+    "Q_comb_W",
+    "flue_gas_kmol_h",
+    "T_fg_in_K",
+    "feed_per_tube_kmol_h",
+    "dry_feed_kmol_h",
+    "H2_out_kmol_h",
+    "H2_net_kmol_h",
+    "dry_H2_pct",
+    "CH4_slip_dry_pct",
+    "CH4_conversion",
+    "T_out_K",
+    "P_out_bar",
+    "T_wo_max_K",
+    "z_frac_T_wo_max",
+    "T_mid_max_K",
+    "T_fg_out_K",
+    "T_fg_max_K",
+    "duty_W",
+    "thermal_efficiency",
+    "sigma_hot_MPa",
+    "log10_t_r_hot",
+    "life_consumption_rate_per_h",
+    "life_consumption_ratio_to_base",
+    "energy_closure",
+    "runtime_s",
+    "error"
+  ]
+}

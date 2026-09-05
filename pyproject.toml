@@ -19,6 +19,8 @@ dependencies = [
     "scikit-learn",
     "matplotlib",
     "plotly",
+    "salib",
+    "joblib",
 ]
 
 [project.optional-dependencies]

@@ -1,0 +1,8 @@
+parameter,unit,min,max,base_plant_A,justification
+steam_to_carbon,-,2.5,4.0,2.88,"carbon-formation limit for natural gas on Ni below ~2.5; 4.0 upper for hydrogen plants; Latham 2.7–3.0, Xu–Froment 3.36"
+feed_per_tube_fraction,-,0.60,1.10,1.00,"industrial reformer turndown ~50–60%; 110% short-term overload"
+specific_firing_factor,-,0.85,1.15,1.00,"burner control range around the plant value"
+inlet_T,K,800,900,877,"Latham 877 K, Xu–Froment 793 K; above ~920 K cracking in preheat coils"
+inlet_P,bar,25,33,30.1,"industrial 20–40 bar; Latham 27–30, Xu–Froment 29"
+catalyst_activity,-,0.10,0.30,0.20,"Latham fitted 0.20 for a mid-campaign catalyst; fresh higher, end-of-life lower"
+excess_air,%,5,20,9.2,"industrial reformer furnaces 5–15%; 20% at low load"
