@@ -26,9 +26,24 @@ multiplier ``f_htg``, and the inner-wall temperature from the local flux
 ``T_wi = T_wo - q''_o * d_o/(2 lambda_tube) * ln(d_o/d_i)``.
 
 Higher alkanes (C2H6, C3H8, C4H10, C5H12) in the feed are converted at the inlet
-by Latham's overall rule ``C_k H_2k+2 + (k-1)/3 H2O -> (k-1)/3 CO + (2k+1)/3 CH4``
-(Latham et al. 2011, Eq. 16). The small enthalpy of that step (about 3.7 kJ/mol
-for ethane, Latham 2011 p. 1578) is neglected: the inlet temperature is kept.
+by one of two rules (``Feed.inlet_higher_alkanes``):
+
+* ``"latham"``: ``C_k H_2k+2 + (k-1)/3 H2O -> (k-1)/3 CO + (2k+1)/3 CH4`` (Latham
+  et al. 2011, Eq. 16; no net hydrogen);
+* ``"xu_froment"``: ``C_k H_2k+2 + k H2O -> k CO + (2k+1) H2`` (complete steam
+  reforming of the C2+ fraction, so the equivalent-CH4 conversion starts at the
+  C2+ carbon fraction of the feed, about 0.09 for the Xu & Froment Table 2 gas).
+
+The chemical engineer must confirm which definition Xu & Froment (1989) used
+for the conversion plotted in Part II Fig. 3. The small enthalpy of the inlet
+step is neglected in both cases: the inlet temperature is kept.
+
+Bed-side heat transfer (``simulate(..., heat_transfer=...)``):
+
+* ``"leva_grummer"`` (default): Leva & Grummer (1948) as in Latham 2011 Eq. (20);
+* ``"xu_froment"``: Xu & Froment Part II Eqs. (11)-(12) with the De Wasch &
+  Froment / Yagi-Kunii dynamic terms and the Kunii & Smith (1960) static bed
+  conductivity, see :func:`xu_froment_alpha_i`.
 """
 
 from __future__ import annotations
@@ -110,6 +125,10 @@ class CatalystBed:
     eta : effectiveness factors (eta1, eta2, eta3) or a callable ``eta(z)`` returning them.
           Default 0.1 for all three (Latham et al. 2011, p. 1578).
     activity : multiplier on all intrinsic rates (Latham's f_prx)
+    lambda_s : pellet thermal conductivity [W/(m K)]; default 1.0 is a literature-range value
+          for porous ceramic (MgAl2O4 / alumina) supported Ni catalyst (typ. 0.5-2). ASSUMPTION.
+    emissivity : pellet surface emissivity; default 0.8 for oxide ceramics at 800-1100 K
+          (typ. 0.7-0.9). ASSUMPTION. Both only enter the Kunii-Smith static conductivity.
     """
 
     rho_bed: float
@@ -117,6 +136,8 @@ class CatalystBed:
     d_p: float
     eta: EtaSpec = (0.1, 0.1, 0.1)
     activity: float = 1.0
+    lambda_s: float = 1.0      # solid (pellet) thermal conductivity [W/(m K)], used by Kunii-Smith only
+    emissivity: float = 0.8    # pellet surface emissivity [-], used by Kunii-Smith only
 
     def eta_at(self, z: float) -> np.ndarray:
         e = self.eta(z) if callable(self.eta) else self.eta
@@ -130,16 +151,27 @@ class Feed:
     T_in : temperature [K]
     P_in : pressure [bar]
     F : molar flows [kmol/h] keyed by species; may include C2H6, C3H8, C4H10, C5H12,
-        which are converted to CH4/CO at the inlet by :func:`convert_higher_alkanes`.
+        which are converted at the inlet by :func:`convert_higher_alkanes`.
+    inlet_higher_alkanes : "latham" (C2+ -> CO + CH4, Latham 2011 Eq. 16) or "xu_froment"
+        (C2+ -> CO + H2, complete reforming). Conversion is always reported relative to the
+        carbon-equivalent CH4 feed, so the two rules give different inlet conversions
+        (about 0.02 and 0.09 for the Xu & Froment gas). The chemical engineer must confirm
+        which definition Xu & Froment used.
     """
 
     T_in: float
     P_in: float
     F: Mapping[str, float]
+    inlet_higher_alkanes: str = "latham"   # "latham" or "xu_froment", see convert_higher_alkanes
 
     def state_flows(self) -> Dict[str, float]:
         """Molar flows of the six state species after higher-alkane conversion."""
-        return convert_higher_alkanes(self.F)
+        return convert_higher_alkanes(self.F, rule=self.inlet_higher_alkanes)
+
+    @property
+    def F_CH4_equivalent(self) -> float:
+        """Carbon-equivalent methane feed [kmol/h]: CH4 + sum_k k * F(C_k H_2k+2). Conversion basis."""
+        return float(self.F.get("CH4", 0.0)) + sum(k * float(self.F.get(sp, 0.0)) for sp, k in HIGHER_ALKANES.items())
 
 
 class WallBC:
@@ -238,14 +270,18 @@ class Result:
 # ---------------------------------------------------------------------------
 # Feed helpers
 # ---------------------------------------------------------------------------
-def convert_higher_alkanes(F: Mapping[str, float]) -> Dict[str, float]:
-    """Apply Latham's inlet conversion rule for C2-C5 alkanes (Latham 2011, Eq. 16).
+def convert_higher_alkanes(F: Mapping[str, float], rule: str = "latham") -> Dict[str, float]:
+    """Convert C2-C5 alkanes at the inlet and return flows [kmol/h] of the six state species.
 
-    ``C_k H_2k+2 + (k-1)/3 H2O -> (k-1)/3 CO + (2k+1)/3 CH4`` for each higher alkane.
-    The rule conserves C, H and O and produces no net hydrogen. Its small
-    enthalpy is neglected (see module docstring). Returns flows [kmol/h] of the
-    six state species.
+    ``rule="latham"``: ``C_k H_2k+2 + (k-1)/3 H2O -> (k-1)/3 CO + (2k+1)/3 CH4``
+    (Latham et al. 2011, Eq. 16; conserves C, H, O; no net hydrogen).
+    ``rule="xu_froment"``: ``C_k H_2k+2 + k H2O -> k CO + (2k+1) H2`` (complete
+    steam reforming of the C2+ fraction to CO and H2, so that the carbon-
+    equivalent CH4 conversion at z = 0 equals the C2+ carbon fraction).
+    The enthalpy of either step is neglected (see module docstring).
     """
+    if rule not in ("latham", "xu_froment"):
+        raise ValueError(f"unknown inlet rule {rule!r}; use 'latham' or 'xu_froment'")
     out = {s: float(F.get(s, 0.0)) for s in SPECIES}
     unknown = set(F) - set(SPECIES) - set(HIGHER_ALKANES)
     if unknown:
@@ -254,9 +290,14 @@ def convert_higher_alkanes(F: Mapping[str, float]) -> Dict[str, float]:
         n = float(F.get(sp, 0.0))
         if n <= 0.0:
             continue
-        out["H2O"] -= n * (k - 1) / 3.0
-        out["CO"] += n * (k - 1) / 3.0
-        out["CH4"] += n * (2 * k + 1) / 3.0
+        if rule == "latham":
+            out["H2O"] -= n * (k - 1) / 3.0
+            out["CO"] += n * (k - 1) / 3.0
+            out["CH4"] += n * (2 * k + 1) / 3.0
+        else:
+            out["H2O"] -= n * k
+            out["CO"] += n * k
+            out["H2"] += n * (2 * k + 1)
     if out["H2O"] < 0.0:
         raise ValueError("not enough steam to convert the higher alkanes at the inlet")
     return out
@@ -274,12 +315,20 @@ def ring_equivalent_diameter(d_pe: float, d_pi: float, H: float) -> float:
     return 6.0 * V / S
 
 
-def feed_from_xu_froment(path: Union[str, Path] = DEFAULT_XF_PATH) -> Feed:
+def feed_from_xu_froment(path: Union[str, Path] = DEFAULT_XF_PATH,
+                         split_alkanes: bool = False,
+                         inlet_higher_alkanes: str = "latham") -> Feed:
     """Inlet of one tube for the Xu & Froment (1989) Part II Table 2 case.
 
-    Uses the stated molar quantities: 5.168 kmol/h *equivalent* CH4 (treated as
-    already containing the higher alkanes, so no C2+ is added) and the ratios
-    H2O/CH4, CO2/CH4, H2/CH4, N2/CH4. T_in and P_in from the same table.
+    Uses the stated molar quantities: 5.168 kmol/h *equivalent* CH4 and the ratios
+    H2O/CH4, CO2/CH4, H2/CH4, N2/CH4; T_in and P_in from the same table.
+
+    ``split_alkanes=False`` (default, previous behaviour): all 5.168 kmol/h are
+    fed as CH4. ``split_alkanes=True``: the equivalent CH4 is distributed over
+    CH4, C2H6, C3H8, C4H10, C5H12 in the carbon proportions of the Table 2
+    natural-gas analysis (CH4 81.5, C2H6 2.8, C3H8 0.4, C4H10 0.1, C5H12 0.2 vol%),
+    so that the chosen ``inlet_higher_alkanes`` rule sets the inlet conversion.
+    The carbon-equivalent CH4 feed (conversion basis) is 5.168 kmol/h either way.
     """
     d = _load_yaml(path)
     n_ch4 = float(d["equivalent_CH4_feed_kmol_per_h"])
@@ -292,7 +341,14 @@ def feed_from_xu_froment(path: Union[str, Path] = DEFAULT_XF_PATH) -> Feed:
         "N2": n_ch4 * float(r["N2_over_CH4"]),
         "CO": 0.0,
     }
-    return Feed(T_in=float(d["inlet"]["T0_K"]), P_in=float(d["inlet"]["p_t0_bar"]), F=F)
+    if split_alkanes:
+        ng = d["natural_gas_composition_vol_pct"]
+        carbon = {"CH4": 1, "C2H6": 2, "C3H8": 3, "C4H10": 4, "C5H12": 5}
+        total_c = sum(k * float(ng[sp]) for sp, k in carbon.items())
+        for sp, k in carbon.items():
+            F[sp] = n_ch4 * float(ng[sp]) / total_c   # moles of species per hour
+    return Feed(T_in=float(d["inlet"]["T0_K"]), P_in=float(d["inlet"]["p_t0_bar"]), F=F,
+                inlet_higher_alkanes=inlet_higher_alkanes)
 
 
 #: Tube-wall conductivity used when the source gives none: 106 500 J/(m h K) =
@@ -365,6 +421,7 @@ def _gas_props(T: float, P_bar: float, X: Mapping[str, float]) -> Dict[str, obje
         "mu": gas.viscosity,                      # Pa s
         "lam": gas.thermal_conductivity,          # W/(m K)
         "cp": np.array([cp[idx[s]] for s in SPECIES]),
+        "cp_mass": gas.cp_mass,                   # J/(kg K)
         "dH": dH,
     }
 
@@ -391,9 +448,75 @@ def ergun_dPdz(rho: float, mu: float, v_s: float, d_p: float, phi: float) -> flo
     return f * rho * v_s**2 / d_p
 
 
+SIGMA_SB = 5.670374419e-8  # W/(m2 K4)
+
+
+def kunii_smith_lambda_er0(lam_g: float, lam_s: float, eps: float, T: float, emissivity: float,
+                           d_p: float, beta: float = 1.0, gamma: float = 2.0 / 3.0) -> float:
+    """Static effective radial bed conductivity, Kunii & Smith (1960) [W/(m K)].
+
+    ``lam_er0/lam_g = eps (1 + beta h_rv d_p/lam_g) + beta (1-eps) / [ 1/(1/phi + h_rs d_p/lam_g) + gamma lam_g/lam_s ]``
+    (Kunii & Smith 1960, Eq. 19; Froment & Bischoff 1979, Eq. 11.7.1-2), with
+    ``h_rv = 4 sigma T^3 / (1 + eps/(2(1-eps)) (1-p)/p)`` (void-to-void radiation),
+    ``h_rs = 4 sigma T^3 p/(2-p)`` (solid-to-solid radiation), ``p`` the emissivity,
+    ``beta = 1`` and ``gamma = 2/3``. ``phi`` interpolates between the Kunii-Smith
+    dense-packing (eps = 0.26) and loose-packing (eps = 0.476) values ``phi_2``,
+    ``phi_1`` evaluated from their analytical expression with ``kappa = lam_s/lam_g``,
+    ``sin^2 theta = 1/n``, ``n = 4 sqrt(3)`` (dense) and ``n = 1.5`` (loose); for
+    eps > 0.476 (this ring bed) the loose value ``phi_1`` is used.
+    In the original kcal units ``4 sigma`` is the familiar 0.1952 (T/100)^3.
+    """
+    kappa = lam_s / lam_g
+
+    def phi_i(n: float) -> float:
+        s2 = 1.0 / n
+        c = math.sqrt(1.0 - s2)
+        a = (kappa - 1.0) / kappa
+        return 0.5 * a * a * s2 / (math.log(kappa - (kappa - 1.0) * c) - a * (1.0 - c)) - 2.0 / (3.0 * kappa)
+
+    phi1, phi2 = phi_i(1.5), phi_i(4.0 * math.sqrt(3.0))
+    if eps <= 0.26:
+        phi = phi2
+    elif eps >= 0.476:
+        phi = phi1
+    else:
+        phi = phi2 + (phi1 - phi2) * (eps - 0.26) / 0.216
+    p = emissivity
+    h_rv = 4.0 * SIGMA_SB * T**3 / (1.0 + eps / (2.0 * (1.0 - eps)) * (1.0 - p) / p)
+    h_rs = 4.0 * SIGMA_SB * T**3 * p / (2.0 - p)
+    return lam_g * (eps * (1.0 + beta * h_rv * d_p / lam_g)
+                    + beta * (1.0 - eps) / (1.0 / (1.0 / phi + h_rs * d_p / lam_g) + gamma / kappa))
+
+
+def xu_froment_alpha_i(lam_g: float, mu: float, cp_mass: float, G_s: float, d_p: float, d_ti: float,
+                       lam_er0: float) -> Dict[str, float]:
+    """Bed-side coefficient alpha_i [W/(m2 K)] of Xu & Froment (1989) Part II, Eq. (12) and the
+    two correlations below it (p. 100), in SI.
+
+    ``Re = d_p G_s / mu``, ``Pr = cp mu / lam_g`` (superficial mass velocity, particle diameter);
+    ``alpha_w0 = 8.694 lam_er0 / d_ti^(4/3)`` (De Wasch & Froment 1972; the constant carries
+    m^(1/3) and is unchanged between kJ/(m h K) and W/(m K) because alpha and lambda scale alike);
+    ``alpha_w = alpha_w0 + 0.444 Re Pr lam_g / d_p``;
+    ``lam_er = lam_er0 + 0.14 lam_g Re Pr`` (Yagi & Kunii form);
+    ``alpha_i = 8 lam_er alpha_w / (8 lam_er + alpha_w d_ti)``  (Eq. 12, i.e. 1/alpha_i = 1/alpha_w + d_ti/(8 lam_er)).
+    Returns a dict with alpha_i and the intermediate quantities.
+    """
+    Re = d_p * G_s / mu
+    Pr = cp_mass * mu / lam_g
+    alpha_w0 = 8.694 * lam_er0 / d_ti ** (4.0 / 3.0)
+    alpha_w = alpha_w0 + 0.444 * Re * Pr * lam_g / d_p
+    lam_er = lam_er0 + 0.14 * lam_g * Re * Pr
+    alpha_i = 8.0 * lam_er * alpha_w / (8.0 * lam_er + alpha_w * d_ti)
+    return {"alpha_i": alpha_i, "alpha_w0": alpha_w0, "alpha_w": alpha_w, "lam_er": lam_er,
+            "lam_er0": lam_er0, "Re": Re, "Pr": Pr}
+
+
+HEAT_TRANSFER_OPTIONS = ("leva_grummer", "xu_froment")
+
+
 def _local(z: float, T: float, P: float, F: np.ndarray, tube: TubeGeometry, bed: CatalystBed,
            wall: WallBC, f_htg: float, adiabatic: bool,
-           adiabatic_beyond_heated: bool = False) -> Dict[str, object]:
+           adiabatic_beyond_heated: bool = False, heat_transfer: str = "leva_grummer") -> Dict[str, object]:
     """Everything needed for the RHS and for post-processing at one axial point.
 
     If ``adiabatic_beyond_heated`` is true, no wall heat is exchanged for
@@ -423,7 +546,14 @@ def _local(z: float, T: float, P: float, F: np.ndarray, tube: TubeGeometry, bed:
         alpha_i = U = q_i = q_o = 0.0
         T_wi = T_wo
     else:
-        alpha_i = leva_grummer_alpha(props["lam"], props["mu"], G_s, bed.d_p, tube.d_i, f_htg)
+        if heat_transfer == "leva_grummer":
+            alpha_i = leva_grummer_alpha(props["lam"], props["mu"], G_s, bed.d_p, tube.d_i, f_htg)
+        elif heat_transfer == "xu_froment":
+            lam0 = kunii_smith_lambda_er0(props["lam"], bed.lambda_s, bed.voidage, T, bed.emissivity, bed.d_p)
+            alpha_i = f_htg * xu_froment_alpha_i(props["lam"], props["mu"], props["cp_mass"], G_s,
+                                                 bed.d_p, tube.d_i, lam0)["alpha_i"]
+        else:
+            raise ValueError(f"unknown heat_transfer {heat_transfer!r}; use {HEAT_TRANSFER_OPTIONS}")
         U = 1.0 / (1.0 / alpha_i + tube.wall_resistance)
         q_i = U * (T_wo - T)                       # W/m2 at inner surface
         q_o = q_i * tube.d_i / tube.d_o            # W/m2 at outer surface
@@ -439,12 +569,19 @@ def _local(z: float, T: float, P: float, F: np.ndarray, tube: TubeGeometry, bed:
 def simulate(tube: TubeGeometry, bed: CatalystBed, feed: Feed, wall: WallBC,
              f_htg: float = 1.0, adiabatic: bool = False, L: Optional[float] = None,
              n_out: int = 201, method: str = "LSODA", rtol: float = 1e-7,
-             atol: Optional[np.ndarray] = None, adiabatic_beyond_heated: bool = False) -> Result:
+             atol: Optional[np.ndarray] = None, adiabatic_beyond_heated: bool = False,
+             heat_transfer: str = "leva_grummer") -> Result:
     """Integrate the tube model from z = 0 to ``L`` (default ``tube.L_heated``).
 
     With ``adiabatic_beyond_heated=True`` the section ``tube.L_heated < z <= L`` exchanges
     no heat with the wall (unheated tail, as in Xu & Froment Part II Fig. 3 for 11.12-12 m).
+    ``heat_transfer`` selects the bed-side coefficient: ``"leva_grummer"`` (Latham 2011
+    Eq. 20, scaled by ``f_htg``) or ``"xu_froment"`` (Part II Eqs. 11-12 with Kunii-Smith
+    static conductivity; ``f_htg`` also multiplies it, default 1). CH4 conversion is
+    reported relative to the carbon-equivalent CH4 feed (``feed.F_CH4_equivalent``).
     """
+    if heat_transfer not in HEAT_TRANSFER_OPTIONS:
+        raise ValueError(f"unknown heat_transfer {heat_transfer!r}; use {HEAT_TRANSFER_OPTIONS}")
     L = tube.L_heated if L is None else float(L)
     F0_map = feed.state_flows()
     F0 = np.array([F0_map[s] for s in SPECIES])
@@ -455,7 +592,7 @@ def simulate(tube: TubeGeometry, bed: CatalystBed, feed: Feed, wall: WallBC,
     def rhs(z, y):
         n_eval[0] += 1
         F, T, P = y[:nS], y[nS], y[nS + 1]
-        loc = _local(z, T, P, F, tube, bed, wall, f_htg, adiabatic, adiabatic_beyond_heated)
+        loc = _local(z, T, P, F, tube, bed, wall, f_htg, adiabatic, adiabatic_beyond_heated, heat_transfer)
         pr = loc["props"]
         r_eff = loc["r_eff"]
         dF = np.zeros(nS)
@@ -489,7 +626,7 @@ def simulate(tube: TubeGeometry, bed: CatalystBed, feed: Feed, wall: WallBC,
     dT_app = np.full(n, np.nan)
     for k in range(n):
         Fk = Y[:nS, k]
-        loc = _local(z[k], T[k], P[k], Fk, tube, bed, wall, f_htg, adiabatic, adiabatic_beyond_heated)
+        loc = _local(z[k], T[k], P[k], Fk, tube, bed, wall, f_htg, adiabatic, adiabatic_beyond_heated, heat_transfer)
         for s in SPECIES:
             X[s][k] = loc["X"][s]
         q_o[k], q_i[k], T_wo[k], T_wi[k] = loc["q_o"], loc["q_i"], loc["T_wo"], loc["T_wi"]
@@ -497,7 +634,7 @@ def simulate(tube: TubeGeometry, bed: CatalystBed, feed: Feed, wall: WallBC,
         r1[k], r2[k], r3[k] = loc["r_eff"]
         dT_app[k] = approach_to_equilibrium_I(T[k], {s: P[k] * loc["X"][s] for s in REACTING})
 
-    F_ch4_in = F0_map["CH4"]
+    F_ch4_in = feed.F_CH4_equivalent
     return Result(
         z=z, T=T, P=P, F=F, X=X,
         conversion_CH4=(F_ch4_in - F["CH4"]) / F_ch4_in,
@@ -507,7 +644,8 @@ def simulate(tube: TubeGeometry, bed: CatalystBed, feed: Feed, wall: WallBC,
         F_in=F0_map, success=bool(sol.success), message=str(sol.message),
         n_rhs_evals=n_eval[0], wall_time_s=wall_time,
         extras={"wall_bc": wall.description, "method": method, "f_htg": f_htg, "adiabatic": adiabatic,
-                "adiabatic_beyond_heated": adiabatic_beyond_heated},
+                "adiabatic_beyond_heated": adiabatic_beyond_heated, "heat_transfer": heat_transfer,
+                "inlet_higher_alkanes": feed.inlet_higher_alkanes, "F_CH4_equivalent": F_ch4_in},
     )
 
 

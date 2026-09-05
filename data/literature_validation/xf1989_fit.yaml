@@ -38,256 +38,586 @@ sanity_checks:
     ok: true
 boundary_condition: PCHIP of digitised T_wall_outer for 0 <= z <= 11.12 m; adiabatic (U = 0) for 11.12 < z <= 12 m
 compared_on: digitised z grid of each curve (model interpolated linearly onto it)
-objective_definition: 'least_squares (scipy, trf, bounded) on residuals r_c(z_k) = (model - data)/(max(data_c) - min(data_c))/sqrt(n_c)
-  for each compared curve c on its digitised grid; stage A: c in {p_t}, parameters voidage in [0.35, 0.60], d_p in [4, 12]
-  mm; stage B: c in {x_CH4, T_gas}, parameter m in [0.2, 2.0] with eta_1 = eta_2 = eta_3 = 0.1 m, stage-A values fixed'
-baseline:
-  parameters:
-    voidage: 0.6
-    d_p_m: 0.00924
+leva_grummer:
+  description: Leva-Grummer bed-side coefficient (Latham 2011 Eq. 20), all 5.168 kmol/h fed as CH4, Latham inlet rule
+  objective_definition: 'least_squares (scipy, trf, bounded) on residuals r_c(z_k) = (model - data)/(max(data_c) - min(data_c))/sqrt(n_c)
+    for each compared curve c on its digitised grid; stage A: c in {p_t}, parameters voidage in [0.35, 0.60], d_p in [4, 12] mm; stage
+    B: c in {x_CH4, T_gas}, parameter m in [0.2, 2.0] with eta_1 = eta_2 = eta_3 = 0.1 m, stage-A values fixed'
+  baseline:
+    parameters:
+      voidage: 0.6
+      d_p_m: 0.00924
+      eta:
+      - 0.1
+      - 0.1
+      - 0.1
+      f_htg: 1.0
+    metrics:
+      x_CH4:
+        rmse: 0.1465125582294927
+        max_abs: 0.20306233403051732
+        mean_bias: 0.12405357953760858
+        n: 457
+        unit: '-'
+      x_CO2:
+        rmse: 0.030037004259128405
+        max_abs: 0.05322945313442078
+        mean_bias: 0.0011434879582819001
+        n: 422
+        unit: '-'
+      T_gas:
+        rmse: 73.2597602874607
+        max_abs: 92.24618713039035
+        mean_bias: 70.33588535921434
+        n: 386
+        unit: K
+      T_wall_inner:
+        rmse: 37.70320237935894
+        max_abs: 92.23988403067824
+        mean_bias: -2.3633313544813
+        n: 261
+        unit: K
+      p_t:
+        rmse: 0.6991313491298335
+        max_abs: 1.5031028200102945
+        mean_bias: 0.5501451143463503
+        n: 462
+        unit: bar
+    outlet:
+      z_m: 12.0
+      T_K: 1111.3154241540428
+      P_bar: 27.115176973080423
+      conversion_CH4: 0.7889243521277749
+      yield_CO2: 0.3106436047095061
+      X_H2_dry: 0.6964733684344393
+      T_wall_outer_K: 1111.3154241540428
+      T_wall_inner_K: 1111.3154241540428
+      dT_approach_I_K: 0.04541114646463029
+      conversion_CH4_at_11.12: 0.7856821909747299
+      T_K_at_11.12: 1113.8739671908163
+      P_bar_at_11.12: 27.293883823218273
+      dP_bar_total: 1.8848230269195767
+      T_min_K: 777.2842566423903
+      z_Tmin_m: 0.1
+      inlet_dip_K: 15.865743357609517
+  fitted:
+    stage_A:
+      voidage: 0.526070573791837
+      d_p_m: 0.009439519780359574
+      cost: 8.61962608476333e-05
+      n_runs: 74
+      status: 3
+      message: '`xtol` termination condition is satisfied.'
+      wall_time_s: 9.824936542001524
+      at_bound: false
+    stage_B:
+      eta_multiplier: 0.20000000000206433
+      eta_values:
+      - 0.020000000000206436
+      - 0.020000000000206436
+      - 0.020000000000206436
+      cost: 0.062012861632329525
+      n_runs: 12
+      status: 1
+      message: '`gtol` termination condition is satisfied.'
+      wall_time_s: 1.3051861669991922
+      latham_inlet_variant: false
+      at_bound: true
+    parameters:
+      voidage: 0.526070573791837
+      d_p_m: 0.009439519780359574
+      eta:
+      - 0.020000000000206436
+      - 0.020000000000206436
+      - 0.020000000000206436
+      f_htg: 1.0
+    metrics:
+      x_CH4:
+        rmse: 0.11635490097239837
+        max_abs: 0.17231856402137558
+        mean_bias: 0.08622829677184665
+        n: 457
+        unit: '-'
+      x_CO2:
+        rmse: 0.026049731747193834
+        max_abs: 0.0561102027504433
+        mean_bias: -0.014954868178204718
+        n: 422
+        unit: '-'
+      T_gas:
+        rmse: 75.0836104082127
+        max_abs: 82.50778324756197
+        mean_bias: 73.80561410593603
+        n: 386
+        unit: K
+      T_wall_inner:
+        rmse: 34.44614153246041
+        max_abs: 85.26499307025006
+        mean_bias: -2.1547834374774935
+        n: 261
+        unit: K
+      p_t:
+        rmse: 0.0505247029009153
+        max_abs: 0.144724527659001
+        mean_bias: 0.0021583152388063398
+        n: 462
+        unit: bar
+    outlet:
+      z_m: 12.0
+      T_K: 1099.4998242728004
+      P_bar: 25.707468645434513
+      conversion_CH4: 0.770880601973651
+      yield_CO2: 0.3148492443526016
+      X_H2_dry: 0.692655812911853
+      T_wall_outer_K: 1099.4998242728004
+      T_wall_inner_K: 1099.4998242728004
+      dT_approach_I_K: 1.0389616643128647
+      conversion_CH4_at_11.12: 0.7584321860319169
+      T_K_at_11.12: 1110.2136595527056
+      P_bar_at_11.12: 26.026511918997546
+      dP_bar_total: 3.2925313545654866
+      T_min_K: 790.7100889084188
+      z_Tmin_m: 0.05
+      inlet_dip_K: 2.439911091581166
+  latham_inlet_variant:
+    description: eta = 0.05*m for z < 1.2 m (10 % of 12 m), 0.1*m elsewhere
+    stage_B:
+      eta_multiplier: 0.20000116900871528
+      eta_values:
+      - 0.02000011690087153
+      - 0.02000011690087153
+      - 0.02000011690087153
+      cost: 0.061384722216595244
+      n_runs: 17
+      status: 3
+      message: '`xtol` termination condition is satisfied.'
+      wall_time_s: 1.9111227500034147
+      latham_inlet_variant: true
+      at_bound: true
+    metrics:
+      x_CH4:
+        rmse: 0.11525191058312799
+        max_abs: 0.17088988800013005
+        mean_bias: 0.08047064693108398
+        n: 457
+        unit: '-'
+      x_CO2:
+        rmse: 0.029284450039459807
+        max_abs: 0.06277650884376879
+        mean_bias: -0.01798161996701475
+        n: 422
+        unit: '-'
+      T_gas:
+        rmse: 74.89390859447408
+        max_abs: 81.83038101757188
+        mean_bias: 74.0681803667351
+        n: 386
+        unit: K
+      T_wall_inner:
+        rmse: 34.14248790310125
+        max_abs: 85.00369231699824
+        mean_bias: -2.1489970506765994
+        n: 261
+        unit: K
+      p_t:
+        rmse: 0.05173785800239544
+        max_abs: 0.15088787219799826
+        mean_bias: 0.004766898982078799
+        n: 462
+        unit: bar
+    outlet:
+      z_m: 12.0
+      T_K: 1099.0433942535822
+      P_bar: 25.713745747178702
+      conversion_CH4: 0.7697705744521052
+      yield_CO2: 0.31498517417831806
+      X_H2_dry: 0.6924083013658596
+      T_wall_outer_K: 1099.0433942535822
+      T_wall_inner_K: 1099.0433942535822
+      dT_approach_I_K: 1.0395714287635656
+      conversion_CH4_at_11.12: 0.7572471199316645
+      T_K_at_11.12: 1109.8109053281603
+      P_bar_at_11.12: 26.032469092690754
+      dP_bar_total: 3.2862542528212977
+      T_min_K: 793.15
+      z_Tmin_m: 0.0
+      inlet_dip_K: 0.0
+    inlet_dip_K_baseline_bed_eta0.1: 15.865743357609517
+    inlet_dip_K_baseline_bed_latham: 8.505975636667017
+    removes_inlet_dip: true
+  diagnostics_f_htg_sweep:
+    description: stage-A bed, eta = 0.1, Leva-Grummer multiplier f_htg varied (not fitted)
+    results:
+      '1.0':
+        T_gas_rmse: 73.06450338815617
+        T_gas_bias: 70.00748629186056
+        x_CH4_rmse: 0.15273578225510415
+        x_CH4_bias: 0.1301379076601502
+        T_wall_inner_rmse: 37.783109227778006
+        conversion_at_11.12: 0.7961745545435986
+        T_at_11.12: 1112.9993663696516
+      '0.7':
+        T_gas_rmse: 51.343843110230424
+        T_gas_bias: 48.5743909883796
+        x_CH4_rmse: 0.1053552241279403
+        x_CH4_bias: 0.08420385704603006
+        T_wall_inner_rmse: 29.364985268692433
+        conversion_at_11.12: 0.7428925638921501
+        T_at_11.12: 1090.405731300386
+      '0.5':
+        T_gas_rmse: 27.565937822404834
+        T_gas_bias: 25.390250064231985
+        x_CH4_rmse: 0.053820630006744016
+        x_CH4_bias: 0.03475172740130852
+        T_wall_inner_rmse: 20.947561018000858
+        conversion_at_11.12: 0.6737501855339102
+        T_at_11.12: 1063.2205022770179
+      '0.4':
+        T_gas_rmse: 10.751055113193155
+        T_gas_bias: 8.9111532732654
+        x_CH4_rmse: 0.02337200150425536
+        x_CH4_bias: 0.00023754936815222646
+        T_wall_inner_rmse: 16.482824842964636
+        conversion_at_11.12: 0.6191925719899642
+        T_at_11.12: 1042.4670782750102
+      '0.3':
+        T_gas_rmse: 13.475234590776559
+        T_gas_bias: -12.970579403917897
+        x_CH4_rmse: 0.04422355132479683
+        x_CH4_bias: -0.04408842128538093
+        T_wall_inner_rmse: 15.534802033065212
+        conversion_at_11.12: 0.5425174231940046
+        T_at_11.12: 1013.2029056999734
+xu_froment_correlation:
+  description: 'Xu & Froment Part II Eqs. 11-12 as printed, SI: alpha_w = alpha_w0 + 0.444 Re Pr lam_g/d_p, alpha_w0 = 8.694 lam_er0/d_ti^(4/3),
+    lam_er = lam_er0 + 0.14 lam_g Re Pr, alpha_i = 8 lam_er alpha_w/(8 lam_er + alpha_w d_ti), lam_er0 from Kunii & Smith (1960) with
+    lambda_s = 1.0 W/(m K) and emissivity 0.8 (assumed); no fitted multipliers'
+  bed:
+    voidage: 0.526
+    d_p_m: 0.00944
     eta:
     - 0.1
     - 0.1
     - 0.1
-    f_htg: 1.0
-  metrics:
-    x_CH4:
-      rmse: 0.1465125582294927
-      max_abs: 0.20306233403051732
-      mean_bias: 0.12405357953760858
-      n: 457
-      unit: '-'
-    x_CO2:
-      rmse: 0.030037004259128405
-      max_abs: 0.05322945313442078
-      mean_bias: 0.0011434879582819001
-      n: 422
-      unit: '-'
-    T_gas:
-      rmse: 73.2597602874607
-      max_abs: 92.24618713039035
-      mean_bias: 70.33588535921434
-      n: 386
-      unit: K
-    T_wall_inner:
-      rmse: 37.70320237935894
-      max_abs: 92.23988403067824
-      mean_bias: -2.3633313544813
-      n: 261
-      unit: K
-    p_t:
-      rmse: 0.6991313491298335
-      max_abs: 1.5031028200102945
-      mean_bias: 0.5501451143463503
-      n: 462
-      unit: bar
-  outlet:
-    z_m: 12.0
-    T_K: 1111.3154241540428
-    P_bar: 27.115176973080423
-    conversion_CH4: 0.7889243521277749
-    yield_CO2: 0.3106436047095061
-    X_H2_dry: 0.6964733684344393
-    T_wall_outer_K: 1111.3154241540428
-    T_wall_inner_K: 1111.3154241540428
-    dT_approach_I_K: 0.04541114646463029
-    conversion_CH4_at_11.12: 0.7856821909747299
-    T_K_at_11.12: 1113.8739671908163
-    P_bar_at_11.12: 27.293883823218273
-    dP_bar_total: 1.8848230269195767
-    T_min_K: 777.2842566423903
-    z_Tmin_m: 0.1
-    inlet_dip_K: 15.865743357609517
-fitted:
-  stage_A:
-    voidage: 0.526070573791837
-    d_p_m: 0.009439519780359574
-    cost: 8.61962608476333e-05
-    n_runs: 74
-    status: 3
-    message: '`xtol` termination condition is satisfied.'
-    wall_time_s: 9.655104292000033
-    at_bound: false
-  stage_B:
-    eta_multiplier: 0.20000000000206433
-    eta_values:
-    - 0.020000000000206436
-    - 0.020000000000206436
-    - 0.020000000000206436
-    cost: 0.062012861632329525
-    n_runs: 12
-    status: 1
-    message: '`gtol` termination condition is satisfied.'
-    wall_time_s: 1.314156415999605
-    latham_inlet_variant: false
-    at_bound: true
-  parameters:
-    voidage: 0.526070573791837
-    d_p_m: 0.009439519780359574
-    eta:
-    - 0.020000000000206436
-    - 0.020000000000206436
-    - 0.020000000000206436
-    f_htg: 1.0
-  metrics:
-    x_CH4:
-      rmse: 0.11635490097239837
-      max_abs: 0.17231856402137558
-      mean_bias: 0.08622829677184665
-      n: 457
-      unit: '-'
-    x_CO2:
-      rmse: 0.026049731747193834
-      max_abs: 0.0561102027504433
-      mean_bias: -0.014954868178204718
-      n: 422
-      unit: '-'
-    T_gas:
-      rmse: 75.0836104082127
-      max_abs: 82.50778324756197
-      mean_bias: 73.80561410593603
-      n: 386
-      unit: K
-    T_wall_inner:
-      rmse: 34.44614153246041
-      max_abs: 85.26499307025006
-      mean_bias: -2.1547834374774935
-      n: 261
-      unit: K
-    p_t:
-      rmse: 0.0505247029009153
-      max_abs: 0.144724527659001
-      mean_bias: 0.0021583152388063398
-      n: 462
-      unit: bar
-  outlet:
-    z_m: 12.0
-    T_K: 1099.4998242728004
-    P_bar: 25.707468645434513
-    conversion_CH4: 0.770880601973651
-    yield_CO2: 0.3148492443526016
-    X_H2_dry: 0.692655812911853
-    T_wall_outer_K: 1099.4998242728004
-    T_wall_inner_K: 1099.4998242728004
-    dT_approach_I_K: 1.0389616643128647
-    conversion_CH4_at_11.12: 0.7584321860319169
-    T_K_at_11.12: 1110.2136595527056
-    P_bar_at_11.12: 26.026511918997546
-    dP_bar_total: 3.2925313545654866
-    T_min_K: 790.7100889084188
-    z_Tmin_m: 0.05
-    inlet_dip_K: 2.439911091581166
-latham_inlet_variant:
-  description: eta = 0.05*m for z < 1.2 m (10 % of 12 m), 0.1*m elsewhere
-  stage_B:
-    eta_multiplier: 0.20000116900871528
-    eta_values:
-    - 0.02000011690087153
-    - 0.02000011690087153
-    - 0.02000011690087153
-    cost: 0.061384722216595244
-    n_runs: 17
-    status: 3
-    message: '`xtol` termination condition is satisfied.'
-    wall_time_s: 2.254210833001707
-    latham_inlet_variant: true
-    at_bound: true
-  metrics:
-    x_CH4:
-      rmse: 0.11525191058312799
-      max_abs: 0.17088988800013005
-      mean_bias: 0.08047064693108398
-      n: 457
-      unit: '-'
-    x_CO2:
-      rmse: 0.029284450039459807
-      max_abs: 0.06277650884376879
-      mean_bias: -0.01798161996701475
-      n: 422
-      unit: '-'
-    T_gas:
-      rmse: 74.89390859447408
-      max_abs: 81.83038101757188
-      mean_bias: 74.0681803667351
-      n: 386
-      unit: K
-    T_wall_inner:
-      rmse: 34.14248790310125
-      max_abs: 85.00369231699824
-      mean_bias: -2.1489970506765994
-      n: 261
-      unit: K
-    p_t:
-      rmse: 0.05173785800239544
-      max_abs: 0.15088787219799826
-      mean_bias: 0.004766898982078799
-      n: 462
-      unit: bar
-  outlet:
-    z_m: 12.0
-    T_K: 1099.0433942535822
-    P_bar: 25.713745747178702
-    conversion_CH4: 0.7697705744521052
-    yield_CO2: 0.31498517417831806
-    X_H2_dry: 0.6924083013658596
-    T_wall_outer_K: 1099.0433942535822
-    T_wall_inner_K: 1099.0433942535822
-    dT_approach_I_K: 1.0395714287635656
-    conversion_CH4_at_11.12: 0.7572471199316645
-    T_K_at_11.12: 1109.8109053281603
-    P_bar_at_11.12: 26.032469092690754
-    dP_bar_total: 3.2862542528212977
-    T_min_K: 793.15
-    z_Tmin_m: 0.0
-    inlet_dip_K: 0.0
-  inlet_dip_K_baseline_bed_eta0.1: 15.865743357609517
-  inlet_dip_K_baseline_bed_latham: 8.505975636667017
-  removes_inlet_dip: true
-diagnostics_f_htg_sweep:
-  description: stage-A bed, eta = 0.1, Leva-Grummer multiplier f_htg varied (not fitted)
-  results:
-    '1.0':
-      T_gas_rmse: 73.06450338815617
-      T_gas_bias: 70.00748629186056
-      x_CH4_rmse: 0.15273578225510415
-      x_CH4_bias: 0.1301379076601502
-      T_wall_inner_rmse: 37.783109227778006
-      T_wall_inner_bias: -2.7462026991375503
-      conversion_at_11.12: 0.7961745545435986
-      T_at_11.12: 1112.9993663696516
-    '0.7':
-      T_gas_rmse: 51.343843110230424
-      T_gas_bias: 48.5743909883796
-      x_CH4_rmse: 0.1053552241279403
-      x_CH4_bias: 0.08420385704603006
-      T_wall_inner_rmse: 29.364985268692433
-      T_wall_inner_bias: -3.249440804299094
-      conversion_at_11.12: 0.7428925638921501
-      T_at_11.12: 1090.405731300386
-    '0.5':
-      T_gas_rmse: 27.565937822404834
-      T_gas_bias: 25.390250064231985
-      x_CH4_rmse: 0.053820630006744016
-      x_CH4_bias: 0.03475172740130852
-      T_wall_inner_rmse: 20.947561018000858
-      T_wall_inner_bias: -3.780184841113878
-      conversion_at_11.12: 0.6737501855339102
-      T_at_11.12: 1063.2205022770179
-    '0.4':
-      T_gas_rmse: 10.751055113193155
-      T_gas_bias: 8.9111532732654
-      x_CH4_rmse: 0.02337200150425536
-      x_CH4_bias: 0.00023754936815222646
-      T_wall_inner_rmse: 16.482824842964636
-      T_wall_inner_bias: -4.177055347507046
-      conversion_at_11.12: 0.6191925719899642
-      T_at_11.12: 1042.4670782750102
-    '0.3':
-      T_gas_rmse: 13.475234590776559
-      T_gas_bias: -12.970579403917897
-      x_CH4_rmse: 0.04422355132479683
-      x_CH4_bias: -0.04408842128538093
-      T_wall_inner_rmse: 15.534802033065212
-      T_wall_inner_bias: -4.81421371974261
-      conversion_at_11.12: 0.5425174231940046
-      T_at_11.12: 1013.2029056999734
+    source: stage A of the Leva-Grummer calibration
+  feed: Table 2 equivalent CH4 split into CH4/C2H6/C3H8/C4H10/C5H12 by the natural-gas carbon fractions; inlet rule as labelled
+  temperature_comparison: z >= 0.3 m only (digitised T_gas starts at 764 K vs Table 2 T0 = 793.15 K)
+  combinations:
+    leva_grummer__inlet_latham:
+      heat_transfer: leva_grummer
+      inlet_higher_alkanes: latham
+      metrics:
+        x_CH4:
+          rmse: 0.15985387790550284
+          max_abs: 0.2182611862964008
+          mean_bias: 0.1403754938767284
+          n: 457
+          unit: '-'
+          z_min: 0.00759
+        x_CO2:
+          rmse: 0.033519066166178293
+          max_abs: 0.057146265958199605
+          mean_bias: 0.010106691331617453
+          n: 422
+          unit: '-'
+          z_min: 0.0115
+        T_gas:
+          rmse: 75.40668334308833
+          max_abs: 92.49785878164653
+          mean_bias: 73.37274693407457
+          n: 373
+          unit: K
+          z_min: 0.30585
+        T_wall_inner:
+          rmse: 37.50654660171155
+          max_abs: 92.49376144378812
+          mean_bias: -0.8732126677171907
+          n: 253
+          unit: K
+          z_min: 0.31329
+        p_t:
+          rmse: 0.044771712500042825
+          max_abs: 0.1170248417245432
+          mean_bias: -0.005415211309603108
+          n: 462
+          unit: bar
+          z_min: 0.02332
+      outlet:
+        z_m: 12.0
+        T_K: 1111.4439536279099
+        P_bar: 25.67825772106257
+        conversion_CH4: 0.804226520770598
+        yield_CO2: 0.3154253438256724
+        X_H2_dry: 0.6963442859454155
+        T_wall_outer_K: 1111.4439536279099
+        T_wall_inner_K: 1111.4439536279099
+        dT_approach_I_K: 0.0750432109734902
+        conversion_CH4_at_11.12: 0.8009643848041689
+        T_K_at_11.12: 1114.0283357849087
+        P_bar_at_11.12: 26.001198306697813
+        dP_bar_total: 3.321742278937432
+        T_min_K: 779.5171916472339
+        z_Tmin_m: 0.1
+        inlet_dip_K: 13.632808352766006
+      inlet_conversion: 0.017465626161278277
+      inlet_film_dT_K: 154.1468925418112
+      alpha_i_W_m2K:
+        inlet: 941.0546062985472
+        z_5m: 1404.4111091767234
+        z_11m: 1582.5377844084926
+      U_W_m2K:
+        inlet: 660.1860630655555
+        z_11m: 922.5233971381123
+    leva_grummer__inlet_xu_froment:
+      heat_transfer: leva_grummer
+      inlet_higher_alkanes: xu_froment
+      metrics:
+        x_CH4:
+          rmse: 0.17228809324718064
+          max_abs: 0.2237653589355555
+          mean_bias: 0.16078300159166098
+          n: 457
+          unit: '-'
+          z_min: 0.00759
+        x_CO2:
+          rmse: 0.040978166406013664
+          max_abs: 0.06817012745941184
+          mean_bias: 0.017534065226426004
+          n: 422
+          unit: '-'
+          z_min: 0.0115
+        T_gas:
+          rmse: 83.15572193464705
+          max_abs: 94.14456708703369
+          mean_bias: 82.53136391638884
+          n: 373
+          unit: K
+          z_min: 0.30585
+        T_wall_inner:
+          rmse: 36.60312073748614
+          max_abs: 94.1404963590619
+          mean_bias: 1.6872600504187358
+          n: 253
+          unit: K
+          z_min: 0.31329
+        p_t:
+          rmse: 0.05745770414645318
+          max_abs: 0.09291878366659034
+          mean_bias: -0.03593401894571209
+          n: 462
+          unit: bar
+          z_min: 0.02332
+      outlet:
+        z_m: 12.0
+        T_K: 1113.0891963943982
+        P_bar: 25.629097229971162
+        conversion_CH4: 0.8081036263000031
+        yield_CO2: 0.3148161975225952
+        X_H2_dry: 0.6971750551515731
+        T_wall_outer_K: 1113.0891963943982
+        T_wall_inner_K: 1113.0891963943982
+        dT_approach_I_K: 0.0761962432763994
+        conversion_CH4_at_11.12: 0.8049090741417569
+        T_K_at_11.12: 1115.6412590898176
+        P_bar_at_11.12: 25.95352904499024
+        dP_bar_total: 3.3709027700288416
+        T_min_K: 793.15
+        z_Tmin_m: 0.0
+        inlet_dip_K: 0.0
+      inlet_conversion: 0.0914158305462655
+      inlet_film_dT_K: 151.37008563800964
+      alpha_i_W_m2K:
+        inlet: 998.8951240371553
+        z_5m: 1415.8133134628893
+        z_11m: 1584.4045035402544
+      U_W_m2K:
+        inlet: 688.1398408358946
+        z_11m: 923.1574303119131
+    xu_froment__inlet_latham:
+      heat_transfer: xu_froment
+      inlet_higher_alkanes: latham
+      metrics:
+        x_CH4:
+          rmse: 0.23986443031259064
+          max_abs: 0.2998596111650905
+          mean_bias: 0.22185231301005512
+          n: 457
+          unit: '-'
+          z_min: 0.00759
+        x_CO2:
+          rmse: 0.05406769636847489
+          max_abs: 0.09656115360924375
+          mean_bias: 0.019534560231356444
+          n: 422
+          unit: '-'
+          z_min: 0.0115
+        T_gas:
+          rmse: 114.35777265183523
+          max_abs: 125.04311160913767
+          mean_bias: 113.01493256438897
+          n: 373
+          unit: K
+          z_min: 0.30585
+        T_wall_inner:
+          rmse: 50.66118502528727
+          max_abs: 122.8849859701022
+          mean_bias: 1.5387320359614005
+          n: 253
+          unit: K
+          z_min: 0.31329
+        p_t:
+          rmse: 0.12931595810204646
+          max_abs: 0.20189310939835892
+          mean_bias: -0.10852103962343763
+          n: 462
+          unit: bar
+          z_min: 0.02332
+      outlet:
+        z_m: 12.0
+        T_K: 1141.8266749843337
+        P_bar: 25.432560587253384
+        conversion_CH4: 0.8647861143067793
+        yield_CO2: 0.3022878034103041
+        X_H2_dry: 0.7085696713355275
+        T_wall_outer_K: 1141.8266749843337
+        T_wall_inner_K: 1141.8266749843337
+        dT_approach_I_K: 0.0941700310820579
+        conversion_CH4_at_11.12: 0.8623666502333588
+        T_K_at_11.12: 1144.2615111446244
+        P_bar_at_11.12: 25.773959843832362
+        dP_bar_total: 3.567439412746616
+        T_min_K: 786.1143830035558
+        z_Tmin_m: 0.05
+        inlet_dip_K: 7.035616996444219
+      inlet_conversion: 0.017465626161278277
+      inlet_film_dT_K: 91.60506217799855
+      alpha_i_W_m2K:
+        inlet: 3093.7256120754555
+        z_5m: 3577.5905183016494
+        z_11m: 3719.675016500652
+      U_W_m2K:
+        inlet: 1289.787071672567
+        z_11m: 1387.1018530675067
+    xu_froment__inlet_xu_froment:
+      heat_transfer: xu_froment
+      inlet_higher_alkanes: xu_froment
+      metrics:
+        x_CH4:
+          rmse: 0.24718560678681353
+          max_abs: 0.301776234659738
+          mean_bias: 0.234833300676929
+          n: 457
+          unit: '-'
+          z_min: 0.00759
+        x_CO2:
+          rmse: 0.058731234423197935
+          max_abs: 0.10374915574369975
+          mean_bias: 0.024113156104508718
+          n: 422
+          unit: '-'
+          z_min: 0.0115
+        T_gas:
+          rmse: 118.625258855594
+          max_abs: 128.40847865774413
+          mean_bias: 117.96547081549434
+          n: 373
+          unit: K
+          z_min: 0.30585
+        T_wall_inner:
+          rmse: 48.81842375602429
+          max_abs: 123.1982302646868
+          mean_bias: 3.88420208222995
+          n: 253
+          unit: K
+          z_min: 0.31329
+        p_t:
+          rmse: 0.14978803381621933
+          max_abs: 0.22711723319089216
+          mean_bias: -0.12831064211553714
+          n: 462
+          unit: bar
+          z_min: 0.02332
+      outlet:
+        z_m: 12.0
+        T_K: 1142.1394184025137
+        P_bar: 25.404380264625715
+        conversion_CH4: 0.86550622685319
+        yield_CO2: 0.3021496750691058
+        X_H2_dry: 0.7087103816795375
+        T_wall_outer_K: 1142.1394184025137
+        T_wall_inner_K: 1142.1394184025137
+        dT_approach_I_K: 0.0946366192122241
+        conversion_CH4_at_11.12: 0.863105400414769
+        T_K_at_11.12: 1144.5642582523847
+        P_bar_at_11.12: 25.74632371871293
+        dP_bar_total: 3.595619735374285
+        T_min_K: 793.15
+        z_Tmin_m: 0.0
+        inlet_dip_K: 0.0
+      inlet_conversion: 0.0914158305462655
+      inlet_film_dT_K: 91.24984678938085
+      alpha_i_W_m2K:
+        inlet: 3114.379483844049
+        z_5m: 3581.463520712884
+        z_11m: 3720.021422015917
+      U_W_m2K:
+        inlet: 1293.362981837739
+        z_11m: 1387.1500219026962
+  best_inlet_definition_by_x_CH4_rmse:
+    leva_grummer: leva_grummer__inlet_latham
+    xu_froment: xu_froment__inlet_latham
+  alpha_i_back_calculated_from_digitised:
+    method: q_o = (T_wo - T_wi) 2 lambda_tube/(d_o ln(d_o/d_i)); q_i = q_o d_o/d_i; alpha_i = q_i/(T_wi - T_gas); lambda_tube = 29.6
+      W/(m K) assumed (not given by Xu & Froment)
+    values:
+      z_m:
+      - 0.5
+      - 2.0
+      - 4.0
+      - 6.0
+      - 8.0
+      - 10.0
+      - 11.0
+      T_wo:
+      - 1021.5223356348479
+      - 1046.8268134322727
+      - 1080.6806634411694
+      - 1112.6310726394554
+      - 1142.8264266818285
+      - 1166.1828168640966
+      - 1175.849987098056
+      T_wi:
+      - 992.824863497821
+      - 1019.6559060172455
+      - 1055.5104167584598
+      - 1087.3802291097268
+      - 1118.465463448917
+      - 1144.4496407091651
+      - 1155.646206390339
+      T_gas:
+      - 780.2934409488226
+      - 826.7762475692937
+      - 882.9392223888084
+      - 931.2350682048715
+      - 973.0790936484674
+      - 1011.9889788395955
+      - 1031.130214013596
+      q_o_kW_m2:
+      - 48.784737294735116
+      - 46.18962861859238
+      - 42.78857267275946
+      - 42.925584601539555
+      - 41.412818031135814
+      - 36.94566839322928
+      - 34.345747579442495
+      alpha_i_W_m2K:
+      - 298.67479119225044
+      - 311.5988091603711
+      - 322.62442386292986
+      - 357.70535037846673
+      - 370.63705691007664
+      - 362.92288479387713
+      - 358.9100230728288
+  finding: The correlations as printed give alpha_i ~ 3100-3700 W/(m2 K), about 3x Leva-Grummer and ~10x the 300-370 W/(m2 K) implied
+    by the digitised Fig. 3 curves; they therefore make the gas hotter and conversion higher than the paper's own results. Neither combination
+    meets RMSE(T_gas) < 15 K and RMSE(x_CH4) < 0.03. To be discussed with the chemical engineer (units of lam_g, Re definition).

@@ -207,3 +207,88 @@ def calibrate_stage_b(cv, wall: r1.WallBC, voidage: float, d_p: float, x0=1.0,
             "cost": float(sol.cost), "n_runs": n[0], "status": int(sol.status), "message": sol.message,
             "wall_time_s": time.perf_counter() - t0, "latham_inlet_variant": latham,
             "at_bound": bool(np.isclose(sol.x[0], bounds[0]) or np.isclose(sol.x[0], bounds[1]))}
+
+
+# ---------------------------------------------------------------------------
+# Heat-transfer-correlation comparison (Xu & Froment Eqs. 11-12 vs Leva-Grummer)
+# ---------------------------------------------------------------------------
+#: Digitised T_gas starts at ~764 K at z = 0 although Table 2 gives T0 = 793.15 K, so the
+#: first 0.3 m of the temperature curves are excluded from the comparison metrics.
+Z_MIN_TEMPERATURE = 0.3
+TEMPERATURE_CURVES = ("T_gas", "T_wall_inner", "T_wall_outer")
+STAGE_A_BED = {"voidage": 0.526, "d_p_m": 9.44e-3}  # from the stage-A pressure fit (rounded)
+
+
+def run_case(heat_transfer: str, inlet: str, wall: r1.WallBC, voidage: float = STAGE_A_BED["voidage"],
+             d_p: float = STAGE_A_BED["d_p_m"], eta=None, L: float = L_TOTAL, n_out: int = 241,
+             f_htg: float = 1.0) -> r1.Result:
+    """Xu & Froment case with the natural gas split into CH4/C2+ and the chosen inlet rule and
+    heat-transfer correlation; eta = 0.1 unless given; adiabatic beyond 11.12 m."""
+    tube = r1.tube_from_xu_froment()
+    bed0 = r1.bed_from_xu_froment(voidage=voidage, eta=eta if eta is not None else (ETA_BASE,) * 3)
+    bed = r1.CatalystBed(rho_bed=bed0.rho_bed, voidage=voidage, d_p=d_p, eta=bed0.eta, activity=bed0.activity)
+    feed = r1.feed_from_xu_froment(split_alkanes=True, inlet_higher_alkanes=inlet)
+    return r1.simulate(tube, bed, feed, wall, L=L, n_out=n_out, f_htg=f_htg,
+                       adiabatic_beyond_heated=True, heat_transfer=heat_transfer)
+
+
+def metrics_zmin(res: r1.Result, cv, which: Sequence[str] = COMPARED,
+                 z_min_temperature: float = Z_MIN_TEMPERATURE) -> Dict[str, Dict[str, float]]:
+    """Like :func:`metrics` but temperature curves exclude z < ``z_min_temperature``."""
+    out = {}
+    for c in which:
+        z, v = cv[c]
+        if c in TEMPERATURE_CURVES:
+            m = z >= z_min_temperature
+            z, v = z[m], v[m]
+        err = model_curve(res, c, z) - v
+        out[c] = {"rmse": float(np.sqrt(np.mean(err**2))), "max_abs": float(np.max(np.abs(err))),
+                  "mean_bias": float(np.mean(err)), "n": int(len(z)), "unit": UNITS[c],
+                  "z_min": float(z[0])}
+    return out
+
+
+def inlet_film_dT(res: r1.Result) -> float:
+    """Inner-wall minus gas temperature at z = 0 [K]."""
+    return float(res.T_wall_inner[0] - res.T[0])
+
+
+def four_combinations(cv, wall: r1.WallBC, **kw) -> Dict[str, Dict[str, object]]:
+    """Run {leva_grummer, xu_froment} x {latham, xu_froment} and collect metrics and outlets."""
+    out = {}
+    for ht in ("leva_grummer", "xu_froment"):
+        for inlet in ("latham", "xu_froment"):
+            res = run_case(ht, inlet, wall, **kw)
+            out[f"{ht}__inlet_{inlet}"] = {
+                "heat_transfer": ht, "inlet_higher_alkanes": inlet,
+                "metrics": metrics_zmin(res, cv), "outlet": outlet_summary(res),
+                "inlet_conversion": float(res.conversion_CH4[0]),
+                "inlet_film_dT_K": inlet_film_dT(res),
+                "alpha_i_W_m2K": {"inlet": float(res.alpha_i[0]),
+                                  "z_5m": float(np.interp(5.0, res.z, res.alpha_i)),
+                                  "z_11m": float(np.interp(11.0, res.z, res.alpha_i))},
+                "U_W_m2K": {"inlet": float(res.U[0]), "z_11m": float(np.interp(11.0, res.z, res.U))},
+                "result": res,
+            }
+    return out
+
+
+def alpha_i_from_digitised(cv, lambda_tube: float = r1.LAMBDA_TUBE_DEFAULT,
+                           d_i: float = 0.1016, d_o: float = 0.1322,
+                           z_grid: Sequence[float] = (0.5, 2.0, 4.0, 6.0, 8.0, 10.0, 11.0)) -> Dict[str, list]:
+    """Back-calculate the bed-side coefficient implied by the digitised Fig. 3 curves.
+
+    ``q_o = (T_wo - T_wi) 2 lambda_tube / (d_o ln(d_o/d_i))`` (wall conduction),
+    ``q_i = q_o d_o / d_i``, ``alpha_i = q_i / (T_wi - T_gas)``. Depends on the assumed tube
+    conductivity (not stated by Xu & Froment); ``lambda_tube`` default is Latham's 29.6 W/(m K).
+    """
+    zo, To = cv["T_wall_outer"]; zi, Ti = cv["T_wall_inner"]; zg, Tg = cv["T_gas"]
+    rows = {"z_m": [], "T_wo": [], "T_wi": [], "T_gas": [], "q_o_kW_m2": [], "alpha_i_W_m2K": []}
+    for z in z_grid:
+        two, twi, tg = np.interp(z, zo, To), np.interp(z, zi, Ti), np.interp(z, zg, Tg)
+        q_o = (two - twi) * 2.0 * lambda_tube / (d_o * np.log(d_o / d_i))
+        q_i = q_o * d_o / d_i
+        rows["z_m"].append(float(z)); rows["T_wo"].append(float(two)); rows["T_wi"].append(float(twi))
+        rows["T_gas"].append(float(tg)); rows["q_o_kW_m2"].append(float(q_o / 1e3))
+        rows["alpha_i_W_m2K"].append(float(q_i / (twi - tg)))
+    return rows
