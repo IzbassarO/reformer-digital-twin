@@ -511,12 +511,13 @@ def xu_froment_alpha_i(lam_g: float, mu: float, cp_mass: float, G_s: float, d_p:
             "lam_er0": lam_er0, "Re": Re, "Pr": Pr}
 
 
-HEAT_TRANSFER_OPTIONS = ("leva_grummer", "xu_froment")
+HEAT_TRANSFER_OPTIONS = ("leva_grummer", "xu_froment", "constant")
 
 
 def _local(z: float, T: float, P: float, F: np.ndarray, tube: TubeGeometry, bed: CatalystBed,
            wall: WallBC, f_htg: float, adiabatic: bool,
-           adiabatic_beyond_heated: bool = False, heat_transfer: str = "leva_grummer") -> Dict[str, object]:
+           adiabatic_beyond_heated: bool = False, heat_transfer: str = "leva_grummer",
+           alpha_i_const: Union[float, Callable[[float], float], None] = None) -> Dict[str, object]:
     """Everything needed for the RHS and for post-processing at one axial point.
 
     If ``adiabatic_beyond_heated`` is true, no wall heat is exchanged for
@@ -552,6 +553,10 @@ def _local(z: float, T: float, P: float, F: np.ndarray, tube: TubeGeometry, bed:
             lam0 = kunii_smith_lambda_er0(props["lam"], bed.lambda_s, bed.voidage, T, bed.emissivity, bed.d_p)
             alpha_i = f_htg * xu_froment_alpha_i(props["lam"], props["mu"], props["cp_mass"], G_s,
                                                  bed.d_p, tube.d_i, lam0)["alpha_i"]
+        elif heat_transfer == "constant":
+            if alpha_i_const is None:
+                raise ValueError("heat_transfer='constant' requires alpha_i_const (float or callable of z)")
+            alpha_i = f_htg * float(alpha_i_const(z) if callable(alpha_i_const) else alpha_i_const)
         else:
             raise ValueError(f"unknown heat_transfer {heat_transfer!r}; use {HEAT_TRANSFER_OPTIONS}")
         U = 1.0 / (1.0 / alpha_i + tube.wall_resistance)
@@ -570,15 +575,18 @@ def simulate(tube: TubeGeometry, bed: CatalystBed, feed: Feed, wall: WallBC,
              f_htg: float = 1.0, adiabatic: bool = False, L: Optional[float] = None,
              n_out: int = 201, method: str = "LSODA", rtol: float = 1e-7,
              atol: Optional[np.ndarray] = None, adiabatic_beyond_heated: bool = False,
-             heat_transfer: str = "leva_grummer") -> Result:
+             heat_transfer: str = "leva_grummer",
+             alpha_i_const: Union[float, Callable[[float], float], None] = None) -> Result:
     """Integrate the tube model from z = 0 to ``L`` (default ``tube.L_heated``).
 
     With ``adiabatic_beyond_heated=True`` the section ``tube.L_heated < z <= L`` exchanges
     no heat with the wall (unheated tail, as in Xu & Froment Part II Fig. 3 for 11.12-12 m).
     ``heat_transfer`` selects the bed-side coefficient: ``"leva_grummer"`` (Latham 2011
     Eq. 20, scaled by ``f_htg``) or ``"xu_froment"`` (Part II Eqs. 11-12 with Kunii-Smith
-    static conductivity; ``f_htg`` also multiplies it, default 1). CH4 conversion is
-    reported relative to the carbon-equivalent CH4 feed (``feed.F_CH4_equivalent``).
+    static conductivity; ``f_htg`` also multiplies it, default 1) or ``"constant"``, which uses
+    ``alpha_i_const`` [W/(m2 K)] directly, either a number or a callable ``alpha_i(z)`` (e.g. a
+    coefficient profile back-calculated from measured wall and gas temperatures). CH4 conversion
+    is reported relative to the carbon-equivalent CH4 feed (``feed.F_CH4_equivalent``).
     """
     if heat_transfer not in HEAT_TRANSFER_OPTIONS:
         raise ValueError(f"unknown heat_transfer {heat_transfer!r}; use {HEAT_TRANSFER_OPTIONS}")
@@ -592,7 +600,7 @@ def simulate(tube: TubeGeometry, bed: CatalystBed, feed: Feed, wall: WallBC,
     def rhs(z, y):
         n_eval[0] += 1
         F, T, P = y[:nS], y[nS], y[nS + 1]
-        loc = _local(z, T, P, F, tube, bed, wall, f_htg, adiabatic, adiabatic_beyond_heated, heat_transfer)
+        loc = _local(z, T, P, F, tube, bed, wall, f_htg, adiabatic, adiabatic_beyond_heated, heat_transfer, alpha_i_const)
         pr = loc["props"]
         r_eff = loc["r_eff"]
         dF = np.zeros(nS)
@@ -626,7 +634,7 @@ def simulate(tube: TubeGeometry, bed: CatalystBed, feed: Feed, wall: WallBC,
     dT_app = np.full(n, np.nan)
     for k in range(n):
         Fk = Y[:nS, k]
-        loc = _local(z[k], T[k], P[k], Fk, tube, bed, wall, f_htg, adiabatic, adiabatic_beyond_heated, heat_transfer)
+        loc = _local(z[k], T[k], P[k], Fk, tube, bed, wall, f_htg, adiabatic, adiabatic_beyond_heated, heat_transfer, alpha_i_const)
         for s in SPECIES:
             X[s][k] = loc["X"][s]
         q_o[k], q_i[k], T_wo[k], T_wi[k] = loc["q_o"], loc["q_i"], loc["T_wo"], loc["T_wi"]

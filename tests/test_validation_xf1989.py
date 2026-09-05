@@ -48,32 +48,39 @@ def test_pressure_with_stage_a_bed(combos):
         assert d["metrics"]["p_t"]["rmse"] < 0.2, k
 
 
-def test_xu_froment_correlation_rmse_thresholds(combos):
-    """Xu & Froment Eqs. 11-12 without any fitted multiplier, either inlet definition."""
-    xf = {k: d for k, d in combos.items() if d["heat_transfer"] == "xu_froment"}
-    achieved = {k: (d["metrics"]["T_gas"]["rmse"], d["metrics"]["x_CH4"]["rmse"]) for k, d in xf.items()}
-    ok = any(t < 15.0 and x < 0.03 for t, x in achieved.values())
-    if not ok:
-        txt = "; ".join(f"{k}: RMSE(T_gas) = {t:.1f} K, RMSE(x_CH4) = {x:.3f}" for k, (t, x) in achieved.items())
-        pytest.xfail(
-            "Xu & Froment heat-transfer chain as printed does not reach the target (< 15 K, < 0.03): " + txt
-            + ". As printed it gives alpha_i ~ 3100-3700 W/(m2 K), ~10x the 300-370 W/(m2 K) implied by the digitised Fig. 3."
-        )
-    assert ok
+@pytest.fixture(scope="module")
+def verification(tidy, wall):
+    return vx.verification_runs(vx.curves(tidy), wall)
 
 
-def test_inlet_film_temperature_difference(combos):
-    """Inner-wall minus gas temperature at z = 0: expected orders Leva-Grummer 50-80 K, Xu-Froment 150-250 K."""
-    lg = combos["leva_grummer__inlet_latham"]["inlet_film_dT_K"]
-    xf = combos["xu_froment__inlet_latham"]["inlet_film_dT_K"]
-    ok_lg, ok_xf = 50.0 <= lg <= 80.0, 150.0 <= xf <= 250.0
-    if not (ok_lg and ok_xf):
-        pytest.xfail(
-            f"inlet film dT outside expected orders: Leva-Grummer {lg:.1f} K (expected 50-80), "
-            f"Xu-Froment correlation {xf:.1f} K (expected 150-250). With a 220 K wall-to-gas driving force at the inlet, "
-            f"Leva-Grummer (alpha_i ~ 940 W/m2K) takes ~70 % of it; the printed Xu-Froment chain (alpha_i ~ 3100) only ~40 %."
-        )
-    assert ok_lg and ok_xf
+def test_heat_transfer_coefficients_orders(combos, verification):
+    """Coefficients at inlet conditions: Leva-Grummer 900-1600, printed Xu-Froment chain 2500-4000,
+    back-calculated median from the digitised figure 250-450 W/(m2 K)."""
+    lg = combos["leva_grummer__inlet_latham"]["alpha_i_W_m2K"]["inlet"]
+    xf = combos["xu_froment__inlet_latham"]["alpha_i_W_m2K"]["inlet"]
+    bc = verification["alpha_profile"]["median"]
+    assert 900.0 <= lg <= 1600.0, lg
+    assert 2500.0 <= xf <= 4000.0, xf
+    assert 250.0 <= bc <= 450.0, bc
+    assert verification["alpha_profile"]["iqr"] < 0.5 * bc   # profile is reasonably flat
+
+
+def test_recommended_verification_thresholds(verification):
+    """Recommended matched-alpha configuration: RMSE(T_gas) < 15 K and RMSE of the conversion increment < 0.03."""
+    rec = verification["runs"][verification["recommended"]]
+    t_rmse = rec["metrics"]["T_gas"]["rmse"]
+    inc_rmse = rec["x_CH4_increment"]["rmse"]
+    if not (t_rmse < 15.0 and inc_rmse < 0.03):
+        pytest.xfail(f"{verification['recommended']}: RMSE(T_gas) = {t_rmse:.1f} K (target < 15), "
+                     f"RMSE(x_CH4 increment) = {inc_rmse:.3f} (target < 0.03)")
+    assert t_rmse < 15.0 and inc_rmse < 0.03
+
+
+def test_constant_alpha_option_reproduces_prescribed_coefficient(wall):
+    res = vx.run_matched(400.0, wall)
+    assert res.success
+    heated = res.z <= 11.12
+    assert pytest.approx(400.0) == res.alpha_i[heated].min() == res.alpha_i[heated].max()
 
 
 def test_back_calculated_alpha_from_figure(tidy):

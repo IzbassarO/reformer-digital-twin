@@ -292,3 +292,84 @@ def alpha_i_from_digitised(cv, lambda_tube: float = r1.LAMBDA_TUBE_DEFAULT,
         rows["T_gas"].append(float(tg)); rows["q_o_kW_m2"].append(float(q_o / 1e3))
         rows["alpha_i_W_m2K"].append(float(q_i / (twi - tg)))
     return rows
+
+
+# ---------------------------------------------------------------------------
+# Verification with a matched (back-calculated) film coefficient
+# ---------------------------------------------------------------------------
+Z_INCREMENT_REF = 0.5   # reference point for the conversion increment x(z) - x(z_ref)
+
+
+def alpha_i_profile_from_digitised(cv, lambda_tube: float = r1.LAMBDA_TUBE_DEFAULT,
+                                   d_i: float = 0.1016, d_o: float = 0.1322,
+                                   z_min: float = 0.5, z_max: float = 11.0, n: int = 106) -> Dict[str, object]:
+    """Back-calculated bed-side coefficient alpha_i(z) on a dense grid over [z_min, z_max].
+
+    Same method as :func:`alpha_i_from_digitised`: wall conduction from
+    ``T_wall_outer - T_wall_inner`` with ``lambda_tube`` (29.6 W/(m K) assumed, Latham's value),
+    then ``alpha_i = q_i / (T_wall_inner - T_gas)``. Returns the grid, the profile, its median and
+    interquartile range, and a PCHIP :class:`~rdt.reactor1d.WallBC`-like callable held constant
+    outside the grid.
+    """
+    from scipy.interpolate import PchipInterpolator
+
+    zo, To = cv["T_wall_outer"]; zi, Ti = cv["T_wall_inner"]; zg, Tg = cv["T_gas"]
+    z = np.linspace(z_min, z_max, n)
+    two, twi, tg = np.interp(z, zo, To), np.interp(z, zi, Ti), np.interp(z, zg, Tg)
+    q_o = (two - twi) * 2.0 * lambda_tube / (d_o * np.log(d_o / d_i))
+    alpha = q_o * d_o / d_i / (twi - tg)
+    q25, q50, q75 = np.percentile(alpha, [25, 50, 75])
+    f = PchipInterpolator(z, alpha, extrapolate=False)
+    lo, hi = z[0], z[-1]
+
+    def profile(zz):
+        return float(f(np.clip(zz, lo, hi)))
+
+    return {"z": z, "alpha_i": alpha, "q_o_W_m2": q_o, "median": float(q50), "q25": float(q25),
+            "q75": float(q75), "iqr": float(q75 - q25), "min": float(alpha.min()), "max": float(alpha.max()),
+            "lambda_tube": lambda_tube, "profile": profile}
+
+
+def run_matched(alpha_i, wall: r1.WallBC, latham_inlet: bool = False, inlet: str = "latham",
+                voidage: float = STAGE_A_BED["voidage"], d_p: float = STAGE_A_BED["d_p_m"],
+                L: float = L_TOTAL, n_out: int = 241) -> r1.Result:
+    """Xu & Froment case with a prescribed bed-side coefficient (number or callable of z)."""
+    tube = r1.tube_from_xu_froment()
+    eta = eta_spec(1.0, latham=latham_inlet, L=L)
+    bed0 = r1.bed_from_xu_froment(voidage=voidage, eta=eta)
+    bed = r1.CatalystBed(rho_bed=bed0.rho_bed, voidage=voidage, d_p=d_p, eta=bed0.eta, activity=bed0.activity)
+    feed = r1.feed_from_xu_froment(split_alkanes=True, inlet_higher_alkanes=inlet)
+    return r1.simulate(tube, bed, feed, wall, L=L, n_out=n_out, adiabatic_beyond_heated=True,
+                       heat_transfer="constant", alpha_i_const=alpha_i)
+
+
+def increment_metric(res: r1.Result, cv, z_ref: float = Z_INCREMENT_REF) -> Dict[str, float]:
+    """RMSE / bias of the conversion increment x_CH4(z) - x_CH4(z_ref) for z >= z_ref.
+
+    Removes the dependence on how conversion is defined at z = 0 (inlet-definition ambiguity).
+    """
+    z, v = cv["x_CH4"]
+    m = z >= z_ref
+    data_inc = v[m] - np.interp(z_ref, z, v)
+    model_inc = model_curve(res, "x_CH4", z[m]) - np.interp(z_ref, res.z, res.conversion_CH4)
+    err = model_inc - data_inc
+    return {"rmse": float(np.sqrt(np.mean(err**2))), "max_abs": float(np.max(np.abs(err))),
+            "mean_bias": float(np.mean(err)), "n": int(m.sum()), "z_ref": z_ref, "unit": "-"}
+
+
+def verification_runs(cv, wall: r1.WallBC) -> Dict[str, object]:
+    """(a) constant alpha_i = median, (b) alpha_i(z) PCHIP profile; each with eta = 0.1 and with
+    Latham's inlet eta profile. Returns per-run metrics, outlets and the recommended configuration."""
+    prof = alpha_i_profile_from_digitised(cv)
+    runs = {}
+    for a_name, a_val in (("const_median", prof["median"]), ("profile_pchip", prof["profile"])):
+        for e_name, lat in (("eta_0.1", False), ("eta_latham_inlet", True)):
+            res = run_matched(a_val, wall, latham_inlet=lat)
+            key = f"alpha_{a_name}__{e_name}"
+            runs[key] = {"alpha_i": a_name, "eta": e_name, "metrics": metrics_zmin(res, cv),
+                         "x_CH4_increment": increment_metric(res, cv), "outlet": outlet_summary(res),
+                         "inlet_film_dT_K": inlet_film_dT(res), "result": res}
+    # recommendation: smallest RMSE(T_gas) + 1000*RMSE(increment) among runs (equal weighting, K vs 1e-3 conversion)
+    score = {k: d["metrics"]["T_gas"]["rmse"] + 1000.0 * d["x_CH4_increment"]["rmse"] for k, d in runs.items()}
+    best = min(score, key=score.get)
+    return {"alpha_profile": prof, "runs": runs, "recommended": best, "score": score}
