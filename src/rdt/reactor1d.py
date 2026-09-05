@@ -67,7 +67,7 @@ from rdt import kinetics as kin
 # ---------------------------------------------------------------------------
 SPECIES: Tuple[str, ...] = ("CH4", "H2O", "H2", "CO", "CO2", "N2")
 REACTING: Tuple[str, ...] = kin.SPECIES  # CH4, H2O, H2, CO, CO2
-HIGHER_ALKANES: Dict[str, int] = {"C2H6": 2, "C3H8": 3, "C4H10": 4, "C5H12": 5}
+HIGHER_ALKANES: Dict[str, int] = {"C2H6": 2, "C3H8": 3, "C4H10": 4, "C5H12": 5, "C6H14": 6}
 
 ATOMS: Dict[str, Dict[str, int]] = {
     **kin.ATOMS,
@@ -517,8 +517,12 @@ HEAT_TRANSFER_OPTIONS = ("leva_grummer", "xu_froment", "constant")
 def _local(z: float, T: float, P: float, F: np.ndarray, tube: TubeGeometry, bed: CatalystBed,
            wall: WallBC, f_htg: float, adiabatic: bool,
            adiabatic_beyond_heated: bool = False, heat_transfer: str = "leva_grummer",
-           alpha_i_const: Union[float, Callable[[float], float], None] = None) -> Dict[str, object]:
+           alpha_i_const: Union[float, Callable[[float], float], None] = None,
+           T_wo_value: Optional[float] = None) -> Dict[str, object]:
     """Everything needed for the RHS and for post-processing at one axial point.
+
+    ``T_wo_value`` overrides ``wall(z)`` (used by the coupled furnace model, where the
+    outer-wall temperature is solved from the furnace-side flux balance).
 
     If ``adiabatic_beyond_heated`` is true, no wall heat is exchanged for
     ``z > tube.L_heated`` (unheated tube tail); the wall temperatures are then
@@ -539,7 +543,7 @@ def _local(z: float, T: float, P: float, F: np.ndarray, tube: TubeGeometry, bed:
     eta = bed.eta_at(z)
     r_eff = eta * r
 
-    T_wo = float(wall(z))
+    T_wo = float(T_wo_value) if T_wo_value is not None else float(wall(z))
     if adiabatic_beyond_heated and z > tube.L_heated:
         alpha_i = U = q_i = q_o = 0.0
         T_wo = T_wi = float(T)
@@ -571,6 +575,77 @@ def _local(z: float, T: float, P: float, F: np.ndarray, tube: TubeGeometry, bed:
 # ---------------------------------------------------------------------------
 # Simulation
 # ---------------------------------------------------------------------------
+def tube_derivatives(z: float, F: np.ndarray, T: float, P: float, tube: TubeGeometry, bed: CatalystBed,
+                     wall: Optional[WallBC], f_htg: float = 1.0, adiabatic: bool = False,
+                     adiabatic_beyond_heated: bool = False, heat_transfer: str = "leva_grummer",
+                     alpha_i_const: Union[float, Callable[[float], float], None] = None,
+                     T_wo_value: Optional[float] = None) -> Tuple[np.ndarray, Dict[str, object]]:
+    """Right-hand side of the tube balances at one axial point.
+
+    Returns ``(dy, loc)`` with ``dy = [dF_i/dz (kmol/(h m)), dT/dz (K/m), dP/dz (bar/m)]`` and
+    the local dictionary of :func:`_local` (heat fluxes, coefficients, rates). The outer-wall
+    temperature is ``wall(z)`` unless ``T_wo_value`` is given (coupled furnace model).
+    """
+    nS = len(SPECIES)
+    loc = _local(z, T, P, F, tube, bed, wall, f_htg, adiabatic, adiabatic_beyond_heated, heat_transfer,
+                 alpha_i_const, T_wo_value)
+    pr = loc["props"]
+    r_eff = loc["r_eff"]
+    dF = np.zeros(nS)
+    for i, sp in enumerate(REACTING):
+        dF[i] = tube.A_cs * bed.rho_bed * sum(nu * rj for nu, rj in zip(kin.STOICHIOMETRY[sp], r_eff))
+    q_lin = 3600.0 * math.pi * tube.d_i * loc["q_i"]                       # J/(h m)
+    q_rxn = tube.A_cs * bed.rho_bed * float(np.dot(r_eff, pr["dH"]))       # J/(h m)
+    cp_flow = float(np.dot(np.maximum(F, 0.0), pr["cp"]))                  # J/(h K)
+    dT = (q_lin - q_rxn) / cp_flow
+    dP = -ergun_dPdz(pr["rho"], pr["mu"], loc["v_s"], bed.d_p, bed.voidage) / BAR
+    return np.concatenate([dF, [dT, dP]]), loc
+
+
+def default_atol(F0: np.ndarray) -> np.ndarray:
+    return np.concatenate([np.full(len(SPECIES), 1e-9 * max(float(F0.sum()), 1e-12)), [1e-6, 1e-8]])
+
+
+def _build_result(z: np.ndarray, Y: np.ndarray, tube: TubeGeometry, bed: CatalystBed, feed: Feed,
+                  wall: WallBC, f_htg: float, adiabatic: bool, adiabatic_beyond_heated: bool,
+                  heat_transfer: str, alpha_i_const, success: bool, message: str, n_rhs: int,
+                  wall_time: float, extras: Optional[Dict[str, object]] = None) -> Result:
+    """Post-process an integrated state history ``Y`` (rows F_i, T, P) into a :class:`Result`."""
+    nS = len(SPECIES)
+    F = {sp: Y[i] for i, sp in enumerate(SPECIES)}
+    T = Y[nS]
+    P = Y[nS + 1]
+    n = len(z)
+    X = {sp: np.zeros(n) for sp in SPECIES}
+    q_o = np.zeros(n); q_i = np.zeros(n); T_wo = np.zeros(n); T_wi = np.zeros(n)
+    U = np.zeros(n); alpha = np.zeros(n); r1 = np.zeros(n); r2 = np.zeros(n); r3 = np.zeros(n)
+    dT_app = np.full(n, np.nan)
+    for k in range(n):
+        loc = _local(z[k], T[k], P[k], Y[:nS, k], tube, bed, wall, f_htg, adiabatic, adiabatic_beyond_heated,
+                     heat_transfer, alpha_i_const)
+        for sp in SPECIES:
+            X[sp][k] = loc["X"][sp]
+        q_o[k], q_i[k], T_wo[k], T_wi[k] = loc["q_o"], loc["q_i"], loc["T_wo"], loc["T_wi"]
+        U[k], alpha[k] = loc["U"], loc["alpha_i"]
+        r1[k], r2[k], r3[k] = loc["r_eff"]
+        dT_app[k] = approach_to_equilibrium_I(T[k], {sp: P[k] * loc["X"][sp] for sp in REACTING})
+    F0_map = feed.state_flows()
+    F_ch4_in = feed.F_CH4_equivalent
+    ex = {"wall_bc": wall.description, "f_htg": f_htg, "adiabatic": adiabatic,
+          "adiabatic_beyond_heated": adiabatic_beyond_heated, "heat_transfer": heat_transfer,
+          "inlet_higher_alkanes": feed.inlet_higher_alkanes, "F_CH4_equivalent": F_ch4_in}
+    if extras:
+        ex.update(extras)
+    return Result(
+        z=z, T=T, P=P, F=F, X=X,
+        conversion_CH4=(F_ch4_in - F["CH4"]) / F_ch4_in,
+        yield_CO2=(F["CO2"] - F0_map["CO2"]) / F_ch4_in,
+        q_flux_outer=q_o, q_flux_inner=q_i, T_wall_outer=T_wo, T_wall_inner=T_wi,
+        dT_approach_I=dT_app, U=U, alpha_i=alpha, rates={"r1": r1, "r2": r2, "r3": r3},
+        F_in=F0_map, success=success, message=message, n_rhs_evals=n_rhs, wall_time_s=wall_time, extras=ex,
+    )
+
+
 def simulate(tube: TubeGeometry, bed: CatalystBed, feed: Feed, wall: WallBC,
              f_htg: float = 1.0, adiabatic: bool = False, L: Optional[float] = None,
              n_out: int = 201, method: str = "LSODA", rtol: float = 1e-7,
@@ -582,7 +657,7 @@ def simulate(tube: TubeGeometry, bed: CatalystBed, feed: Feed, wall: WallBC,
     With ``adiabatic_beyond_heated=True`` the section ``tube.L_heated < z <= L`` exchanges
     no heat with the wall (unheated tail, as in Xu & Froment Part II Fig. 3 for 11.12-12 m).
     ``heat_transfer`` selects the bed-side coefficient: ``"leva_grummer"`` (Latham 2011
-    Eq. 20, scaled by ``f_htg``) or ``"xu_froment"`` (Part II Eqs. 11-12 with Kunii-Smith
+    Eq. 20, scaled by ``f_htg``), ``"xu_froment"`` (Part II Eqs. 11-12 with Kunii-Smith
     static conductivity; ``f_htg`` also multiplies it, default 1) or ``"constant"``, which uses
     ``alpha_i_const`` [W/(m2 K)] directly, either a number or a callable ``alpha_i(z)`` (e.g. a
     coefficient profile back-calculated from measured wall and gas temperatures). CH4 conversion
@@ -592,69 +667,26 @@ def simulate(tube: TubeGeometry, bed: CatalystBed, feed: Feed, wall: WallBC,
         raise ValueError(f"unknown heat_transfer {heat_transfer!r}; use {HEAT_TRANSFER_OPTIONS}")
     L = tube.L_heated if L is None else float(L)
     F0_map = feed.state_flows()
-    F0 = np.array([F0_map[s] for s in SPECIES])
+    F0 = np.array([F0_map[sp] for sp in SPECIES])
     y0 = np.concatenate([F0, [feed.T_in, feed.P_in]])
     nS = len(SPECIES)
     n_eval = [0]
 
     def rhs(z, y):
         n_eval[0] += 1
-        F, T, P = y[:nS], y[nS], y[nS + 1]
-        loc = _local(z, T, P, F, tube, bed, wall, f_htg, adiabatic, adiabatic_beyond_heated, heat_transfer, alpha_i_const)
-        pr = loc["props"]
-        r_eff = loc["r_eff"]
-        dF = np.zeros(nS)
-        for i, s in enumerate(REACTING):
-            dF[i] = tube.A_cs * bed.rho_bed * sum(nu * rj for nu, rj in zip(kin.STOICHIOMETRY[s], r_eff))
-        # energy: J/(h m)
-        q_lin = 3600.0 * math.pi * tube.d_i * loc["q_i"]
-        q_rxn = tube.A_cs * bed.rho_bed * float(np.dot(r_eff, pr["dH"]))
-        cp_flow = float(np.dot(np.maximum(F, 0.0), pr["cp"]))  # J/(h K)
-        dT = (q_lin - q_rxn) / cp_flow
-        dP = -ergun_dPdz(pr["rho"], pr["mu"], loc["v_s"], bed.d_p, bed.voidage) / BAR
-        return np.concatenate([dF, [dT, dP]])
+        dy, _ = tube_derivatives(z, y[:nS], y[nS], y[nS + 1], tube, bed, wall, f_htg, adiabatic,
+                                 adiabatic_beyond_heated, heat_transfer, alpha_i_const)
+        return dy
 
     if atol is None:
-        atol = np.concatenate([np.full(nS, 1e-9 * max(F0.sum(), 1e-12)), [1e-6, 1e-8]])
+        atol = default_atol(F0)
     z_eval = np.linspace(0.0, L, n_out)
     t0 = time.perf_counter()
     sol = solve_ivp(rhs, (0.0, L), y0, method=method, t_eval=z_eval, rtol=rtol, atol=atol)
     wall_time = time.perf_counter() - t0
-
-    z = sol.t
-    Y = sol.y
-    F = {s: Y[i] for i, s in enumerate(SPECIES)}
-    T = Y[nS]
-    P = Y[nS + 1]
-
-    n = len(z)
-    X = {s: np.zeros(n) for s in SPECIES}
-    q_o = np.zeros(n); q_i = np.zeros(n); T_wo = np.zeros(n); T_wi = np.zeros(n)
-    U = np.zeros(n); alpha = np.zeros(n); r1 = np.zeros(n); r2 = np.zeros(n); r3 = np.zeros(n)
-    dT_app = np.full(n, np.nan)
-    for k in range(n):
-        Fk = Y[:nS, k]
-        loc = _local(z[k], T[k], P[k], Fk, tube, bed, wall, f_htg, adiabatic, adiabatic_beyond_heated, heat_transfer, alpha_i_const)
-        for s in SPECIES:
-            X[s][k] = loc["X"][s]
-        q_o[k], q_i[k], T_wo[k], T_wi[k] = loc["q_o"], loc["q_i"], loc["T_wo"], loc["T_wi"]
-        U[k], alpha[k] = loc["U"], loc["alpha_i"]
-        r1[k], r2[k], r3[k] = loc["r_eff"]
-        dT_app[k] = approach_to_equilibrium_I(T[k], {s: P[k] * loc["X"][s] for s in REACTING})
-
-    F_ch4_in = feed.F_CH4_equivalent
-    return Result(
-        z=z, T=T, P=P, F=F, X=X,
-        conversion_CH4=(F_ch4_in - F["CH4"]) / F_ch4_in,
-        yield_CO2=(F["CO2"] - F0_map["CO2"]) / F_ch4_in,
-        q_flux_outer=q_o, q_flux_inner=q_i, T_wall_outer=T_wo, T_wall_inner=T_wi,
-        dT_approach_I=dT_app, U=U, alpha_i=alpha, rates={"r1": r1, "r2": r2, "r3": r3},
-        F_in=F0_map, success=bool(sol.success), message=str(sol.message),
-        n_rhs_evals=n_eval[0], wall_time_s=wall_time,
-        extras={"wall_bc": wall.description, "method": method, "f_htg": f_htg, "adiabatic": adiabatic,
-                "adiabatic_beyond_heated": adiabatic_beyond_heated, "heat_transfer": heat_transfer,
-                "inlet_higher_alkanes": feed.inlet_higher_alkanes, "F_CH4_equivalent": F_ch4_in},
-    )
+    return _build_result(sol.t, sol.y, tube, bed, feed, wall, f_htg, adiabatic, adiabatic_beyond_heated,
+                         heat_transfer, alpha_i_const, bool(sol.success), str(sol.message), n_eval[0],
+                         wall_time, extras={"method": method})
 
 
 def approach_to_equilibrium_I(T: float, p: Mapping[str, float],

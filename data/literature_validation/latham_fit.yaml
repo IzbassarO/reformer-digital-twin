@@ -1,0 +1,364 @@
+source: Latham (2008) thesis Appendix H plant cases; parameters Latham et al. (2011) Table 6
+data_file: data/literature_validation/latham2008_plant_cases.csv
+model: 'rdt.furnace.simulate_coupled: plug-flow furnace gas, parabolic heat release (L_q, alpha_top), q = sigma F_gt (T_fg^4 - T_wo^4)
+  + h_conv (T_fg - T_wo); tube: rdt.reactor1d (Xu-Froment kinetics, Leva-Grummer x f_htg, Ergun)'
+baseline:
+  parameters:
+    L_q: 0.48
+    alpha_top: 0.182
+    f_htg: 1.68
+    voidage: 0.607
+    activity: 0.2
+    eta: 0.1
+    eta_top: 0.05
+    f_ctube: 0.38
+    F_gt: 0.35
+    f_loss: 0.02
+    tube_od_m: 0.146
+    wall_thickness_m: 0.015
+    heated_length_m: 12.5
+    lambda_tube: 29.6
+    d_p_m: 0.0054
+    rho_bed: 1100.0
+    heat_transfer: leva_grummer
+    n_sections: 15
+  assumptions:
+  - wall thickness 15 mm (ID 0.116 m) not given by Latham
+  - F_gt = 0.35 initial guess
+  - furnace plan dimensions assumed for the convective term only (rdt.furnace.LATHAM_FURNACE)
+  - heat of combustion, flue-gas flow, excess air derived from thesis Table 29 streams (LHV basis)
+  - furnace gas enters at the mixed fuel/air temperature; ordering T_gas < T_wi < T_wo < T_fg holds for z >= L/15
+  cases:
+    Plant_A:
+      plant_rate_pct: 99
+      out_T_K:
+        predicted: 1109.1688256568877
+        measured: 1105.55
+        difference: 3.6188256568877932
+      out_P_Pa:
+        predicted: 2838699.18121714
+        measured: 2846100.0
+        difference: -7400.8187828599475
+      out_x_H2_wet_molpct:
+        predicted: 45.85053252184312
+        measured: 45.8247
+        difference: 0.025832521843121015
+      out_x_CH4_wet_molpct:
+        predicted: 5.1042587197565865
+        measured: 5.0455
+        difference: 0.058758719756586864
+      out_x_CO_wet_molpct:
+        predicted: 8.067390671583603
+        measured: 8.2013
+        difference: -0.13390932841639724
+      out_x_CO2_wet_molpct:
+        predicted: 5.924569546302503
+        measured: 5.8182
+        difference: 0.10636954630250273
+      flue_out_T_K:
+        predicted: 1294.9724276894578
+        measured: 1285.4499999999998
+        difference: 9.522427689458027
+      TWT_upper_K:
+        predicted: 1059.5987944640415
+        measured: 1095.9499999999998
+        difference: -36.35120553595834
+      TWT_lower_K:
+        predicted: 1140.6744389754476
+        measured: 1132.05
+        difference: 8.624438975447674
+      TWT_peak:
+        z_frac: 0.445
+        z_m: 5.5625
+        T_wo_K: 1168.4032489348017
+      T_fg_max_K:
+        value: 1675.6436314842208
+        z_m: 5.0
+      conversion_CH4:
+        predicted: 0.7278391447646841
+      energy:
+        Q_comb_W: 218996949.3832803
+        Q_eff_W: 214617010.39561468
+        flue_enthalpy_rise_W: 104586446.47681496
+        tube_duty_W: 110024547.8215993
+        release_integral_W: 214608362.76497015
+        closure_rel_error: -2.8031781774117972e-05
+        duty_fraction_of_Q_comb: 0.5024021938727486
+      runtime_s: 0.20936179199634353
+    Plant_B:
+      plant_rate_pct: 92
+      out_T_K:
+        predicted: 1109.183385241864
+        measured: 1107.15
+        difference: 2.0333852418639253
+      out_P_Pa:
+        predicted: 2806886.304691583
+        measured: 2804000.0
+        difference: 2886.304691582918
+      out_x_H2_wet_molpct:
+        predicted: 46.305863969446534
+        measured: 46.3134
+        difference: -0.007536030553467299
+      out_x_CH4_wet_molpct:
+        predicted: 5.329565420876486
+        measured: 5.26
+        difference: 0.06956542087648643
+      out_x_CO_wet_molpct:
+        predicted: 8.294700827027555
+        measured: 8.452900000000001
+        difference: -0.1581991729724468
+      out_x_CO2_wet_molpct:
+        predicted: 5.878681353983424
+        measured: 5.7538
+        difference: 0.12488135398342415
+      flue_out_T_K:
+        predicted: 1282.0103559297565
+        measured: 1271.25
+        difference: 10.760355929756543
+      TWT_upper_K:
+        predicted: 1050.7935456017121
+        measured: 1082.35
+        difference: -31.55645439828777
+      TWT_lower_K:
+        predicted: 1137.7459305365012
+        measured: 1130.85
+        difference: 6.895930536501282
+      TWT_peak:
+        z_frac: 0.45
+        z_m: 5.625
+        T_wo_K: 1160.0501866579157
+      T_fg_max_K:
+        value: 1641.557671354985
+        z_m: 5.0
+      conversion_CH4:
+        predicted: 0.7212441629221216
+      energy:
+        Q_comb_W: 203393819.84250015
+        Q_eff_W: 199325943.44565013
+        flue_enthalpy_rise_W: 99523357.75260492
+        tube_duty_W: 99796643.47463518
+        release_integral_W: 199317911.94277152
+        closure_rel_error: -2.9811565455678696e-05
+        duty_fraction_of_Q_comb: 0.49065720655580203
+      runtime_s: 0.10501587500039022
+    Plant_C1:
+      plant_rate_pct: 96
+      out_T_K:
+        predicted: 1062.6768914892305
+        measured: 1122.05
+        difference: -59.3731085107695
+      out_P_Pa:
+        predicted: 2788174.414935058
+        measured: 2879800.0
+        difference: -91625.58506494202
+      out_x_H2_wet_molpct:
+        predicted: 41.75381090935309
+        measured: 47.1325
+        difference: -5.378689090646908
+      out_x_CH4_wet_molpct:
+        predicted: 7.608961614809001
+        measured: 4.5364
+        difference: 3.0725616148090005
+      out_x_CO_wet_molpct:
+        predicted: 6.151855964221454
+        measured: 8.8874
+        difference: -2.7355440357785454
+      out_x_CO2_wet_molpct:
+        predicted: 6.323249349547553
+        measured: 5.5893999999999995
+        difference: 0.7338493495475538
+      flue_out_T_K:
+        predicted: 1255.3850215379518
+        measured: 1279.05
+        difference: -23.66497846204811
+      TWT_upper_K:
+        predicted: 1042.6881100534983
+        measured: 1111.15
+        difference: -68.46188994650174
+      TWT_lower_K:
+        predicted: 1096.3182299819173
+        measured: 1151.55
+        difference: -55.23177001808267
+      TWT_peak:
+        z_frac: 0.44
+        z_m: 5.5
+        T_wo_K: 1133.1260447028508
+      T_fg_max_K:
+        value: 1670.7474035848008
+        z_m: 4.875
+      conversion_CH4:
+        predicted: 0.6135555932299875
+      energy:
+        Q_comb_W: 203219269.04504377
+        Q_eff_W: 199154883.66414288
+        flue_enthalpy_rise_W: 88959499.33211021
+        tube_duty_W: 110189582.53912726
+        release_integral_W: 199146859.05382982
+        closure_rel_error: -2.9132064444898455e-05
+        duty_fraction_of_Q_comb: 0.5422201499735915
+      runtime_s: 0.1024622500044643
+    Plant_C2:
+      plant_rate_pct: 71
+      out_T_K:
+        predicted: 1112.5092260792612
+        measured: 1108.9499999999998
+        difference: 3.559226079261407
+      out_P_Pa:
+        predicted: 2724674.198383175
+        measured: 2723400.0
+        difference: 1274.1983831748366
+      out_x_H2_wet_molpct:
+        predicted: 46.82310289173047
+        measured: 46.5506
+        difference: 0.2725028917304684
+      out_x_CH4_wet_molpct:
+        predicted: 4.747538816656958
+        measured: 4.8226
+        difference: -0.07506118334304279
+      out_x_CO_wet_molpct:
+        predicted: 8.458166179471709
+        measured: 8.4954
+        difference: -0.03723382052829116
+      out_x_CO2_wet_molpct:
+        predicted: 5.835664726476064
+        measured: 5.7359
+        difference: 0.09976472647606371
+      flue_out_T_K:
+        predicted: 1220.9026936380794
+        measured: 1214.05
+        difference: 6.852693638079472
+      TWT_upper_K:
+        predicted: 1064.1621316829555
+        measured: 1075.65
+        difference: -11.487868317044558
+      TWT_lower_K:
+        predicted: 1132.122711192889
+        measured: 1126.25
+        difference: 5.872711192889028
+      TWT_peak:
+        z_frac: 0.44
+        z_m: 5.5
+        T_wo_K: 1158.8093977378824
+      T_fg_max_K:
+        value: 1583.4715229012543
+        z_m: 4.875
+      conversion_CH4:
+        predicted: 0.7466479065924424
+      energy:
+        Q_comb_W: 146277669.72481552
+        Q_eff_W: 143352116.3303192
+        flue_enthalpy_rise_W: 66084402.078966565
+        tube_duty_W: 77261861.0026106
+        release_integral_W: 143346340.1984467
+        closure_rel_error: -4.083126843106118e-05
+        duty_fraction_of_Q_comb: 0.5281862990295051
+      runtime_s: 0.11541895800473867
+  summary_table:
+  - case: Plant_A
+    rate_pct: 99
+    out_T_K_pred: 1109.1688256568877
+    out_T_K_meas: 1105.55
+    out_T_K_diff: 3.6188256568877932
+    out_P_Pa_pred: 2838699.18121714
+    out_P_Pa_meas: 2846100.0
+    out_P_Pa_diff: -7400.8187828599475
+    out_x_H2_wet_molpct_pred: 45.85053252184312
+    out_x_H2_wet_molpct_meas: 45.8247
+    out_x_H2_wet_molpct_diff: 0.025832521843121015
+    out_x_CH4_wet_molpct_pred: 5.1042587197565865
+    out_x_CH4_wet_molpct_meas: 5.0455
+    out_x_CH4_wet_molpct_diff: 0.058758719756586864
+    flue_out_T_K_pred: 1294.9724276894578
+    flue_out_T_K_meas: 1285.4499999999998
+    flue_out_T_K_diff: 9.522427689458027
+    TWT_upper_K_pred: 1059.5987944640415
+    TWT_upper_K_meas: 1095.9499999999998
+    TWT_upper_K_diff: -36.35120553595834
+    TWT_lower_K_pred: 1140.6744389754476
+    TWT_lower_K_meas: 1132.05
+    TWT_lower_K_diff: 8.624438975447674
+    TWT_peak_frac: 0.445
+    TWT_peak_K: 1168.4032489348017
+    T_fg_max_K: 1675.6436314842208
+    energy_closure: -2.8031781774117972e-05
+  - case: Plant_B
+    rate_pct: 92
+    out_T_K_pred: 1109.183385241864
+    out_T_K_meas: 1107.15
+    out_T_K_diff: 2.0333852418639253
+    out_P_Pa_pred: 2806886.304691583
+    out_P_Pa_meas: 2804000.0
+    out_P_Pa_diff: 2886.304691582918
+    out_x_H2_wet_molpct_pred: 46.305863969446534
+    out_x_H2_wet_molpct_meas: 46.3134
+    out_x_H2_wet_molpct_diff: -0.007536030553467299
+    out_x_CH4_wet_molpct_pred: 5.329565420876486
+    out_x_CH4_wet_molpct_meas: 5.26
+    out_x_CH4_wet_molpct_diff: 0.06956542087648643
+    flue_out_T_K_pred: 1282.0103559297565
+    flue_out_T_K_meas: 1271.25
+    flue_out_T_K_diff: 10.760355929756543
+    TWT_upper_K_pred: 1050.7935456017121
+    TWT_upper_K_meas: 1082.35
+    TWT_upper_K_diff: -31.55645439828777
+    TWT_lower_K_pred: 1137.7459305365012
+    TWT_lower_K_meas: 1130.85
+    TWT_lower_K_diff: 6.895930536501282
+    TWT_peak_frac: 0.45
+    TWT_peak_K: 1160.0501866579157
+    T_fg_max_K: 1641.557671354985
+    energy_closure: -2.9811565455678696e-05
+  - case: Plant_C1
+    rate_pct: 96
+    out_T_K_pred: 1062.6768914892305
+    out_T_K_meas: 1122.05
+    out_T_K_diff: -59.3731085107695
+    out_P_Pa_pred: 2788174.414935058
+    out_P_Pa_meas: 2879800.0
+    out_P_Pa_diff: -91625.58506494202
+    out_x_H2_wet_molpct_pred: 41.75381090935309
+    out_x_H2_wet_molpct_meas: 47.1325
+    out_x_H2_wet_molpct_diff: -5.378689090646908
+    out_x_CH4_wet_molpct_pred: 7.608961614809001
+    out_x_CH4_wet_molpct_meas: 4.5364
+    out_x_CH4_wet_molpct_diff: 3.0725616148090005
+    flue_out_T_K_pred: 1255.3850215379518
+    flue_out_T_K_meas: 1279.05
+    flue_out_T_K_diff: -23.66497846204811
+    TWT_upper_K_pred: 1042.6881100534983
+    TWT_upper_K_meas: 1111.15
+    TWT_upper_K_diff: -68.46188994650174
+    TWT_lower_K_pred: 1096.3182299819173
+    TWT_lower_K_meas: 1151.55
+    TWT_lower_K_diff: -55.23177001808267
+    TWT_peak_frac: 0.44
+    TWT_peak_K: 1133.1260447028508
+    T_fg_max_K: 1670.7474035848008
+    energy_closure: -2.9132064444898455e-05
+  - case: Plant_C2
+    rate_pct: 71
+    out_T_K_pred: 1112.5092260792612
+    out_T_K_meas: 1108.9499999999998
+    out_T_K_diff: 3.559226079261407
+    out_P_Pa_pred: 2724674.198383175
+    out_P_Pa_meas: 2723400.0
+    out_P_Pa_diff: 1274.1983831748366
+    out_x_H2_wet_molpct_pred: 46.82310289173047
+    out_x_H2_wet_molpct_meas: 46.5506
+    out_x_H2_wet_molpct_diff: 0.2725028917304684
+    out_x_CH4_wet_molpct_pred: 4.747538816656958
+    out_x_CH4_wet_molpct_meas: 4.8226
+    out_x_CH4_wet_molpct_diff: -0.07506118334304279
+    flue_out_T_K_pred: 1220.9026936380794
+    flue_out_T_K_meas: 1214.05
+    flue_out_T_K_diff: 6.852693638079472
+    TWT_upper_K_pred: 1064.1621316829555
+    TWT_upper_K_meas: 1075.65
+    TWT_upper_K_diff: -11.487868317044558
+    TWT_lower_K_pred: 1132.122711192889
+    TWT_lower_K_meas: 1126.25
+    TWT_lower_K_diff: 5.872711192889028
+    TWT_peak_frac: 0.44
+    TWT_peak_K: 1158.8093977378824
+    T_fg_max_K: 1583.4715229012543
+    energy_closure: -4.083126843106118e-05

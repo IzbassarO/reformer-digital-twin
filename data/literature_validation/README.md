@@ -44,3 +44,30 @@ Kinetic constants (Xu & Froment Part I) live in `../kinetics/xu_froment_1989.yam
   99/92/96/71 %.
 - **Tube wall thickness** is not given in the thesis or the 2011 paper. The Xu & Froment Part II
   tube (ID 0.1016 m, OD 0.1322 m, wall about 15 mm) is recorded as a documented reference value only.
+
+## `latham2008_plant_cases.csv` (added 2026-09-04)
+
+One row per plant case of Latham (2008), M.Sc.E. thesis, Appendix H: Table 29 furnace-side inputs
+(pp. 239-241), Table 30 process-side inputs (p. 241), Table 31 measured outputs (p. 242); plant rates
+99/92/96/71 % from p. 125. Built by a script from the thesis text; the Plant B anchor (wet H2 outlet
+0.463134 = 46.3 mol%, matching Latham et al. 2011 Table 7) is reproduced.
+
+Conventions and conversions:
+- Temperatures: thesis degC + 273.15 -> K. **All temperatures are absolute** (unlike the 2011 paper).
+- Pressures: kPa x 1000 -> Pa. Flows: gmol/h / 1000 -> kmol/h; per tube = total / 336.
+- Compositions: mole fraction x 100 -> mol%. Feed C6plus = thesis n-C6; iso-C4, iso-C5, neo-C5 are zero in all cases.
+- Tube-wall temperatures: peep holes 3.66 m (upper) and 8.53 m (lower) from the top of the tubes (p. 9);
+  fractions 0.293 and 0.682 of the **exposed (heated) tube length 12.5 m** (p. 6), which is what "height" means here.
+- Uncertainties (`sigma_*`) are the "uncertainty in value" of thesis Table 15 (pp. 89-90), used as one standard
+  deviation: +/-2 degC outlet T, +/-3 degC tube wall, +/-8 degC flue-gas outlet, +/-36 kPa, +/-227 kgmol/h,
+  +/-0.01 H2, +/-0.003 CH4 mole fraction. The thesis gives no per-tube spread; the 2011 paper's standard
+  deviations refer to shifted data of different cases.
+- Columns `*_given` for heat of combustion, flue-gas flow and excess air are **empty**: the thesis does not state
+  them. Columns `*_derived` are computed from the Table 29 streams: complete combustion of fuel gas + PSA off-gas
+  in the air stream (O2 in air by difference from the listed N2, CO2, H2O), LHV at 298.15 K with gri30
+  enthalpies (CH4, C2H6, C3H8, H2, CO) and tabulated values for n-C4/C5/C6 (2657.3, 3244.9, 3855.1 kJ/mol);
+  the mixed inlet temperature is the enthalpy-weighted mixing temperature of the three unburnt streams
+  (C4-C6 lumped into C3H8 for cp).
+- Known oddities, not corrected: Plant C1 process feed (9.654E+06 gmol/h) equals its air flow to four digits,
+  suspicious; thesis Table 23 (p. 124) has the Plant B / C1 columns for P_out and n_out swapped relative to
+  Table 31; Table 31 (Appendix H) is used.
