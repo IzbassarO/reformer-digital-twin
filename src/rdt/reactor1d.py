@@ -169,6 +169,23 @@ class WallBC:
     def from_callable(cls, f: Callable[[float], float], description: str = "callable") -> "WallBC":
         return cls(f, description)
 
+    @classmethod
+    def from_table(cls, z: Sequence[float], T: Sequence[float], description: str = "table (PCHIP)") -> "WallBC":
+        """Shape-preserving (PCHIP) interpolation of tabulated ``T_wo(z)``, held constant beyond the table ends."""
+        from scipy.interpolate import PchipInterpolator
+
+        z = np.asarray(z, dtype=float); T = np.asarray(T, dtype=float)
+        order = np.argsort(z); z, T = z[order], T[order]
+        keep = np.concatenate([[True], np.diff(z) > 0]); z, T = z[keep], T[keep]
+        f = PchipInterpolator(z, T, extrapolate=False)
+        lo, hi = z[0], z[-1]
+
+        def g(zz):
+            zz = np.asarray(zz, dtype=float)
+            return f(np.clip(zz, lo, hi))
+
+        return cls(g, description)
+
 
 @dataclass
 class Result:
@@ -375,8 +392,14 @@ def ergun_dPdz(rho: float, mu: float, v_s: float, d_p: float, phi: float) -> flo
 
 
 def _local(z: float, T: float, P: float, F: np.ndarray, tube: TubeGeometry, bed: CatalystBed,
-           wall: WallBC, f_htg: float, adiabatic: bool) -> Dict[str, object]:
-    """Everything needed for the RHS and for post-processing at one axial point."""
+           wall: WallBC, f_htg: float, adiabatic: bool,
+           adiabatic_beyond_heated: bool = False) -> Dict[str, object]:
+    """Everything needed for the RHS and for post-processing at one axial point.
+
+    If ``adiabatic_beyond_heated`` is true, no wall heat is exchanged for
+    ``z > tube.L_heated`` (unheated tube tail); the wall temperatures are then
+    reported equal to the gas temperature.
+    """
     _, _, mw = _gas()
     F = np.maximum(F, 0.0)
     F_tot = F.sum()
@@ -393,7 +416,10 @@ def _local(z: float, T: float, P: float, F: np.ndarray, tube: TubeGeometry, bed:
     r_eff = eta * r
 
     T_wo = float(wall(z))
-    if adiabatic:
+    if adiabatic_beyond_heated and z > tube.L_heated:
+        alpha_i = U = q_i = q_o = 0.0
+        T_wo = T_wi = float(T)
+    elif adiabatic:
         alpha_i = U = q_i = q_o = 0.0
         T_wi = T_wo
     else:
@@ -413,8 +439,12 @@ def _local(z: float, T: float, P: float, F: np.ndarray, tube: TubeGeometry, bed:
 def simulate(tube: TubeGeometry, bed: CatalystBed, feed: Feed, wall: WallBC,
              f_htg: float = 1.0, adiabatic: bool = False, L: Optional[float] = None,
              n_out: int = 201, method: str = "LSODA", rtol: float = 1e-7,
-             atol: Optional[np.ndarray] = None) -> Result:
-    """Integrate the tube model from z = 0 to ``L`` (default ``tube.L_heated``)."""
+             atol: Optional[np.ndarray] = None, adiabatic_beyond_heated: bool = False) -> Result:
+    """Integrate the tube model from z = 0 to ``L`` (default ``tube.L_heated``).
+
+    With ``adiabatic_beyond_heated=True`` the section ``tube.L_heated < z <= L`` exchanges
+    no heat with the wall (unheated tail, as in Xu & Froment Part II Fig. 3 for 11.12-12 m).
+    """
     L = tube.L_heated if L is None else float(L)
     F0_map = feed.state_flows()
     F0 = np.array([F0_map[s] for s in SPECIES])
@@ -425,7 +455,7 @@ def simulate(tube: TubeGeometry, bed: CatalystBed, feed: Feed, wall: WallBC,
     def rhs(z, y):
         n_eval[0] += 1
         F, T, P = y[:nS], y[nS], y[nS + 1]
-        loc = _local(z, T, P, F, tube, bed, wall, f_htg, adiabatic)
+        loc = _local(z, T, P, F, tube, bed, wall, f_htg, adiabatic, adiabatic_beyond_heated)
         pr = loc["props"]
         r_eff = loc["r_eff"]
         dF = np.zeros(nS)
@@ -459,7 +489,7 @@ def simulate(tube: TubeGeometry, bed: CatalystBed, feed: Feed, wall: WallBC,
     dT_app = np.full(n, np.nan)
     for k in range(n):
         Fk = Y[:nS, k]
-        loc = _local(z[k], T[k], P[k], Fk, tube, bed, wall, f_htg, adiabatic)
+        loc = _local(z[k], T[k], P[k], Fk, tube, bed, wall, f_htg, adiabatic, adiabatic_beyond_heated)
         for s in SPECIES:
             X[s][k] = loc["X"][s]
         q_o[k], q_i[k], T_wo[k], T_wi[k] = loc["q_o"], loc["q_i"], loc["T_wo"], loc["T_wi"]
@@ -476,7 +506,8 @@ def simulate(tube: TubeGeometry, bed: CatalystBed, feed: Feed, wall: WallBC,
         dT_approach_I=dT_app, U=U, alpha_i=alpha, rates={"r1": r1, "r2": r2, "r3": r3},
         F_in=F0_map, success=bool(sol.success), message=str(sol.message),
         n_rhs_evals=n_eval[0], wall_time_s=wall_time,
-        extras={"wall_bc": wall.description, "method": method, "f_htg": f_htg, "adiabatic": adiabatic},
+        extras={"wall_bc": wall.description, "method": method, "f_htg": f_htg, "adiabatic": adiabatic,
+                "adiabatic_beyond_heated": adiabatic_beyond_heated},
     )
 
 
