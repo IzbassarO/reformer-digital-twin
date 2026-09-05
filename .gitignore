@@ -21,3 +21,6 @@ data/lhs_runs/*.csv
 
 # Downloaded literature (PDFs must never be committed)
 literature/
+
+# Trained surrogate models (regenerate with notebooks/08_surrogate.ipynb)
+models/*.joblib

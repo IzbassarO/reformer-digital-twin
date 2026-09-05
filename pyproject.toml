@@ -21,6 +21,7 @@ dependencies = [
     "plotly",
     "salib",
     "joblib",
+    "mapie",
 ]
 
 [project.optional-dependencies]
