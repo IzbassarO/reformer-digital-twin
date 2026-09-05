@@ -1,0 +1,216 @@
+alloy: Manaurite XM (Manoir Industries), HP-Nb micro-alloyed 25Cr-35Ni-Nb-Ti centrifugally cast reformer tube
+source: Yeh, C.-L. (2021) Appl. Sci. 11:231, doi:10.3390/app11010231, Section 3.2 pp. 10-11; Figure 3 (p. 11) reproduced from
+  Manoir Industries data sheet, ref. [34]
+local_pdf: literature/yeh2021_applsci_11_231.pdf
+status: PLACEHOLDER alloy curve until the NIMS 16B/38A sheets are processed
+larson_miller:
+  C: 22.96
+  C_source: Yeh 2021 p. 10, 'as suggested by the manufacturer [34]'
+  scale: 0.001
+  definition: LMP = T_K (C + log10 t_r_h) x 1e-3  (Yeh Eq. 14, p. 10); t_r = 10^(1000 LMP/T - C) (Eq. 15)
+  default_curve: minimum
+  curves:
+    average:
+      description: '''Average'' curve of Fig. 3 (upper, thick line)'
+      fit_degree: 3
+      points:
+      - T_K: 1090.84
+        sigma_MPa: 53.92
+        t_r_h: 100000.0
+        LMP: 30.5
+      - T_K: 1108.73
+        sigma_MPa: 50.14
+        t_r_h: 100000.0
+        LMP: 31.0
+      - T_K: 1126.61
+        sigma_MPa: 44.29
+        t_r_h: 100000.0
+        LMP: 31.5
+      - T_K: 1144.49
+        sigma_MPa: 39.83
+        t_r_h: 100000.0
+        LMP: 32.0
+      - T_K: 1162.37
+        sigma_MPa: 35.08
+        t_r_h: 100000.0
+        LMP: 32.5
+      - T_K: 1180.26
+        sigma_MPa: 30.33
+        t_r_h: 100000.0
+        LMP: 33.0
+      - T_K: 1198.14
+        sigma_MPa: 26.39
+        t_r_h: 100000.0
+        LMP: 33.5
+      - T_K: 1216.02
+        sigma_MPa: 22.96
+        t_r_h: 100000.0
+        LMP: 34.0
+      - T_K: 1233.91
+        sigma_MPa: 19.49
+        t_r_h: 100000.0
+        LMP: 34.5
+      - T_K: 1251.79
+        sigma_MPa: 16.4
+        t_r_h: 100000.0
+        LMP: 35.0
+      - T_K: 1269.67
+        sigma_MPa: 13.89
+        t_r_h: 100000.0
+        LMP: 35.5
+      - T_K: 1287.55
+        sigma_MPa: 11.41
+        t_r_h: 100000.0
+        LMP: 36.0
+      - T_K: 1305.44
+        sigma_MPa: 9.63
+        t_r_h: 100000.0
+        LMP: 36.5
+      - T_K: 1323.32
+        sigma_MPa: 7.96
+        t_r_h: 100000.0
+        LMP: 37.0
+      - T_K: 1341.2
+        sigma_MPa: 6.63
+        t_r_h: 100000.0
+        LMP: 37.5
+      - T_K: 1359.08
+        sigma_MPa: 5.21
+        t_r_h: 100000.0
+        LMP: 38.0
+      - T_K: 1376.97
+        sigma_MPa: 4.29
+        t_r_h: 100000.0
+        LMP: 38.5
+      - T_K: 1394.85
+        sigma_MPa: 3.49
+        t_r_h: 100000.0
+        LMP: 39.0
+      - T_K: 1412.73
+        sigma_MPa: 2.87
+        t_r_h: 100000.0
+        LMP: 39.5
+      - T_K: 1430.62
+        sigma_MPa: 2.27
+        t_r_h: 100000.0
+        LMP: 40.0
+      - T_K: 1448.5
+        sigma_MPa: 1.88
+        t_r_h: 100000.0
+        LMP: 40.5
+    minimum:
+      description: '''min.'' curve of Fig. 3 (lower, thin line); reproduces Yeh''s design anchor (1198 K, 11.9 MPa -> ~5e6
+        h), hence default'
+      fit_degree: 3
+      points:
+      - T_K: 1090.84
+        sigma_MPa: 48.35
+        t_r_h: 100000.0
+        LMP: 30.5
+      - T_K: 1108.73
+        sigma_MPa: 44.42
+        t_r_h: 100000.0
+        LMP: 31.0
+      - T_K: 1126.61
+        sigma_MPa: 39.35
+        t_r_h: 100000.0
+        LMP: 31.5
+      - T_K: 1144.49
+        sigma_MPa: 34.86
+        t_r_h: 100000.0
+        LMP: 32.0
+      - T_K: 1162.37
+        sigma_MPa: 30.89
+        t_r_h: 100000.0
+        LMP: 32.5
+      - T_K: 1180.26
+        sigma_MPa: 26.87
+        t_r_h: 100000.0
+        LMP: 33.0
+      - T_K: 1198.14
+        sigma_MPa: 23.38
+        t_r_h: 100000.0
+        LMP: 33.5
+      - T_K: 1216.02
+        sigma_MPa: 20.22
+        t_r_h: 100000.0
+        LMP: 34.0
+      - T_K: 1233.91
+        sigma_MPa: 17.17
+        t_r_h: 100000.0
+        LMP: 34.5
+      - T_K: 1251.79
+        sigma_MPa: 14.58
+        t_r_h: 100000.0
+        LMP: 35.0
+      - T_K: 1269.67
+        sigma_MPa: 12.34
+        t_r_h: 100000.0
+        LMP: 35.5
+      - T_K: 1287.55
+        sigma_MPa: 10.32
+        t_r_h: 100000.0
+        LMP: 36.0
+      - T_K: 1305.44
+        sigma_MPa: 8.66
+        t_r_h: 100000.0
+        LMP: 36.5
+      - T_K: 1323.32
+        sigma_MPa: 7.18
+        t_r_h: 100000.0
+        LMP: 37.0
+      - T_K: 1341.2
+        sigma_MPa: 5.91
+        t_r_h: 100000.0
+        LMP: 37.5
+      - T_K: 1359.08
+        sigma_MPa: 4.78
+        t_r_h: 100000.0
+        LMP: 38.0
+      - T_K: 1376.97
+        sigma_MPa: 3.87
+        t_r_h: 100000.0
+        LMP: 38.5
+      - T_K: 1394.85
+        sigma_MPa: 3.13
+        t_r_h: 100000.0
+        LMP: 39.0
+      - T_K: 1412.73
+        sigma_MPa: 2.5
+        t_r_h: 100000.0
+        LMP: 39.5
+      - T_K: 1430.62
+        sigma_MPa: 1.97
+        t_r_h: 100000.0
+        LMP: 40.0
+      - T_K: 1448.5
+        sigma_MPa: 1.6
+        t_r_h: 100000.0
+        LMP: 40.5
+  digitisation:
+    method: 'pixel extraction from the Fig. 3 JPEG embedded in the PDF (781x499 px): blue-mask for the average curve, dark-mask
+      below it for the minimum curve; axis calibration LMP 30-41 linear (checked against the 900/1000/1100 degC guide lines
+      for 1e5 h: 32.80/35.60/38.39), stress log10 2-100 MPa (checked against the 10 and 30 MPa gridlines)'
+    estimated_accuracy: about +/-3 % in stress, +/-0.05 in LMP
+    TODO: replace by a WebPlotDigitizer export of Fig. 3 or by the Manoir Manaurite XM data sheet (https://www.rmg.co.id/MANAURITEXM.pdf,
+      Yeh ref. [34]); points at t_r = 1e5 h are a representation of the master curve, not measured rupture tests
+design_life_assumptions:
+  design_temperature_C: 925
+  design_pressure_kg_per_cm2: 24
+  design_pressure_MPa: 2.354
+  hoop_stress_formula: S = 0.5 P D_o / t (thin wall on outer diameter), Yeh Eq. 16 p. 10
+  hoop_stress_MPa: 11.9
+  design_life_h: 5000000.0
+  design_life_years: 570
+  note: 'Yeh p. 11: design life ~5e6 h ''evaluated on the basis of design operating conditions which have taken a safety factor
+    into account''; simulated lives from maximum tube temperatures give ~4 years for upstream tubes (p. 11); industry design
+    basis is 100 000 h (Latham 2008 p. 1)'
+  source: Yeh 2021 pp. 10-11
+tube_dimensions:
+  outer_diameter_mm: 136
+  wall_thickness_mm: 13.4
+  source: Yeh 2021 p. 5
+checks:
+  design_anchor_LMP: 35.536
+  minimum_curve_stress_at_anchor_MPa: 25.9
+  average_curve_stress_at_anchor_MPa: 29.23

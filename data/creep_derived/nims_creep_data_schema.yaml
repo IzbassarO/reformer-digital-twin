@@ -1,0 +1,19 @@
+# Schema placeholder for NIMS Creep Data Sheets No. 16B (SCH 22-CF, HK40-type) and No. 38A (SCH 24, HP40-type)
+# doi:10.11503/nims.1020, doi:10.11503/nims.1042 (CC BY-NC 4.0; registration on the NIMS MatNavi portal required).
+# Raw NIMS data are NOT redistributed in this repository (see README.md). Only derived fits are stored.
+# Fill this schema locally from the downloaded sheets; the derived Larson-Miller fit goes into a separate file.
+alloy: null              # e.g. "HK40 (SCH 22-CF)" or "HP40 (SCH 24)"
+data_sheet: null         # "16B" or "38A"
+doi: null
+retrieved: null          # date
+license: "CC BY-NC 4.0 (NIMS); raw data not redistributed here"
+columns:
+  heat_id: "string, NIMS heat identifier"
+  T_K: "test temperature [K]"
+  sigma_MPa: "applied stress [MPa]"
+  t_r_h: "time to rupture [h]"
+  elongation_pct: "rupture elongation [%]"
+  reduction_of_area_pct: "optional"
+  source: "sheet/table/page reference"
+points: []               # list of {heat_id, T_K, sigma_MPa, t_r_h, elongation_pct, source}
+derived_fit_file: null   # e.g. nims_38A_hp40_larson_miller.yaml (curve fitted from the points above)

@@ -32,8 +32,13 @@ TWT_SIGMA_FALLBACK = 20.0
 BASE = replace(lc.BASELINE, inlet_mode="well_mixed_top")
 
 
-def params_from_vector(x: Sequence[float], base: lc.LathamParams = BASE) -> lc.LathamParams:
-    return replace(base, **{k: float(v) for k, v in zip(PARAM_NAMES, x)})
+def params_from_vector(x: Sequence[float], base: lc.LathamParams = BASE,
+                       names: Sequence[str] = PARAM_NAMES) -> lc.LathamParams:
+    return replace(base, **{k: float(v) for k, v in zip(names, x)})
+
+
+def bounds_for(names: Sequence[str]) -> Tuple[np.ndarray, np.ndarray]:
+    return np.array([BOUNDS[k][0] for k in names]), np.array([BOUNDS[k][1] for k in names])
 
 
 def case_rows(cases: Sequence[str] = CAL_CASES) -> List[pd.Series]:
@@ -49,8 +54,8 @@ def sigma_for(row: pd.Series, q: str) -> float:
 
 
 def residuals(x: Sequence[float], rows: Sequence[pd.Series], base: lc.LathamParams = BASE,
-              return_details: bool = False):
-    p = params_from_vector(x, base)
+              return_details: bool = False, names: Sequence[str] = PARAM_NAMES):
+    p = params_from_vector(x, base, names)
     res_all = []; details = {}
     for row in rows:
         res = lc.run_case(row, p)
@@ -62,37 +67,43 @@ def residuals(x: Sequence[float], rows: Sequence[pd.Series], base: lc.LathamPara
     return (r, details) if return_details else r
 
 
-def fit(rows: Sequence[pd.Series], x0: Sequence[float], base: lc.LathamParams = BASE) -> Dict[str, object]:
+def fit(rows: Sequence[pd.Series], x0: Sequence[float], base: lc.LathamParams = BASE,
+        names: Sequence[str] = PARAM_NAMES) -> Dict[str, object]:
+    lo, up = bounds_for(names)
     n = [0]
 
     def fun(x):
         n[0] += 1
-        return residuals(x, rows, base)
+        return residuals(x, rows, base, names=names)
 
-    sol = least_squares(fun, x0=np.asarray(x0, float), bounds=(LOWER, UPPER), method="trf",
-                        x_scale=UPPER - LOWER, diff_step=2e-3, xtol=1e-6, ftol=1e-8, gtol=1e-8, max_nfev=400)
-    return {"x": sol.x, "params": dict(zip(PARAM_NAMES, sol.x.tolist())), "cost": float(sol.cost),
+    sol = least_squares(fun, x0=np.asarray(x0, float), bounds=(lo, up), method="trf",
+                        x_scale=up - lo, diff_step=2e-3, xtol=1e-6, ftol=1e-8, gtol=1e-8, max_nfev=400)
+    return {"x": sol.x, "names": tuple(names), "params": dict(zip(names, sol.x.tolist())), "cost": float(sol.cost),
             "chi2": float(2 * sol.cost), "n_obs": int(sol.fun.size), "jac": sol.jac, "fun": sol.fun,
             "status": int(sol.status), "message": sol.message, "n_evals": n[0], "x0": list(map(float, x0)),
-            "at_bound": {k: bool(np.isclose(v, BOUNDS[k][0]) or np.isclose(v, BOUNDS[k][1])) for k, v in zip(PARAM_NAMES, sol.x)}}
+            "fixed": {k: getattr(base, k) for k in PARAM_NAMES if k not in names},
+            "at_bound": {k: bool(np.isclose(v, BOUNDS[k][0]) or np.isclose(v, BOUNDS[k][1])) for k, v in zip(names, sol.x)}}
 
 
-def lhs_starts(n: int = 5, seed: int = 7) -> np.ndarray:
-    sampler = qmc.LatinHypercube(d=len(PARAM_NAMES), seed=seed)
-    return qmc.scale(sampler.random(n), LOWER, UPPER)
+def lhs_starts(n: int = 5, seed: int = 7, names: Sequence[str] = PARAM_NAMES) -> np.ndarray:
+    lo, up = bounds_for(names)
+    sampler = qmc.LatinHypercube(d=len(names), seed=seed)
+    return qmc.scale(sampler.random(n), lo, up)
 
 
 def multistart(rows: Sequence[pd.Series], n_starts: int = 5, seed: int = 7, base: lc.LathamParams = BASE,
-               extra_starts: Optional[Sequence[Sequence[float]]] = None) -> Dict[str, object]:
-    starts = list(lhs_starts(n_starts, seed))
+               extra_starts: Optional[Sequence[Sequence[float]]] = None,
+               names: Sequence[str] = PARAM_NAMES) -> Dict[str, object]:
+    lo, up = bounds_for(names)
+    starts = list(lhs_starts(n_starts, seed, names))
     if extra_starts:
         starts = [np.asarray(s, float) for s in extra_starts] + starts
-    fits = [fit(rows, x0, base) for x0 in starts]
+    fits = [fit(rows, x0, base, names) for x0 in starts]
     fits.sort(key=lambda f: f["cost"])
     # distinct local optima: parameter vectors differing by more than 2 % of the bound range
     optima = []
     for f in fits:
-        if not any(np.all(np.abs(f["x"] - g["x"]) / (UPPER - LOWER) < 0.02) for g in optima):
+        if not any(np.all(np.abs(f["x"] - g["x"]) / (up - lo) < 0.02) for g in optima):
             optima.append(f)
     return {"fits": fits, "best": fits[0], "distinct_optima": optima}
 
@@ -100,6 +111,7 @@ def multistart(rows: Sequence[pd.Series], n_starts: int = 5, seed: int = 7, base
 def covariance(f: Dict[str, object]) -> Dict[str, object]:
     """Covariance from the scaled-residual Jacobian: cov = s2 (J^T J)^-1, s2 = chi2/(n - p); 95 % t-intervals."""
     J = f["jac"]; n, p = J.shape
+    names = f.get("names", PARAM_NAMES)
     dof = max(n - p, 1)
     s2 = f["chi2"] / dof
     JtJ = J.T @ J
@@ -107,28 +119,30 @@ def covariance(f: Dict[str, object]) -> Dict[str, object]:
     se = np.sqrt(np.diag(cov))
     t = stats.t.ppf(0.975, dof)
     corr = cov / np.outer(se, se)
-    flags = [(PARAM_NAMES[i], PARAM_NAMES[j], float(corr[i, j])) for i in range(p) for j in range(i + 1, p) if abs(corr[i, j]) > 0.9]
-    return {"cov": cov, "se": dict(zip(PARAM_NAMES, se.tolist())), "t_975": float(t), "dof": int(dof),
+    flags = [(names[i], names[j], float(corr[i, j])) for i in range(p) for j in range(i + 1, p) if abs(corr[i, j]) > 0.9]
+    return {"cov": cov, "se": dict(zip(names, se.tolist())), "t_975": float(t), "dof": int(dof),
             "reduced_chi2": float(s2),
-            "ci95": {k: [float(v - t * s), float(v + t * s)] for k, v, s in zip(PARAM_NAMES, f["x"], se)},
-            "corr": corr, "corr_table": {a: {b: float(corr[i, j]) for j, b in enumerate(PARAM_NAMES)} for i, a in enumerate(PARAM_NAMES)},
+            "ci95": {k: [float(v - t * s), float(v + t * s)] for k, v, s in zip(names, f["x"], se)},
+            "corr": corr, "corr_table": {a: {b: float(corr[i, j]) for j, b in enumerate(names)} for i, a in enumerate(names)},
             "high_correlation_pairs": flags, "condition_number_JtJ": float(np.linalg.cond(JtJ))}
 
 
-def errors_table(x: Sequence[float], rows: Sequence[pd.Series], base: lc.LathamParams = BASE) -> Dict[str, Dict[str, float]]:
+def errors_table(x: Sequence[float], rows: Sequence[pd.Series], base: lc.LathamParams = BASE,
+                 names: Sequence[str] = PARAM_NAMES) -> Dict[str, Dict[str, float]]:
     """Per-case prediction errors (pred - meas) for all quantities at parameters x."""
-    _, det = residuals(x, rows, base, return_details=True)
+    _, det = residuals(x, rows, base, return_details=True, names=names)
     return {c: {q: d["comparison"][q]["difference"] for q in QUANTITIES} | {"TWT_peak_frac": d["comparison"]["TWT_peak"]["z_frac"],
             "T_fg_0plus_K": d["result"].extras["T_fg_0plus_K"], "T_fg_max_K": d["comparison"]["T_fg_max_K"]["value"]}
             for c, d in det.items()}
 
 
-def leave_one_out(rows: Sequence[pd.Series], x0: Sequence[float], base: lc.LathamParams = BASE) -> Dict[str, object]:
+def leave_one_out(rows: Sequence[pd.Series], x0: Sequence[float], base: lc.LathamParams = BASE,
+                  names: Sequence[str] = PARAM_NAMES) -> Dict[str, object]:
     folds = {}
     for k, held in enumerate(rows):
         train = [r for j, r in enumerate(rows) if j != k]
-        f = fit(train, x0, base)
-        err = errors_table(f["x"], [held], base)[str(held.case)]
+        f = fit(train, x0, base, names)
+        err = errors_table(f["x"], [held], base, names)[str(held.case)]
         folds[str(held.case)] = {"trained_on": [str(r.case) for r in train], "params": f["params"], "cost_train": f["cost"],
                                  "held_out_errors": err, "at_bound": f["at_bound"]}
     return folds
@@ -156,3 +170,30 @@ def sensitivity_screen(row: pd.Series, p_fit: lc.LathamParams) -> pd.DataFrame:
         o = outputs(replace(p_fit, activity=a))
         rows_out.append({"perturbation": f"activity {a:.2f}", **{q: o[q] - ref[q] for q in ref}})
     return pd.DataFrame(rows_out).set_index("perturbation")
+
+
+# ---------------------------------------------------------------------------
+# Wall-temperature summaries for the creep module and default configuration
+# ---------------------------------------------------------------------------
+def wall_profiles(p: lc.LathamParams, cases: Sequence[str] = CAL_CASES) -> Dict[str, Dict[str, object]]:
+    """Per case: outer/inner/mid-wall temperature profiles, pressure, T_wo maximum and its location."""
+    out = {}
+    for row in case_rows(cases):
+        res = lc.run_case(row, p)
+        k = int(np.argmax(res.T_wo))
+        out[str(row.case)] = {"z_m": res.z, "z_frac": res.z_frac, "T_wo_K": res.T_wo, "T_wi_K": res.T_wi,
+                              "T_mid_K": 0.5 * (res.T_wo + res.T_wi), "P_bar": res.tube.P,
+                              "T_wo_max_K": float(res.T_wo[k]), "z_T_wo_max_m": float(res.z[k]),
+                              "z_frac_T_wo_max": float(res.z_frac[k]), "T_wo_mean_K": float(np.trapezoid(res.T_wo, res.z) / res.z[-1]),
+                              "T_mid_max_K": float(np.max(0.5 * (res.T_wo + res.T_wi))), "result": res}
+    return out
+
+
+def default_calibrated_params() -> lc.LathamParams:
+    """Calibrated parameters selected as default in latham_fit.yaml (key 'default_configuration')."""
+    import yaml
+
+    doc = yaml.safe_load(lc.FIT_YAML.read_text())
+    key = doc.get("default_configuration", "calibration")
+    prm = doc[key]["best_fit"]["full_parameters"]
+    return lc.LathamParams(**prm)
