@@ -362,3 +362,460 @@ baseline:
     TWT_peak_K: 1158.8093977378824
     T_fg_max_K: 1583.4715229012543
     energy_closure: -4.083126843106118e-05
+calibration:
+  cases:
+  - Plant_A
+  - Plant_B
+  - Plant_C2
+  excluded:
+    Plant_C1: feed flow equals air flow to four digits and exceeds Plant A by 22 % at a lower rate; thesis table transcription error
+      (README)
+  inlet_mode: well_mixed_top
+  fitted_parameters:
+  - F_gt
+  - L_q
+  - alpha_top
+  - f_htg
+  bounds:
+    F_gt:
+    - 0.2
+    - 0.9
+    L_q:
+    - 0.29
+    - 0.6
+    alpha_top:
+    - 0.05
+    - 0.4
+    f_htg:
+    - 0.8
+    - 3.0
+  fixed:
+    activity: 0.2
+    voidage: 0.607
+    eta: 0.1
+    eta_top: 0.05
+    f_ctube: 0.38
+    wall_thickness_m: 0.015
+  objective: 'sum over cases and quantities of ((pred - meas)/s)^2; s: outlet T 3 K, outlet P 0.1 bar, wet H2/CH4/CO/CO2 0.3 mol%, flue-gas
+    outlet T 10 K, TWT per-case thesis sigma (3 K, fallback 20 K)'
+  multistart:
+    n_lhs_starts: 5
+    seed: 7
+    extra_start: Latham Table 6
+    all_fits:
+    - x0:
+      - 0.5779767201124284
+      - 0.35983968638543173
+      - 0.11963142868040977
+      - 1.758659495911583
+      params:
+        F_gt: 0.3160677209623136
+        L_q: 0.49704109787854994
+        alpha_top: 0.39999931757897467
+        f_htg: 1.7391053676745405
+      chi2: 30.46544192825305
+      n_evals: 64
+      status: 3
+      message: '`xtol` termination condition is satisfied.'
+      at_bound:
+        F_gt: false
+        L_q: false
+        alpha_top: true
+        f_htg: false
+    - x0:
+      - 0.8643182577284225
+      - 0.5724052690352759
+      - 0.22468162187294327
+      - 0.9964611650872234
+      params:
+        F_gt: 0.3160867186076954
+        L_q: 0.49715549841915047
+        alpha_top: 0.39999999392186
+        f_htg: 1.7384417547884816
+      chi2: 30.465653803386438
+      n_evals: 69
+      status: 3
+      message: '`xtol` termination condition is satisfied.'
+      at_bound:
+        F_gt: false
+        L_q: false
+        alpha_top: true
+        f_htg: false
+    - x0:
+      - 0.35
+      - 0.48
+      - 0.182
+      - 1.68
+      params:
+        F_gt: 0.3161015557472012
+        L_q: 0.4971889167870691
+        alpha_top: 0.3999999903409647
+        f_htg: 1.7383220679030753
+      chi2: 30.465668365299912
+      n_evals: 53
+      status: 2
+      message: '`ftol` termination condition is satisfied.'
+      at_bound:
+        F_gt: false
+        L_q: false
+        alpha_top: true
+        f_htg: false
+    - x0:
+      - 0.6484102799747136
+      - 0.44698803292368927
+      - 0.16878773012264806
+      - 2.43749273067566
+      params:
+        F_gt: 0.31611380307650777
+        L_q: 0.49718510671628097
+        alpha_top: 0.3999999927011316
+        f_htg: 1.7384496279722685
+      chi2: 30.465679904067287
+      n_evals: 76
+      status: 3
+      message: '`xtol` termination condition is satisfied.'
+      at_bound:
+        F_gt: false
+        L_q: false
+        alpha_top: true
+        f_htg: false
+    - x0:
+      - 0.340629960319185
+      - 0.4888549610087473
+      - 0.3564474539391186
+      - 1.2448575350199707
+      params:
+        F_gt: 0.3161052911244665
+        L_q: 0.49719554940192734
+        alpha_top: 0.3999999998699481
+        f_htg: 1.7383059277514006
+      chi2: 30.465686337955606
+      n_evals: 65
+      status: 3
+      message: '`xtol` termination condition is satisfied.'
+      at_bound:
+        F_gt: false
+        L_q: false
+        alpha_top: true
+        f_htg: false
+    - x0:
+      - 0.25248663467534666
+      - 0.2963727443398863
+      - 0.2757020016828365
+      - 2.90090883640414
+      params:
+        F_gt: 0.26586400848079383
+        L_q: 0.29000005166001674
+        alpha_top: 0.39999956636377143
+        f_htg: 2.999999995360269
+      chi2: 159.2040406465561
+      n_evals: 39
+      status: 3
+      message: '`xtol` termination condition is satisfied.'
+      at_bound:
+        F_gt: false
+        L_q: true
+        alpha_top: true
+        f_htg: true
+    distinct_optima:
+    - params:
+        F_gt: 0.3160677209623136
+        L_q: 0.49704109787854994
+        alpha_top: 0.39999931757897467
+        f_htg: 1.7391053676745405
+      chi2: 30.46544192825305
+    - params:
+        F_gt: 0.26586400848079383
+        L_q: 0.29000005166001674
+        alpha_top: 0.39999956636377143
+        f_htg: 2.999999995360269
+      chi2: 159.2040406465561
+  best_fit:
+    params:
+      F_gt: 0.3160677209623136
+      L_q: 0.49704109787854994
+      alpha_top: 0.39999931757897467
+      f_htg: 1.7391053676745405
+    chi2: 30.46544192825305
+    n_obs: 27
+    at_bound:
+      F_gt: false
+      L_q: false
+      alpha_top: true
+      f_htg: false
+    covariance:
+      se:
+        F_gt: 0.014330638722321425
+        L_q: 0.0813392410253882
+        alpha_top: 0.31958605365813914
+        f_htg: 0.15090725182736178
+      ci95:
+        F_gt:
+        - 0.28642253610721746
+        - 0.34571290581740977
+        L_q:
+        - 0.3287780579056714
+        - 0.6653041378514285
+        alpha_top:
+        - -0.26111480450472524
+        - 1.0611134396626745
+        f_htg:
+        - 1.4269299327144447
+        - 2.0512808026346363
+      t_975: 2.0686576104190486
+      dof: 23
+      reduced_chi2: 1.324584431663176
+      corr_table:
+        F_gt:
+          F_gt: 1.0
+          L_q: -0.8080244416183014
+          alpha_top: -0.8697687854919677
+          f_htg: 0.6782035635230447
+        L_q:
+          F_gt: -0.8080244416183046
+          L_q: 1.0000000000000002
+          alpha_top: 0.9845570650954126
+          f_htg: -0.8645473295980468
+        alpha_top:
+          F_gt: -0.8697687854919703
+          L_q: 0.984557065095412
+          alpha_top: 1.0
+          f_htg: -0.7945472230411835
+        f_htg:
+          F_gt: 0.6782035635230467
+          L_q: -0.8645473295980463
+          alpha_top: -0.7945472230411835
+          f_htg: 0.9999999999999999
+      high_correlation_pairs:
+      - - L_q
+        - alpha_top
+        - 0.9845570650954126
+      condition_number_JtJ: 12336.91347235712
+    errors_pred_minus_meas:
+      Plant_A:
+        out_T_K: 3.4047179820292968
+        out_P_Pa: -13519.991410266608
+        out_x_H2_wet_molpct: 0.06596681621917355
+        out_x_CH4_wet_molpct: 0.03880556151015302
+        out_x_CO_wet_molpct: -0.1211475515410747
+        out_x_CO2_wet_molpct: 0.10664621931491336
+        flue_out_T_K: 8.872242442482047
+        TWT_upper_K: -8.30547010376904
+        TWT_lower_K: 0.4991463966352967
+        TWT_peak_frac: 0.47
+        T_fg_0plus_K: 1165.8444721949922
+        T_fg_max_K: 1620.269444950199
+      Plant_B:
+        out_T_K: 1.9506163776816265
+        out_P_Pa: -2171.1819200892933
+        out_x_H2_wet_molpct: 0.03580730728483417
+        out_x_CH4_wet_molpct: 0.0471154725654781
+        out_x_CO_wet_molpct: -0.14254675004614725
+        out_x_CO2_wet_molpct: 0.1237655664360231
+        flue_out_T_K: 9.94780553057899
+        TWT_upper_K: -2.2996823156263417
+        TWT_lower_K: -0.6483263696038648
+        TWT_peak_frac: 1.0
+        T_fg_0plus_K: 1140.2345013343065
+        T_fg_max_K: 1588.371915788294
+      Plant_C2:
+        out_T_K: 3.5503305196020847
+        out_P_Pa: -1999.1979567166418
+        out_x_H2_wet_molpct: 0.30112420928738004
+        out_x_CH4_wet_molpct: -0.09003041175066517
+        out_x_CO_wet_molpct: -0.026285729396654745
+        out_x_CO2_wet_molpct: 0.0985795180654021
+        flue_out_T_K: 6.221250496531866
+        TWT_upper_K: 10.794011769998406
+        TWT_lower_K: -0.0679281839070427
+        TWT_peak_frac: 0.465
+        T_fg_0plus_K: 1132.3766523812676
+        T_fg_max_K: 1526.5469787585293
+    alpha_i_plant_A_midheight_W_m2K: 1408.1824465992202
+    alpha_i_plant_A_range_W_m2K:
+    - 925.5566107064848
+    - 1537.0486745205842
+    full_parameters:
+      L_q: 0.49704109787854994
+      alpha_top: 0.39999931757897467
+      f_htg: 1.7391053676745405
+      voidage: 0.607
+      activity: 0.2
+      eta: 0.1
+      eta_top: 0.05
+      f_ctube: 0.38
+      F_gt: 0.3160677209623136
+      f_loss: 0.02
+      tube_od_m: 0.146
+      wall_thickness_m: 0.015
+      heated_length_m: 12.5
+      lambda_tube: 29.6
+      d_p_m: 0.0054
+      rho_bed: 1100.0
+      heat_transfer: leva_grummer
+      n_sections: 15
+      inlet_mode: well_mixed_top
+  leave_one_out_cv:
+    Plant_A:
+      trained_on:
+      - Plant_B
+      - Plant_C2
+      params:
+        F_gt: 0.31907540553278607
+        L_q: 0.5108587979984696
+        alpha_top: 0.39999999999999997
+        f_htg: 1.740548463062835
+      cost_train: 7.22599108951024
+      held_out_errors:
+        out_T_K: 3.3900304846306426
+        out_P_Pa: -13231.87392997602
+        out_x_H2_wet_molpct: 0.05982417899861048
+        out_x_CH4_wet_molpct: 0.04205936371824226
+        out_x_CO_wet_molpct: -0.12363078453667953
+        out_x_CO2_wet_molpct: 0.10700324569646913
+        flue_out_T_K: 9.023382427046954
+        TWT_upper_K: -12.686820400535453
+        TWT_lower_K: 1.0288134658503623
+        TWT_peak_frac: 0.48
+        T_fg_0plus_K: 1165.8454918300306
+        T_fg_max_K: 1613.0693812355255
+      at_bound:
+        F_gt: false
+        L_q: false
+        alpha_top: true
+        f_htg: false
+    Plant_B:
+      trained_on:
+      - Plant_A
+      - Plant_C2
+      params:
+        F_gt: 0.3144003789727287
+        L_q: 0.4980157039537563
+        alpha_top: 0.3999999999920019
+        f_htg: 1.7422508969764783
+      cost_train: 13.779402164552
+      held_out_errors:
+        out_T_K: 1.617148497793778
+        out_P_Pa: -2051.705620607361
+        out_x_H2_wet_molpct: 0.005259741242056748
+        out_x_CH4_wet_molpct: 0.06449324886669405
+        out_x_CO_wet_molpct: -0.15766588751122157
+        out_x_CO2_wet_molpct: 0.12763236628825148
+        flue_out_T_K: 10.902274673210059
+        TWT_upper_K: -3.484513243791298
+        TWT_lower_K: -1.0235517124078797
+        TWT_peak_frac: 1.0
+        T_fg_0plus_K: 1140.2354870550596
+        T_fg_max_K: 1588.837734773745
+      at_bound:
+        F_gt: false
+        L_q: false
+        alpha_top: true
+        f_htg: false
+    Plant_C2:
+      trained_on:
+      - Plant_A
+      - Plant_B
+      params:
+        F_gt: 0.32520101494998593
+        L_q: 0.434540000790649
+        alpha_top: 0.05000000058375398
+        f_htg: 1.8283787239618912
+      cost_train: 3.2626779570096267
+      held_out_errors:
+        out_T_K: 3.845192341679649
+        out_P_Pa: -298.6525147501379
+        out_x_H2_wet_molpct: 0.31564215529613193
+        out_x_CH4_wet_molpct: -0.09884470302534609
+        out_x_CO_wet_molpct: -0.01750412487071351
+        out_x_CO2_wet_molpct: 0.09554656601771416
+        flue_out_T_K: 5.592565023150428
+        TWT_upper_K: 19.570297034661962
+        TWT_lower_K: -0.17018027407721092
+        TWT_peak_frac: 0.405
+        T_fg_0plus_K: 588.9483780287732
+        T_fg_max_K: 1599.0082893237163
+      at_bound:
+        F_gt: false
+        L_q: false
+        alpha_top: true
+        f_htg: false
+  latham_2011_table10_reference: outlet T within <1 to 4 K, TWT 3 to 22 K
+  sensitivity_plant_A:
+    description: one-at-a-time changes of the four outputs relative to the calibrated reference (first row = reference absolute values)
+    table:
+    - perturbation: reference
+      TWT_upper_K: 1087.6445298962308
+      TWT_lower_K: 1132.5491463966353
+      out_T_K: 1108.9547179820293
+      dry_H2_pct: 70.57543356608879
+    - perturbation: F_gt x0.8 (= 0.253)
+      TWT_upper_K: -28.766200862587084
+      TWT_lower_K: -14.646551010794838
+      out_T_K: -14.002590792329556
+      dry_H2_pct: -0.8716296073434364
+    - perturbation: F_gt x1.2 (= 0.379)
+      TWT_upper_K: 22.390263438980128
+      TWT_lower_K: 10.059696081925267
+      out_T_K: 9.981823464444687
+      dry_H2_pct: 0.5742772174971975
+    - perturbation: L_q x0.8 (= 0.398)
+      TWT_upper_K: 42.64709491208396
+      TWT_lower_K: 0.3369110533699313
+      out_T_K: 3.857008659496614
+      dry_H2_pct: 0.2467147461800323
+    - perturbation: L_q x1.2 (= 0.596)
+      TWT_upper_K: -35.9428575687823
+      TWT_lower_K: 0.1371911390317564
+      out_T_K: -4.355554106191221
+      dry_H2_pct: -0.287721220229443
+    - perturbation: alpha_top x0.8 (= 0.32)
+      TWT_upper_K: -8.108233714226571
+      TWT_lower_K: -0.006261872394588863
+      out_T_K: -1.3715345412012994
+      dry_H2_pct: -0.091065581941848
+    - perturbation: alpha_top x1.2 (= 0.4)
+      TWT_upper_K: 6.721258750985726e-05
+      TWT_lower_K: 3.141519755445188e-07
+      out_T_K: 1.2257552270966698e-05
+      dry_H2_pct: 8.087496610187372e-07
+    - perturbation: f_htg x0.8 (= 1.39)
+      TWT_upper_K: 20.678501367686067
+      TWT_lower_K: 7.930314753754374
+      out_T_K: -1.3434304825784693
+      dry_H2_pct: -0.08051204931099676
+    - perturbation: f_htg x1.2 (= 2.09)
+      TWT_upper_K: -14.089385849156997
+      TWT_lower_K: -5.241963439437768
+      out_T_K: 0.8801662446455794
+      dry_H2_pct: 0.05230021711535926
+    - perturbation: wall 12 mm
+      TWT_upper_K: -5.208709561678916
+      TWT_lower_K: -2.3527802133439764
+      out_T_K: 0.7350507973467302
+      dry_H2_pct: 0.009216611466854374
+    - perturbation: wall 15 mm
+      TWT_upper_K: 0.0
+      TWT_lower_K: 0.0
+      out_T_K: 0.0
+      dry_H2_pct: 0.0
+    - perturbation: wall 18 mm
+      TWT_upper_K: 6.164340424920056
+      TWT_lower_K: 2.7015330446042753
+      out_T_K: -0.9478621893963464
+      dry_H2_pct: -0.00753324402170108
+    - perturbation: activity 0.15
+      TWT_upper_K: 5.851860332568776
+      TWT_lower_K: 2.1326805568164673
+      out_T_K: 0.7724194340157737
+      dry_H2_pct: -0.05465627302409359
+    - perturbation: activity 0.20
+      TWT_upper_K: 0.0
+      TWT_lower_K: 0.0
+      out_T_K: 0.0
+      dry_H2_pct: 0.0
+    - perturbation: activity 0.25
+      TWT_upper_K: -3.7112576363786047
+      TWT_lower_K: -1.2350045822704487
+      out_T_K: -0.44819272877589356
+      dry_H2_pct: 0.031931590288692746

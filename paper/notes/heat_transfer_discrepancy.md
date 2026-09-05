@@ -52,3 +52,18 @@ of the error, but this is a hypothesis, not a finding, and neither the original 
 3. Until then, `alpha_i` in the range **[300, 3000] W/(m2 K)** (back-calculated value to the printed
    correlation) is carried into the uncertainty analysis as an epistemic parameter, with Leva-Grummer
    (about 1000) as the nominal correlation.
+
+**Resolution (plant calibration, 2026-09-04).** Calibrating the coupled furnace-tube model on the Latham
+(2008) plant cases A, B and C2 (Appendix H; outlet temperature, pressure, wet composition, flue-gas outlet
+temperature and the two absolute tube-wall temperatures per case; `latham_fit.yaml`, `calibration`) gives
+`f_htg = 1.74` (95 % interval 1.43-2.05) on the Leva-Grummer correlation, i.e. a plant-constrained bed-side
+coefficient of **alpha_i = 1410 W/(m2 K) at mid-height of the Plant A tube** (926-1540 W/(m2 K) along the
+tube; overall inner-area coefficient U about 860 W/(m2 K) including the 15 mm wall). This is within 4 % of
+Latham et al. (2011)'s own f_htg = 1.68 and reproduces the two measured tube-wall temperatures to within
+11 K and 1 K, respectively, with leave-one-case-out errors of the same size. The value is four times the
+348 W/(m2 K) back-calculated from Xu & Froment's Fig. 3 for a ring catalyst at Re_p of about 4500, and two
+to three times below the printed Xu & Froment chain. The two plants differ in catalyst shape (quadralobe
+5.4 mm equivalent diameter vs 17 mm rings), tube diameter and mass velocity, so a single universal value is
+not expected; for this project the Latham plant value (with its interval) is the validated coefficient for
+the industrial top-fired reformer, the Xu & Froment value remains a verification-only setting, and the
+range [300, 3000] W/(m2 K) stays in the uncertainty analysis as the epistemic envelope.

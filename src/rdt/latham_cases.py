@@ -44,6 +44,7 @@ class LathamParams:
     rho_bed: float = 1100.0
     heat_transfer: str = "leva_grummer"
     n_sections: int = 15
+    inlet_mode: str = "plug_flow"   # or "well_mixed_top"
 
     @property
     def tube_id_m(self) -> float:
@@ -90,7 +91,8 @@ def build_case(row: pd.Series, p: LathamParams = BASELINE):
 
 def run_case(row: pd.Series, p: LathamParams = BASELINE, n_out: int = 201) -> fu.CoupledResult:
     tube, bed, feed, flue, geom = build_case(row, p)
-    return fu.simulate_coupled(tube, bed, feed, geom, flue, fu.HeatRelease(p.L_q, p.alpha_top, p.f_loss, p.n_sections),
+    return fu.simulate_coupled(tube, bed, feed, geom, flue,
+                               fu.HeatRelease(p.L_q, p.alpha_top, p.f_loss, p.n_sections, p.inlet_mode),
                                fu.FurnaceParams(F_gt=p.F_gt, f_ctube=p.f_ctube), f_htg=p.f_htg,
                                heat_transfer=p.heat_transfer, n_out=n_out)
 

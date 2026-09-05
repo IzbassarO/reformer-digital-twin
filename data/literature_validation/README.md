@@ -71,3 +71,12 @@ Conventions and conversions:
 - Known oddities, not corrected: Plant C1 process feed (9.654E+06 gmol/h) equals its air flow to four digits,
   suspicious; thesis Table 23 (p. 124) has the Plant B / C1 columns for P_out and n_out swapped relative to
   Table 31; Table 31 (Appendix H) is used.
+
+### Calibration set and the exclusion of Plant C1
+
+The furnace parameters are calibrated on Plants A, B and C2 only. Plant C1 is excluded because its
+process feed flow in thesis Table 30 (9.654E+06 gmol/h) equals its combustion-air flow in Table 29 to four
+digits and exceeds Plant A's feed by 22 % although the stated plant rate is lower (96 % vs 99 %); with the
+baseline model C1 is the only case whose outlet temperature (-59 K), composition (-5.4 mol% H2) and both
+tube-wall temperatures (-68/-55 K) are far off while A, B and C2 agree within a few kelvin. This is treated
+as a transcription error in the thesis table, not as plant behaviour. C1 is kept in the CSV.

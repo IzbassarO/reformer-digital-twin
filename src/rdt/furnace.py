@@ -86,15 +86,31 @@ class HeatRelease:
     alpha_top: float = 0.182
     f_loss: float = 0.02
     n_sections: int = 15
+    inlet_mode: str = "plug_flow"   # "plug_flow" or "well_mixed_top"
+
+    @property
+    def Q_instant_fraction(self) -> float:
+        """Fraction of (1 - f_loss) Q_comb released instantly at z = 0 (well-mixed top zone), else 0."""
+        return self.alpha_top if self.inlet_mode == "well_mixed_top" else 0.0
 
     def coefficients(self, L: float) -> Tuple[float, float, float, float]:
         """(a, b, c, z_q) of ``r(z)/Q_eff = a z^2 + b z + c`` on ``[0, z_q]``, ``z_q = L_q L``.
 
-        Conditions: r(z_q) = 0; integral over [0, z_q] = 1; integral over [0, L/n_sections] = alpha_top.
+        ``inlet_mode="plug_flow"``: r(z_q) = 0; integral over [0, z_q] = 1; integral over
+        [0, L/n_sections] = alpha_top (Latham's discrete parabola made continuous).
+        ``inlet_mode="well_mixed_top"``: the fraction alpha_top is released instantly at z = 0 by
+        adiabatic mixing (see :func:`simulate_coupled`); the remaining 1 - alpha_top follows the
+        Roesler-type parabola ``r = c (1 - (z/z_q)^2)`` (maximum at the roof, zero at z_q, zero slope
+        at z_q), i.e. a = -c/z_q^2, b = 0, c = 1.5 (1 - alpha_top)/z_q.
         Raises ``ValueError`` if the parabola does not open downward or becomes negative on [0, z_q].
         """
+        if self.inlet_mode not in ("plug_flow", "well_mixed_top"):
+            raise ValueError(f"unknown inlet_mode {self.inlet_mode!r}")
         zq = self.L_q * L
         h = L / self.n_sections
+        if self.inlet_mode == "well_mixed_top":
+            c = 1.5 * (1.0 - self.alpha_top) / zq
+            return -c / zq**2, 0.0, c, zq
         A = np.array([[zq**2, zq, 1.0],
                       [zq**3 / 3.0, zq**2 / 2.0, zq],
                       [h**3 / 3.0, h**2 / 2.0, h]])
@@ -107,7 +123,8 @@ class HeatRelease:
         return float(a), float(b), float(c), float(zq)
 
     def density(self, z, Q_comb: float, L: float):
-        """Heat-release density r(z) [W/m]; integrates to (1 - f_loss) Q_comb."""
+        """Heat-release density r(z) [W/m]; integrates to (1 - f_loss) Q_comb (plug_flow) or to
+        (1 - alpha_top)(1 - f_loss) Q_comb (well_mixed_top, the rest being released at z = 0)."""
         a, b, c, zq = self.coefficients(L)
         z = np.asarray(z, dtype=float)
         r = (a * z**2 + b * z + c) * (1.0 - self.f_loss) * Q_comb
@@ -303,8 +320,18 @@ def simulate_coupled(tube: r1.TubeGeometry, bed: r1.CatalystBed, feed: r1.Feed, 
     nS = len(r1.SPECIES)
     F0_map = feed.state_flows()
     F0 = np.array([F0_map[sp] for sp in r1.SPECIES])
-    y0 = np.concatenate([F0, [feed.T_in, feed.P_in, flue.T_in_K]])
     n_fg_s = flue.n_kmol_h / 3600.0  # kmol/s
+    T_fg0 = flue.T_in_K
+    Q_instant = release.Q_instant_fraction * (1.0 - release.f_loss) * flue.Q_comb_W
+    if Q_instant > 0.0:
+        # well-mixed top zone: adiabatic mixing of the products raises the furnace gas to T_fg(0+)
+        h0 = flue_props(flue.T_in_K, flue.X)["h"] + Q_instant / n_fg_s
+
+        def gh(T):
+            return flue_props(T, flue.X)["h"] - h0
+
+        T_fg0 = float(brentq(gh, flue.T_in_K, 3000.0))
+    y0 = np.concatenate([F0, [feed.T_in, feed.P_in, T_fg0]])
     n_eval = [0]
 
     def wall_temperature(z, F, T, P, T_fg):
@@ -348,12 +375,13 @@ def simulate_coupled(tube: r1.TubeGeometry, bed: r1.CatalystBed, feed: r1.Feed, 
     dH_fg = n_fg_s * (h_out - h_in)
     Q_eff = (1.0 - release.f_loss) * flue.Q_comb_W
     energy = {"Q_comb_W": flue.Q_comb_W, "Q_eff_W": Q_eff, "flue_enthalpy_rise_W": dH_fg, "tube_duty_W": duty,
-              "release_integral_W": float(np.trapezoid(rel, z)), "closure_rel_error": (dH_fg + duty - Q_eff) / Q_eff,
-              "duty_fraction_of_Q_comb": duty / flue.Q_comb_W}
+              "release_integral_W": float(np.trapezoid(rel, z)) + Q_instant, "instant_release_W": Q_instant,
+              "closure_rel_error": (dH_fg + duty - Q_eff) / Q_eff, "duty_fraction_of_Q_comb": duty / flue.Q_comb_W}
     return CoupledResult(tube=tube_res, z=z, T_fg=T_fg, T_wo=T_wo, T_wi=tube_res.T_wall_inner,
                          q_outer=tube_res.q_flux_outer, release=rel, h_conv=h_arr, energy=energy,
                          success=bool(sol.success), message=str(sol.message), n_rhs_evals=n_eval[0],
                          wall_time_s=wall_time,
                          extras={"F_gt": fparams.F_gt, "f_ctube": fparams.f_ctube, "L_q": release.L_q,
                                  "alpha_top": release.alpha_top, "f_loss": release.f_loss, "T_fg_in_K": flue.T_in_K,
+                                 "inlet_mode": release.inlet_mode, "T_fg_0plus_K": T_fg0,
                                  "n_fg_kmol_h": flue.n_kmol_h, "excess_air_pct": flue.excess_air_pct})
