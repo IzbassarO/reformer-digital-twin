@@ -171,7 +171,8 @@ class History:
                              "specific_firing_factor": self.firing if self.firing is not None else np.ones(self.n)})
 
 
-def base_inputs(n: int = HOURS, excess_air: float = EXCESS_AIR_SCEN) -> Dict[str, np.ndarray]:
+def base_inputs(n: int = HOURS, excess_air: Optional[float] = None) -> Dict[str, np.ndarray]:
+    excess_air = EXCESS_AIR_SCEN if excess_air is None else excess_air
     b = op.base_case().inputs()
     return {"load": np.ones(n), "steam_to_carbon": np.full(n, b["steam_to_carbon"]), "inlet_T": np.full(n, b["inlet_T"]),
             "inlet_P": np.full(n, b["inlet_P"]), "excess_air": np.full(n, excess_air), "activity": np.full(n, b["catalyst_activity"])}
@@ -293,3 +294,64 @@ def steady_state_closed_form(tw: TwinSurrogate, control: str = "hold_T_out", n_h
     t_r = float(tw.curve.time_to_rupture(float(p["T_wo_max_K"].iloc[0]), float(p["sigma_hot_MPa"].iloc[0])))
     return {"t_r_h": t_r, "D_year": n_hours / t_r, "T_wo_max_K": float(p["T_wo_max_K"].iloc[0]), "firing": float(X["specific_firing_factor"].iloc[0]),
             "CH4_slip_dry_pct": float(p["CH4_slip_dry_pct"].iloc[0]), "H2_year_kmol": n_hours * float(p["H2_net_kmol_h"].iloc[0])}
+
+
+def use_config(cfg) -> None:
+    """Point the module at a rdt.config.RunConfig (base excess air, output names)."""
+    global EXCESS_AIR_SCEN, SUMMARY_CSV, SUMMARY_META, TAG
+    EXCESS_AIR_SCEN = float(cfg.excess_air_base)
+    SUMMARY_CSV = Path(cfg.scenarios_summary); SUMMARY_META = Path(cfg.scenarios_meta); TAG = cfg.tag
+
+
+SUMMARY_CSV = OUT_DIR / "summary_v1.csv"
+SUMMARY_META = OUT_DIR / "summary_v1_meta.json"
+TAG = "v1"
+
+
+def hourly_path(name: str) -> Path:
+    return OUT_DIR / (f"hourly_{name}.csv.gz" if TAG == "v1" else f"hourly_{TAG}_{name}.csv.gz")
+
+
+def run_all_scenarios(tw: Optional["TwinSurrogate"] = None) -> Dict[str, object]:
+    """Run S1-S6 (+ S5 campaigns), write the summary CSV / meta JSON and hourly files for the active config."""
+    t0 = time.perf_counter()
+    tw = tw or TwinSurrogate()
+    ss = steady_state_closed_form(tw); slip0 = ss["CH4_slip_dry_pct"]
+    results = {}; S = make_scenarios()
+    for name, h in S.items():
+        results[name] = evaluate(h, tw)
+    camp = {}
+    for label, kw in (("hold_CH4_slip_ageing", dict(control="hold_CH4_slip")), ("hold_T_out_ageing", dict(control="hold_T_out")),
+                      ("hold_T_out_const0.20", dict(control="hold_T_out", constant_activity=0.20))):
+        yrs = []
+        for h in ageing_campaign(**kw):
+            r = evaluate(h, tw, slip_target=slip0); results[h.name] = r; hh = r["hourly"]
+            yrs.append({"year": len(yrs) + 1, "activity_start": float(hh.catalyst_activity.iloc[0]), "activity_end": float(hh.catalyst_activity.iloc[-1]),
+                        "firing_start": float(hh.specific_firing_factor.iloc[0]), "firing_end": float(hh.specific_firing_factor.iloc[-1]),
+                        "T_out_start": float(hh.T_out_K.iloc[0]), "T_out_end": float(hh.T_out_K.iloc[-1]), "T_wo_start": float(hh.T_wo_max_K.iloc[0]), "T_wo_end": float(hh.T_wo_max_K.iloc[-1]),
+                        "slip_start": float(hh.CH4_slip_dry_pct.iloc[0]), "slip_end": float(hh.CH4_slip_dry_pct.iloc[-1]), "H2_kmol": r["annual_H2_kmol"], "D": r["annual_damage"]})
+        camp[label] = yrs
+    D1, H1 = results["S1_steady"]["annual_damage"], results["S1_steady"]["annual_H2_kmol"]
+    rows = []
+    for name, r in results.items():
+        rows.append({"scenario": name, "control": r["control"], "annual_H2_kmol_per_tube": r["annual_H2_kmol"], "annual_damage_D": r["annual_damage"],
+                     "years_to_D1_yeh_placeholder": r["years_to_D1"], "life_consumption_per_kmol_H2_rel_S1": (r["annual_damage"] / r["annual_H2_kmol"]) / (D1 / H1),
+                     "D_avg_condition": r["D_avg_condition"], "avg_condition_error": r["avg_condition_error"], "T_wo_max_mean_K": r["T_wo_max_mean_K"], "T_wo_max_max_K": r["T_wo_max_max_K"],
+                     "firing_mean": r["firing_mean"], "T_out_mean_K": r["T_out_mean_K"], "CH4_slip_mean_pct": r["CH4_slip_mean_pct"], "n_physics_hours": r["n_physics_hours"],
+                     "verify_max_abs_dT_wo_K": r["verify_max_abs_dT_wo_K"], "verify_max_abs_dT_out_K": r["verify_max_abs_dT_out_K"], "notes": r["notes"]})
+    summ = pd.DataFrame(rows).set_index("scenario")
+    dD_base = results["S1_steady"]["hourly"].dD.iloc[0]; ev = {}
+    for name in ("S4a_mild_overfire", "S4b_severe_overfire", "S4c_hot_band"):
+        hh = results[name]["hourly"]; m = hh.dD > dD_base * 1.0001
+        ev[name] = {"event_hours": int(m.sum()), "dD_event_mean": float(hh.dD[m].mean()), "dD_base": float(dD_base), "ratio_event_to_base": float(hh.dD[m].mean() / dD_base),
+                    "share_of_annual_damage_pct": float(100 * (hh.dD[m].sum() - m.sum() * dD_base) / hh.dD.sum()), "T_wo_event_mean_K": float(hh.T_wo_max_K[m].mean())}
+        summ.loc[name, "event_hours"] = ev[name]["event_hours"]; summ.loc[name, "dD_event_to_base_ratio"] = ev[name]["ratio_event_to_base"]
+    OUT_DIR.mkdir(exist_ok=True)
+    summ.to_csv(SUMMARY_CSV)
+    for name, r in results.items():
+        r["hourly"].to_csv(hourly_path(name), index=False, compression="gzip")
+    meta = {"created": time.strftime("%Y-%m-%d %H:%M:%S"), "wall_time_s": time.perf_counter() - t0, "excess_air_pct": EXCESS_AIR_SCEN, "T_out_target_K": T_OUT_TARGET,
+            "slip_target_pct": slip0, "steady_closed_form": ss, "S4_events": ev, "S5_campaigns": camp, "n_physics_calls": tw.n_physics_calls, "tag": TAG,
+            "life_curve": "Yeh 2021 Manaurite XM minimum curve, PLACEHOLDER", "scope": "quasi-steady creep only; start-up/shutdown thermal fatigue excluded"}
+    json.dump(meta, open(SUMMARY_META, "w"), indent=2, default=float)
+    return {"summary": summ, "meta": meta, "results": results}

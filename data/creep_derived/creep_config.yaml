@@ -1,0 +1,6 @@
+# Active Larson-Miller master curve for rdt.creep.LarsonMillerCurve.from_config()
+# Options: a curve file in this directory (Yeh placeholder) or a derived NIMS fit written by rdt.creep.ingest_nims:
+#   active: yeh2021_manaurite_xm.yaml           (PLACEHOLDER, minimum curve)
+#   active: HP40_derived.yaml                    (after NIMS 38A transcription)
+#   active: HK40_derived.yaml                    (after NIMS 16B transcription)
+active: yeh2021_manaurite_xm.yaml

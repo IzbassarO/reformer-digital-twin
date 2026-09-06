@@ -197,9 +197,9 @@ def run_point(name: str, point: Dict[str, float], X: pd.DataFrame, lq_variant: b
 # ---------------------------------------------------------------------------
 def operating_points() -> Dict[str, Dict[str, float]]:
     base = op.base_case(); b = base.inputs(); b["excess_air"] = sc.EXCESS_AIR_SCEN
-    summ = pd.read_csv(sc.OUT_DIR / "summary_v1.csv").set_index("scenario")
-    meta = json.loads((sc.OUT_DIR / "summary_v1_meta.json").read_text())
-    reg = pd.read_csv(lc.ROOT / "data" / "optimization" / "regimes_v1.csv", index_col=0)
+    summ = pd.read_csv(sc.SUMMARY_CSV).set_index("scenario")
+    meta = json.loads(Path(sc.SUMMARY_META).read_text())
+    reg = pd.read_csv(REGIMES_CSV, index_col=0)
     pts = {}
     pts["S1_base"] = {**b, "specific_firing_factor": float(summ.loc["S1_steady", "firing_mean"])}
     for r in ("knee", "min_life_iso_H2"):
@@ -303,3 +303,61 @@ def robustness_fractions(mc: Dict[str, pd.DataFrame], mc_var: Dict[str, pd.DataF
                 res["S3_life_per_kmol_le_S1"] = float(np.mean(d3 / h3 <= b.loc[ok, "life_rate_per_kmol_H2"].to_numpy()))
         out[tag] = res
     return out
+
+
+REGIMES_CSV = ROOT / "data" / "optimization" / "regimes_v1.csv"
+MC_TAG = "mc_v1"
+SUMMARY_JSON = OUT_DIR / "uq_summary_v1.json"
+
+
+def use_config(cfg) -> None:
+    global REGIMES_CSV, MC_TAG, SUMMARY_JSON, N_MC
+    REGIMES_CSV = Path(cfg.regimes_csv); MC_TAG = cfg.mc_tag; SUMMARY_JSON = Path(cfg.uq_summary); N_MC = int(cfg.n_mc)
+
+
+POINT_NAMES = ["S1_base", "RQ3_knee", "RQ3_min_life_iso_H2", "S5_y4_holdslip_end", "S6_SC2.5", "S6_SC3.5", "load_0.70", "load_0.85"]
+LQ_VARIANT_POINTS = ("RQ3_knee", "RQ3_min_life_iso_H2", "load_0.70", "load_0.85")
+
+
+def run_campaign(n: Optional[int] = None, n_group: int = 1024, log=print) -> Dict[str, object]:
+    """Resumable Monte Carlo for the active config: main points, L_q-variant points, one-group-at-a-time runs."""
+    n = n or N_MC
+    spec = build_spec(); X = sample(spec, n)
+    X.to_csv(OUT_DIR / f"{MC_TAG}_design.csv.gz", index=False, compression="gzip")
+    pts = operating_points(); flex = flexibility_points(); pts["load_0.70"] = flex["load_0.70"]; pts["load_0.85"] = flex["load_0.85"]
+    json.dump(pts, open(OUT_DIR / f"{MC_TAG}_points.json", "w"), indent=2)
+    for name in POINT_NAMES:
+        df = run_point(name, pts[name], X, tag=MC_TAG); log(f"{name}: {int((df.converged == True).sum())}/{len(df)} converged")
+    for name in LQ_VARIANT_POINTS:
+        df = run_point(name, pts[name], X, lq_variant=True, tag=MC_TAG); log(f"{name} (L_q variant): {int((df.converged == True).sum())}/{len(df)}")
+    for g in GROUPS:
+        Xg = sample(spec, n_group, seed=1, active_groups=[g]); df = run_point(f"S1_base_group_{g}", pts["S1_base"], Xg, tag=MC_TAG); log(f"group {g}: {int((df.converged == True).sum())}/{len(df)}")
+    return {"points": pts, "N": n}
+
+
+def analyse(log=print) -> Dict[str, object]:
+    """Intervals, variance shares, Sobol on surrogate, robustness fractions for the active config."""
+    spec = build_spec(save=False)
+    pts = json.load(open(OUT_DIR / f"{MC_TAG}_points.json"))
+    mc = {n: pd.read_csv(OUT_DIR / f"{MC_TAG}_{n}.csv.gz") for n in POINT_NAMES}; mc["load_1.00"] = mc["S1_base"]
+    var = dict(mc)
+    for n in LQ_VARIANT_POINTS:
+        var[n] = pd.read_csv(OUT_DIR / f"{MC_TAG}_{n}_lqvar.csv.gz")
+    groups = {g: pd.read_csv(OUT_DIR / f"{MC_TAG}_S1_base_group_{g}.csv.gz") for g in GROUPS}
+    nom = nominal(spec); nominal_runs = {n: evaluate_one(pts[n], nom) for n in POINT_NAMES}
+    summary = {"N": int(len(mc["S1_base"])), "tag": MC_TAG, "points": pts, "convergence": {n: float((d.converged == True).mean()) for n, d in mc.items()},
+               "intervals": {n: intervals(mc[n], mc["S1_base"]) for n in POINT_NAMES},
+               "intervals_lq_variant": {n: intervals(var[n], mc["S1_base"]) for n in LQ_VARIANT_POINTS},
+               "nominal_runs": nominal_runs, "variance_shares_S1_base": variance_shares(mc["S1_base"], groups),
+               "robustness_fractions": robustness_fractions(mc, var)}
+    summary["nominal_inside_90pct_interval"] = {n: {c: bool(summary["intervals"][n][c]["p05"] <= nominal_runs[n][c] <= summary["intervals"][n][c]["p95"])
+                                                    for c in ("T_wo_max_K", "T_out_K", "CH4_slip_dry_pct", "log10_t_r")} for n in POINT_NAMES}
+    try:
+        summary["sobol_on_surrogate_S1_base"] = sobol_on_surrogate(mc["S1_base"])
+    except Exception as e:  # noqa: BLE001
+        summary["sobol_on_surrogate_S1_base"] = {"error": f"{type(e).__name__}: {e}"}
+    json.dump(summary, open(SUMMARY_JSON, "w"), indent=2, default=float)
+    allmc = pd.concat([mc[n] for n in POINT_NAMES] + [var[n] for n in LQ_VARIANT_POINTS], ignore_index=True)
+    allmc.to_csv(OUT_DIR / f"{MC_TAG}.csv.gz", index=False, compression="gzip")
+    log("analysis written to " + str(SUMMARY_JSON))
+    return summary

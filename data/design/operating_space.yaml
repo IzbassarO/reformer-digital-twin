@@ -1,37 +1,77 @@
-# Operating space for the RQ1 dataset on the calibrated digital twin (Plant A geometry and feed composition)
-ranges_file: data/design/parameter_ranges.csv      # authoritative ranges (min, max, base_plant_A, justification)
+ranges_file: data/design/parameter_ranges.csv
 inputs:
-  steam_to_carbon:        {unit: "-",   min: 2.5,  max: 4.0,  definition: "H2O / (C atoms in hydrocarbons); steam changed only, dry feed composition fixed"}
-  feed_per_tube_fraction: {unit: "-",   min: 0.60, max: 1.10, definition: "dry (steam-free) feed per tube relative to Plant A (5.959 kmol/h)"}
-  specific_firing_factor: {unit: "-",   min: 0.85, max: 1.15, definition: "Q_comb per unit dry feed relative to Plant A; fuel gas and PSA off-gas scaled together"}
-  inlet_T:                {unit: "K",   min: 800,  max: 900}
-  inlet_P:                {unit: "bar", min: 25,   max: 33}
-  catalyst_activity:      {unit: "-",   min: 0.10, max: 0.30, definition: "multiplier on Xu-Froment rates (Latham f_prx)"}
-  excess_air:             {unit: "%",   min: 5,    max: 20,   definition: "combustion air = (1 + EA/100) x stoichiometric for the fuel + off-gas; flue-gas flow and composition follow"}
+  steam_to_carbon:
+    unit: '-'
+    min: 2.5
+    max: 4.0
+    definition: H2O / (C atoms in hydrocarbons); steam changed only, dry feed composition fixed
+  feed_per_tube_fraction:
+    unit: '-'
+    min: 0.6
+    max: 1.1
+    definition: dry (steam-free) feed per tube relative to Plant A (5.959 kmol/h)
+  specific_firing_factor:
+    unit: '-'
+    min: 0.85
+    max: 1.15
+    definition: Q_comb per unit dry feed relative to Plant A; fuel gas and PSA off-gas scaled together
+  inlet_T:
+    unit: K
+    min: 800
+    max: 900
+  inlet_P:
+    unit: bar
+    min: 25
+    max: 33
+  catalyst_activity:
+    unit: '-'
+    min: 0.1
+    max: 0.3
+    definition: multiplier on Xu-Froment rates (Latham f_prx)
+  excess_air:
+    unit: '%'
+    min: 5
+    max: 20
+    definition: combustion air = (1 + EA/100) x stoichiometric for the fuel + off-gas; flue-gas flow and composition follow
 fixed:
-  feed_hydrocarbon_composition: "Plant A (thesis Table 30): CH4 24.21, C2 0.42, C3 0.09, nC4 0.05, nC5 0.02, nC6 0.03, H2 0.04, N2 0.06, CO2 0.47 mol% of mixed feed"
+  feed_hydrocarbon_composition: 'Plant A (thesis Table 30): CH4 24.21, C2 0.42, C3 0.09, nC4 0.05, nC5 0.02, nC6 0.03, H2
+    0.04, N2 0.06, CO2 0.47 mol% of mixed feed'
   wall_thickness_m: 0.015
-  furnace_tube_parameters: "latham_fit.yaml -> calibration_alpha_top_fixed (F_gt 0.323, L_q 0.456, alpha_top 0.182, f_htg 1.83, f_ctube 0.38, voidage 0.607, eta 0.1/0.05, well-mixed top zone)"
-  fuel_and_offgas_composition_and_temperatures: "Plant A thesis Table 29"
+  furnace_tube_parameters: latham_fit.yaml -> calibration_alpha_top_fixed (F_gt 0.323, L_q 0.456, alpha_top 0.182, f_htg 1.83,
+    f_ctube 0.38, voidage 0.607, eta 0.1/0.05, well-mixed top zone)
+  fuel_and_offgas_composition_and_temperatures: Plant A thesis Table 29
 base_case:
-  source: "Plant A calibrated state (thesis Appendix H); reproduces the calibration"
+  source: Plant A calibrated state (thesis Appendix H); reproduces the calibration
   steam_to_carbon: 2.892
   feed_per_tube_fraction: 1.0
   specific_firing_factor: 1.0
   inlet_T_K: 884.55
   inlet_P_bar: 30.06
-  catalyst_activity: 0.20
+  catalyst_activity: 0.2
   excess_air_pct: 21.64
   Q_comb_MW: 219.0
-  note: >
-    parameter_ranges.csv lists base_plant_A values of 877 K and 9.2 % excess air, which are the 2011 paper's
-    Table 8 99 % case; the calibration used the thesis Appendix H state (884.55 K; 21.6 % excess air derived from
-    the Table 29 fuel, off-gas and air flows). The calibrated state is kept as base so that the base run reproduces
-    the calibration; its excess air lies outside the sampled 5-20 % range. To be reconciled with the chemical engineer.
+  note: 'parameter_ranges.csv lists base_plant_A values of 877 K and 9.2 % excess air, which are the 2011 paper''s Table 8
+    99 % case; the calibration used the thesis Appendix H state (884.55 K; 21.6 % excess air derived from the Table 29 fuel,
+    off-gas and air flows). The calibrated state is kept as base so that the base run reproduces the calibration; its excess
+    air lies outside the sampled 5-20 % range. To be reconciled with the chemical engineer.
+
+    '
 closed_loop:
-  target: "outlet process-gas temperature = Plant A measured 1105.55 K (thesis Table 31)"
+  target: outlet process-gas temperature = Plant A measured 1105.55 K (thesis Table 31)
   manipulated: specific_firing_factor (brentq, bracket 0.6-1.6)
 life_metric:
-  curve: "Yeh 2021 Manaurite XM minimum Larson-Miller curve, C = 22.96 -- PLACEHOLDER until NIMS 16B/38A"
-  stress: "mean-diameter hoop stress at the hot spot from the local pressure, wall 15 mm"
-  reported_as: "log10 t_r at the hot spot and life-consumption rate 1/t_r relative to the Plant A base case"
+  curve: Yeh 2021 Manaurite XM minimum Larson-Miller curve, C = 22.96 -- PLACEHOLDER until NIMS 16B/38A
+  stress: mean-diameter hoop stress at the hot spot from the local pressure, wall 15 mm
+  reported_as: log10 t_r at the hot spot and life-consumption rate 1/t_r relative to the Plant A base case
+v2:
+  ranges_file: data/design/parameter_ranges_v2.csv
+  excess_air:
+    min: 5
+    max: 25
+    note: upper bound raised from 20 to 25 % so that the calibrated Plant A value (21.64 %) lies inside the space
+  base_case: calibrated Plant A state (steam_to_carbon 2.892, load 1.0, firing 1.0, inlet_T 884.55 K, inlet_P 30.06 bar, activity
+    0.20, excess_air 21.64 %); v1 scenarios/optimisation used 20 %
+  monte_carlo_N: 2048
+  entry_point: 'python -m rdt.pipeline --stage all --version v2 (Makefile targets: design surrogate scenarios pareto uq figures)'
+  outputs: all result files tagged *_v2 next to the v1 files; v1 never overwritten; figures regenerated in paper/figures with
+    v1 PNGs archived in paper/figures/v1/

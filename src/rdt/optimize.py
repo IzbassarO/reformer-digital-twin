@@ -65,7 +65,7 @@ def base_reference(tw: sc.TwinSurrogate) -> BaseRef:
 
 class ReformerProblem(Problem):
     def __init__(self, tw: sc.TwinSurrogate, ref: BaseRef, T_shift_K: float = 0.0):
-        super().__init__(n_var=5, n_obj=3, n_ieq_constr=3, xl=XL, xu=XU)
+        super().__init__(n_var=5, n_obj=3, n_ieq_constr=3, xl=XL.copy(), xu=XU.copy())
         self.tw, self.ref, self.T_shift = tw, ref, T_shift_K
         self.n_evals = 0
 
@@ -201,11 +201,12 @@ def run_all(pop: int = 200, gens: int = 300, seed: int = 0, save: bool = True) -
            "robustness": rob, "settings": {"pop": pop, "gens": gens, "seed": seed, "T_wo_limit_K": T_WO_LIMIT_K, "T_out_limit_K": T_OUT_LIMIT_K, "slip_limit_pct": ref.slip, "excess_air_base": EXCESS_AIR_BASE}}
     if save:
         OUT_DIR.mkdir(exist_ok=True)
-        ver.to_csv(OUT_DIR / "pareto_v1.csv", index=False); reg.to_csv(OUT_DIR / "regimes_v1.csv")
+        ver.to_csv(PARETO_CSV, index=False); reg.to_csv(REGIMES_CSV)
         meta = {k: v for k, v in out.items() if k not in ("pareto_verified", "feasible", "regimes", "ref")}
         meta["base_reference"] = {"inputs": ref.inputs, "H2": ref.H2, "fuel_MJ_per_kmol_H2": ref.fuel, "slip": ref.slip, "T_wo_max": ref.T_wo_max, "T_out": ref.T_out, "Q_comb_W": ref.Q_comb_W}
         meta["decision_ranges_pareto"] = {k: [float(pareto[k].min()), float(pareto[k].max())] for k in DECISION}
-        json.dump(meta, open(OUT_DIR / "pareto_v1_meta.json", "w"), indent=2, default=float)
+        meta["tag"] = TAG; meta["decision_bounds"] = {k: [float(XL[i]), float(XU[i])] for i, k in enumerate(DECISION)}
+        json.dump(meta, open(PARETO_META, "w"), indent=2, default=float)
     return out
 
 
@@ -273,6 +274,20 @@ def run_variant_total_heat(pop: int = 200, gens: int = 300, seed: int = 0, save:
     out = {"pareto_verified": ver, "feasible": feas, "ref_total_fuel_MJ_per_kmol_H2": ref_total_fuel, "iso_production": iso, "wall_time_s": dt,
            "decision_ranges": {k: [float(feas[k].min()), float(feas[k].max())] for k in DECISION}, "n_feasible": int(len(feas))}
     if save:
-        ver.to_csv(OUT_DIR / "pareto_v1_alt_totalheat.csv", index=False)
-        json.dump({k: v for k, v in out.items() if k not in ("pareto_verified", "feasible")}, open(OUT_DIR / "pareto_v1_alt_totalheat_meta.json", "w"), indent=2, default=float)
+        ver.to_csv(PARETO_ALT_CSV, index=False)
+        json.dump({k: v for k, v in out.items() if k not in ("pareto_verified", "feasible")}, open(PARETO_ALT_META, "w"), indent=2, default=float)
     return out
+
+
+PARETO_CSV = OUT_DIR / "pareto_v1.csv"; REGIMES_CSV = OUT_DIR / "regimes_v1.csv"; PARETO_META = OUT_DIR / "pareto_v1_meta.json"
+PARETO_ALT_CSV = OUT_DIR / "pareto_v1_alt_totalheat.csv"; PARETO_ALT_META = OUT_DIR / "pareto_v1_alt_totalheat_meta.json"; TAG = "v1"
+
+
+def use_config(cfg) -> None:
+    """Point the module at a rdt.config.RunConfig: base excess air, decision bounds from the ranges file, output names."""
+    global EXCESS_AIR_BASE, XL, XU, PARETO_CSV, REGIMES_CSV, PARETO_META, PARETO_ALT_CSV, PARETO_ALT_META, TAG
+    EXCESS_AIR_BASE = float(cfg.excess_air_base)
+    r = pd.read_csv(cfg.ranges_csv).set_index("parameter")
+    XL = np.array([r.loc[k, "min"] for k in DECISION], float); XU = np.array([r.loc[k, "max"] for k in DECISION], float)
+    PARETO_CSV, REGIMES_CSV, PARETO_META = Path(cfg.pareto_csv), Path(cfg.regimes_csv), Path(cfg.pareto_meta)
+    PARETO_ALT_CSV, PARETO_ALT_META, TAG = Path(cfg.pareto_alt_csv), Path(cfg.pareto_alt_meta), cfg.tag

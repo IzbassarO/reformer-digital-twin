@@ -1,0 +1,52 @@
+{
+  "design": {
+    "wall_time_s": 214.0838619999995,
+    "finished": "2026-09-06 16:29:57",
+    "lhs_converged": 1.0,
+    "grid_converged": 1.0,
+    "sobol_converged": 1.0
+  },
+  "surrogate": {
+    "wall_time_s": 548.7472768329899,
+    "finished": "2026-09-06 16:39:06",
+    "best_T_wo_rmse_K": 0.11280002470451717
+  },
+  "scenarios": {
+    "wall_time_s": 190.63608399999794,
+    "finished": "2026-09-06 16:42:16",
+    "n_scenarios": 20
+  },
+  "pareto": {
+    "wall_time_s": 172.10109658401052,
+    "finished": "2026-09-06 16:45:08",
+    "n_feasible": 199,
+    "steam_credit_alphas": [
+      0.0,
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ]
+  },
+  "uq": {
+    "wall_time_s": 931.9361010840075,
+    "finished": "2026-09-06 17:00:40",
+    "N": 2048,
+    "convergence": {
+      "S1_base": 1.0,
+      "RQ3_knee": 1.0,
+      "RQ3_min_life_iso_H2": 1.0,
+      "S5_y4_holdslip_end": 1.0,
+      "S6_SC2.5": 1.0,
+      "S6_SC3.5": 1.0,
+      "load_0.70": 1.0,
+      "load_0.85": 1.0,
+      "load_1.00": 1.0
+    }
+  },
+  "figures": {
+    "wall_time_s": 9.661849957992672,
+    "finished": "2026-09-06 17:01:22",
+    "n_figures": 32
+  }
+}

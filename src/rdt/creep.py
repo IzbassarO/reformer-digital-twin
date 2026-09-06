@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
+import pandas as pd
 import yaml
 
 DATA_DIR = Path(__file__).resolve().parents[2] / "data" / "creep_derived"
@@ -87,6 +88,13 @@ class LarsonMillerCurve:
                   degree: Optional[int] = None) -> "LarsonMillerCurve":
         """Load constant, scale and rupture points from a data file (see data/creep_derived/*.yaml)."""
         d = yaml.safe_load(Path(path).read_text())
+        if "derived" in d:   # derived NIMS fit written by ingest_nims: coefficients only, no raw points
+            dv = d["derived"]
+            obj = cls(C=float(dv["C"]), scale=float(dv.get("scale", 1e-3)), degree=int(dv["degree"]), points=[], alloy=d.get("alloy", ""),
+                      source=d.get("source", ""), curve_kind="nims_derived")
+            obj.coeffs = np.array(dv["coefficients_high_to_low"], float); obj.lmp_range = (float(dv["lmp_range"][0]), float(dv["lmp_range"][1]))
+            obj.sigma_log10_heat = float(dv.get("sigma_log10_heat", float("nan")))
+            return obj
         lm = d["larson_miller"]
         curve = curve or lm.get("default_curve")
         cdef = lm["curves"][curve]
@@ -95,6 +103,12 @@ class LarsonMillerCurve:
                   points=pts, alloy=d.get("alloy", ""), source=d.get("source", ""), curve_kind=curve)
         obj.fit()
         return obj
+
+    @classmethod
+    def from_config(cls, config: Union[str, Path] = DATA_DIR / "creep_config.yaml") -> "LarsonMillerCurve":
+        """Load the curve named by ``active:`` in ``data/creep_derived/creep_config.yaml`` (one-line switch)."""
+        cfg = yaml.safe_load(Path(config).read_text())
+        return cls.from_yaml(Path(config).parent / cfg["active"])
 
     def lmp(self, T_K, t_r_h):
         return self.scale * np.asarray(T_K, float) * (self.C + np.log10(np.asarray(t_r_h, float)))
@@ -194,3 +208,90 @@ def life_along_tube(z: np.ndarray, T_K: np.ndarray, P_bar: np.ndarray, d_o: floa
             "t_r_min_years": float(tr[k] / 8760.0), "z_min_m": float(z[k]), "z_frac_min": float(z[k] / z[-1]),
             "T_at_min_K": float(T_K[k]), "sigma_at_min_MPa": float(sigma[k]),
             "T_mean_K": float(np.trapezoid(T_K, z) / (z[-1] - z[0])), "sigma_mean_MPa": float(np.trapezoid(sigma, z) / (z[-1] - z[0]))}
+
+
+# ---------------------------------------------------------------------------
+# NIMS ingestion: raw transcription -> derived master curve (only derived quantities are stored)
+# ---------------------------------------------------------------------------
+TEMPLATE_COLUMNS = ["heat_id", "alloy", "T_C", "sigma_MPa", "t_r_h", "elongation_pct", "RoA_pct", "source_sheet", "page", "note"]
+
+
+def _lm_fit_cv(T_K: np.ndarray, sigma: np.ndarray, t_r: np.ndarray, heats: np.ndarray, C_grid: np.ndarray,
+               degrees=(1, 2, 3, 4), n_folds: int = 5, scale: float = 1e-3, seed: int = 0) -> Dict[str, object]:
+    """Grid over the Larson-Miller constant and polynomial degree with grouped K-fold CV on log10(sigma)."""
+    from sklearn.model_selection import GroupKFold
+    y = np.log10(sigma); best = None
+    gkf = GroupKFold(n_splits=min(n_folds, len(np.unique(heats))))
+    for C in C_grid:
+        L = scale * T_K * (C + np.log10(t_r))
+        for deg in degrees:
+            err = []
+            for tr_idx, te_idx in gkf.split(L, y, heats):
+                coef = np.polyfit(L[tr_idx], y[tr_idx], deg)
+                err.append(np.mean((np.polyval(coef, L[te_idx]) - y[te_idx]) ** 2))
+            cv = float(np.mean(err))
+            if best is None or cv < best["cv_mse"]:
+                best = {"C": float(C), "degree": int(deg), "cv_mse": cv}
+    return best
+
+
+def ingest_nims(csv_path: Union[str, Path], out_dir: Union[str, Path] = DATA_DIR, C_grid: Optional[np.ndarray] = None,
+                degrees=(1, 2, 3), scale: float = 1e-3, min_points: int = 8, n_iter: int = 4) -> Dict[str, Dict[str, object]]:
+    """Fit a Larson-Miller master curve per alloy from a transcription CSV (see nims_transcription_template.csv).
+
+    C is optimised on a grid (default 15-30, step 0.25) and the polynomial degree chosen by grouped K-fold cross-
+    validation (groups = heats), alternating ``n_iter`` times with per-heat offsets in log10 t_r so that the
+    heat-to-heat scatter does not bias C (heat-normalised master curve). The scatter ``sigma_log10_heat`` is the
+    standard deviation of the heat offsets (residuals converted from log10 sigma through the local slope of the
+    master curve). Only derived quantities are written to ``<out_dir>/<alloy>_derived.yaml``; raw data are not copied.
+    """
+    df = pd.read_csv(csv_path)
+    missing = set(TEMPLATE_COLUMNS[:5]) - set(df.columns)
+    if missing:
+        raise ValueError(f"transcription CSV lacks columns {sorted(missing)}")
+    C_grid = np.arange(15.0, 30.01, 0.25) if C_grid is None else np.asarray(C_grid, float)
+    out = {}
+    for alloy, g in df.groupby("alloy"):
+        g = g.dropna(subset=["T_C", "sigma_MPa", "t_r_h"])
+        if len(g) < min_points:
+            continue
+        T = g.T_C.to_numpy(float) + 273.15; sig = g.sigma_MPa.to_numpy(float); tr = g.t_r_h.to_numpy(float); heats = g.heat_id.astype(str).to_numpy()
+        # heat-normalised master-curve fit: alternate between (C, degree, polynomial) on heat-adjusted rupture
+        # times and per-heat offsets in log10 t_r (random-effect style), so that heat scatter does not bias C
+        offsets = pd.Series(0.0, index=np.unique(heats))
+        for _ in range(n_iter):
+            tr_adj = tr / 10 ** offsets.loc[heats].to_numpy()
+            best = _lm_fit_cv(T, sig, tr_adj, heats, C_grid, degrees, scale=scale)
+            L = scale * T * (best["C"] + np.log10(tr_adj)); coef = np.polyfit(L, np.log10(sig), best["degree"])
+            # residuals in log10 t_r of the raw data: d(log10 t_r) = d(log10 sigma) / slope / (scale T)
+            L_raw = scale * T * (best["C"] + np.log10(tr)); slope = np.polyval(np.polyder(coef), L_raw)
+            res_logtr = -(np.log10(sig) - np.polyval(coef, L_raw)) / slope / (scale * T)   # slope < 0: positive offset = longer life
+            offsets = pd.Series(res_logtr).groupby(heats).mean()
+        heat_means = offsets
+        derived = {"alloy": str(alloy), "source": "derived from NIMS transcription " + str(Path(csv_path).name) + "; raw data not redistributed",
+                   "n_points": int(len(g)), "n_heats": int(len(heat_means)), "sheets": sorted(set(g.get("source_sheet", pd.Series(dtype=str)).dropna().astype(str))),
+                   "derived": {"C": best["C"], "scale": scale, "degree": best["degree"], "coefficients_high_to_low": [float(c) for c in coef],
+                               "lmp_range": [float(L.min()), float(L.max())], "cv_mse_log10_sigma": best["cv_mse"],
+                               "sigma_log10_heat": float(heat_means.std(ddof=1)) if len(heat_means) > 1 else float("nan"),
+                               "sigma_log10_total": float(np.std(res_logtr, ddof=1)),
+                               "T_range_C": [float(g.T_C.min()), float(g.T_C.max())], "sigma_range_MPa": [float(sig.min()), float(sig.max())],
+                               "t_r_range_h": [float(tr.min()), float(tr.max())]}}
+        path = Path(out_dir) / f"{str(alloy).replace(' ', '_')}_derived.yaml"
+        yaml.safe_dump(derived, open(path, "w"), sort_keys=False)
+        derived["file"] = str(path); out[str(alloy)] = derived
+    return out
+
+
+def synthetic_nims_dataset(n_heats: int = 40, n_per_heat: int = 10, sigma_heat: float = 0.3, noise: float = 0.05,
+                           seed: int = 0, alloy: str = "SYNTH_XM") -> pd.DataFrame:
+    """Synthetic transcription generated from the Yeh placeholder curve with log-normal heat scatter (for tests)."""
+    rng = np.random.default_rng(seed); curve = LarsonMillerCurve.from_yaml(); rows = []
+    for h in range(n_heats):
+        off = rng.normal(0.0, sigma_heat)
+        for _ in range(n_per_heat):
+            T_C = rng.uniform(850.0, 1050.0); logt = rng.uniform(2.0, 5.0)
+            sig = float(curve.rupture_stress(T_C + 273.15, 10 ** logt))
+            logt_obs = logt + off + rng.normal(0.0, noise)
+            rows.append({"heat_id": f"H{h:03d}", "alloy": alloy, "T_C": T_C, "sigma_MPa": sig, "t_r_h": 10 ** logt_obs, "elongation_pct": np.nan, "RoA_pct": np.nan,
+                         "source_sheet": "synthetic", "page": "", "note": "generated"})
+    return pd.DataFrame(rows, columns=TEMPLATE_COLUMNS)

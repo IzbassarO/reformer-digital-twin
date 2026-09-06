@@ -24,3 +24,6 @@ literature/
 
 # Trained surrogate models (regenerate with notebooks/08_surrogate.ipynb)
 models/*.joblib
+
+# Logs
+*.log

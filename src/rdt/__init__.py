@@ -5,4 +5,4 @@ a 1D process model, an ML surrogate with uncertainty quantification,
 and a tube creep-life module.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

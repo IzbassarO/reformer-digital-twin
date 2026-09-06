@@ -30,7 +30,7 @@ ALPHAS = (0.0, 0.25, 0.5, 0.75, 1.0)
 
 class IsoProductionProblem(Problem):
     def __init__(self, tw: sc.TwinSurrogate, ref: ox.BaseRef, alpha: float, band: float = 0.01):
-        super().__init__(n_var=5, n_obj=2, n_ieq_constr=5, xl=ox.XL, xu=ox.XU)
+        super().__init__(n_var=5, n_obj=2, n_ieq_constr=5, xl=ox.XL.copy(), xu=ox.XU.copy())
         self.inner = ox.ReformerProblemTotalHeat(tw, ref)
         self.tw, self.ref, self.alpha, self.band = tw, ref, alpha, band
 
@@ -80,6 +80,14 @@ def run_steam_credit(alphas=ALPHAS, pop: int = 120, gens: int = 150, seed: int =
             rec["SC_range_front"] = [float(feas.steam_to_carbon.min()), float(feas.steam_to_carbon.max())]
         results["per_alpha"][str(a)] = rec
     if save:
-        pd.concat(fronts).to_csv(OUT_DIR / "steam_credit_fronts_v1.csv", index=False)
-        json.dump(results, open(OUT_DIR / "steam_credit_v1.json", "w"), indent=2, default=float)
+        pd.concat(fronts).to_csv(FRONTS_CSV, index=False)
+        json.dump(results, open(RESULT_JSON, "w"), indent=2, default=float)
     return results
+
+
+FRONTS_CSV = OUT_DIR / "steam_credit_fronts_v1.csv"; RESULT_JSON = OUT_DIR / "steam_credit_v1.json"
+
+
+def use_config(cfg) -> None:
+    global FRONTS_CSV, RESULT_JSON
+    FRONTS_CSV = Path(cfg.steam_credit_fronts); RESULT_JSON = Path(cfg.steam_credit_json)

@@ -53,8 +53,8 @@ SEED = 0
 # ---------------------------------------------------------------------------
 # Data and features
 # ---------------------------------------------------------------------------
-def load_data() -> Tuple[pd.DataFrame, pd.DataFrame]:
-    tr = pd.read_csv(TRAIN_FILE); te = pd.read_csv(TEST_FILE)
+def load_data(train_file: Optional[Path] = None, test_file: Optional[Path] = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    tr = pd.read_csv(train_file or TRAIN_FILE); te = pd.read_csv(test_file or TEST_FILE)
     tr = tr[tr.converged == True].reset_index(drop=True); te = te[te.converged == True].reset_index(drop=True)  # noqa: E712
     return tr, te
 
@@ -149,10 +149,10 @@ def train_all(features: Sequence[str] = INPUTS, with_physics: bool = True, save:
     if with_physics:
         tr = add_physics_features(tr, base); te = add_physics_features(te, base)
     feats_base = list(INPUTS); feats_phys = list(INPUTS) + PHYSICS_FEATURES
-    result = {"train_file": str(TRAIN_FILE.relative_to(ROOT)), "test_file": str(TEST_FILE.relative_to(ROOT)),
+    result = {"train_file": str(Path(TRAIN_FILE).relative_to(ROOT)), "test_file": str(Path(TEST_FILE).relative_to(ROOT)), "models_dir": str(Path(MODELS_DIR).relative_to(ROOT)),
               "n_train": int(len(tr)), "n_test": int(len(te)), "features_base": feats_base, "features_physics": feats_phys,
               "gp_subset": GP_SUBSET, "seed": seed, "targets": {}}
-    MODELS_DIR.mkdir(exist_ok=True)
+    Path(MODELS_DIR).mkdir(parents=True, exist_ok=True)
     kf = KFold(cv_folds, shuffle=True, random_state=seed)
     for tgt in TARGETS:
         y_tr, y_te = tr[tgt].to_numpy(float), te[tgt].to_numpy(float)
@@ -239,3 +239,9 @@ def predict_base_case(tgt: str = "T_wo_max_K", model_key: Optional[str] = None) 
     if any(f in PHYSICS_FEATURES for f in bundle["features"]):
         x = add_physics_features(x, base)
     return float(bundle["pipeline"].predict(x[bundle["features"]].to_numpy(float))[0])
+
+
+def use_config(cfg) -> None:
+    """Point the module at a rdt.config.RunConfig (train/test files, metrics JSON, models directory)."""
+    global TRAIN_FILE, TEST_FILE, METRICS_JSON, MODELS_DIR
+    TRAIN_FILE = Path(cfg.lhs_file); TEST_FILE = Path(cfg.saltelli_file); METRICS_JSON = Path(cfg.surrogate_metrics); MODELS_DIR = Path(cfg.models_dir)

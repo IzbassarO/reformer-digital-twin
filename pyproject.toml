@@ -4,29 +4,30 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rdt"
-version = "0.1.0"
+version = "0.2.0"
 description = "Physics-informed digital twin of an industrial steam methane reformer"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
 authors = [{ name = "Izbassar Orynbassarov" }]
 dependencies = [
-    "cantera",
-    "coolprop",
-    "numpy",
-    "scipy",
-    "pandas",
-    "scikit-learn",
-    "matplotlib",
-    "plotly",
-    "salib",
-    "joblib",
-    "mapie",
-    "pymoo",
+    "cantera==3.2.0",
+    "coolprop==8.0.0",
+    "numpy==2.5.2",
+    "scipy==1.18.1",
+    "pandas==3.0.5",
+    "scikit-learn==1.9.0",
+    "matplotlib==3.11.1",
+    "plotly==7.0.0",
+    "salib==1.5.2",
+    "joblib==1.6.0",
+    "mapie==1.5.0",
+    "pymoo==0.6.2",
+    "pyyaml==6.0.3",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "jupyter", "nbconvert"]
+dev = ["pytest==9.1.1", "jupyter==1.1.1", "nbconvert==7.17.1", "pypdf==6.17.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -1,0 +1,1058 @@
+{
+  "train_file": "data/lhs_runs/lhs_plantA_v2.csv.gz",
+  "test_file": "data/lhs_runs/sobol_saltelli_v2.csv.gz",
+  "models_dir": "models/v2",
+  "n_train": 2000,
+  "n_test": 4096,
+  "features_base": [
+    "steam_to_carbon",
+    "feed_per_tube_fraction",
+    "specific_firing_factor",
+    "inlet_T",
+    "inlet_P",
+    "catalyst_activity",
+    "excess_air"
+  ],
+  "features_physics": [
+    "steam_to_carbon",
+    "feed_per_tube_fraction",
+    "specific_firing_factor",
+    "inlet_T",
+    "inlet_P",
+    "catalyst_activity",
+    "excess_air",
+    "x_eq_CH4",
+    "specific_duty_MJ_per_kmol"
+  ],
+  "gp_subset": 1000,
+  "seed": 0,
+  "targets": {
+    "T_wo_max_K": {
+      "unit": "K",
+      "models": {
+        "hgb__base": {
+          "model": "hgb",
+          "features": "base",
+          "test": {
+            "r2": 0.9831469966092828,
+            "rmse": 3.245170151593431,
+            "max_abs_error": 14.544280892999723
+          },
+          "cv5": {
+            "r2": 0.9792381827663491,
+            "rmse": 3.5674353055363777,
+            "max_abs_error": 16.143956238916417
+          },
+          "fit_time_s": 4.296052874997258,
+          "predict_time_per_1e5_s": 0.6227856670011533
+        },
+        "gp__base": {
+          "model": "gp",
+          "features": "base",
+          "test": {
+            "r2": 0.9999792519475459,
+            "rmse": 0.11386427554963065,
+            "max_abs_error": 1.839691138529588
+          },
+          "cv5": {
+            "r2": 0.9999736685310235,
+            "rmse": 0.12604398443471354,
+            "max_abs_error": 1.241999063531921
+          },
+          "fit_time_s": 6.219610166997882,
+          "predict_time_per_1e5_s": 3.789555457988172
+        },
+        "mlp__base": {
+          "model": "mlp",
+          "features": "base",
+          "test": {
+            "r2": 0.9994180980373705,
+            "rmse": 0.6030089105566057,
+            "max_abs_error": 4.778842105326476
+          },
+          "cv5": {
+            "r2": 0.9994788595756934,
+            "rmse": 0.5651982459116894,
+            "max_abs_error": 4.252206733420053
+          },
+          "fit_time_s": 0.393240750010591,
+          "predict_time_per_1e5_s": 0.07707308301178273
+        },
+        "hgb__physics": {
+          "model": "hgb",
+          "features": "physics",
+          "test": {
+            "r2": 0.986273800807048,
+            "rmse": 2.928693795891384,
+            "max_abs_error": 14.439389232517897
+          },
+          "cv5": {
+            "r2": 0.9834836546340057,
+            "rmse": 3.181855128073084,
+            "max_abs_error": 14.594555238257271
+          },
+          "fit_time_s": 4.810018916003173,
+          "predict_time_per_1e5_s": 0.6128250419860706
+        },
+        "gp__physics": {
+          "model": "gp",
+          "features": "physics",
+          "test": {
+            "r2": 0.9999796379850421,
+            "rmse": 0.11280002470451717,
+            "max_abs_error": 1.7549324958672514
+          },
+          "cv5": {
+            "r2": 0.9999705142344256,
+            "rmse": 0.13338002163111218,
+            "max_abs_error": 1.4643842495181616
+          },
+          "fit_time_s": 6.689991041988833,
+          "predict_time_per_1e5_s": 3.074496792003629
+        },
+        "mlp__physics": {
+          "model": "mlp",
+          "features": "physics",
+          "test": {
+            "r2": 0.9995400635349192,
+            "rmse": 0.5361023861209816,
+            "max_abs_error": 4.304075928649581
+          },
+          "cv5": {
+            "r2": 0.9994068711212574,
+            "rmse": 0.602973129767142,
+            "max_abs_error": 6.451328358946512
+          },
+          "fit_time_s": 0.448105667004711,
+          "predict_time_per_1e5_s": 0.08638341599726118
+        }
+      },
+      "best": "gp__physics",
+      "physics_feature_rmse_change_pct": {
+        "hgb": -9.752226876197911,
+        "gp": -0.9346661540472367,
+        "mlp": -11.095445401273786
+      }
+    },
+    "z_frac_T_wo_max": {
+      "unit": "-",
+      "models": {
+        "hgb__base": {
+          "model": "hgb",
+          "features": "base",
+          "test": {
+            "r2": 0.19956250004022325,
+            "rmse": 0.047801344534430815,
+            "max_abs_error": 0.601934019315397
+          },
+          "cv5": {
+            "r2": 0.4171080186564574,
+            "rmse": 0.04676697642005213,
+            "max_abs_error": 0.5873434251699334
+          },
+          "fit_time_s": 4.007232332995045,
+          "predict_time_per_1e5_s": 0.7338290829939069
+        },
+        "gp__base": {
+          "model": "gp",
+          "features": "base",
+          "test": {
+            "r2": 0.4487051652059768,
+            "rmse": 0.03967056270507448,
+            "max_abs_error": 0.5976960755752048
+          },
+          "cv5": {
+            "r2": 0.2952971105394949,
+            "rmse": 0.04907174624589732,
+            "max_abs_error": 0.602070099304875
+          },
+          "fit_time_s": 10.846166290997644,
+          "predict_time_per_1e5_s": 1.213391709010466
+        },
+        "mlp__base": {
+          "model": "mlp",
+          "features": "base",
+          "test": {
+            "r2": 0.6436005587931979,
+            "rmse": 0.03189663775562868,
+            "max_abs_error": 0.41433071118447207
+          },
+          "cv5": {
+            "r2": 0.27403378582211557,
+            "rmse": 0.05219194204201672,
+            "max_abs_error": 0.5692163764436172
+          },
+          "fit_time_s": 0.5218139579956187,
+          "predict_time_per_1e5_s": 0.05693595799675677
+        },
+        "hgb__physics": {
+          "model": "hgb",
+          "features": "physics",
+          "test": {
+            "r2": 0.13746008957216949,
+            "rmse": 0.04962105557763118,
+            "max_abs_error": 0.5941778118212184
+          },
+          "cv5": {
+            "r2": 0.457555382242799,
+            "rmse": 0.045115207018622046,
+            "max_abs_error": 0.5837939312935914
+          },
+          "fit_time_s": 4.654537500013248,
+          "predict_time_per_1e5_s": 0.9323823749873554
+        },
+        "gp__physics": {
+          "model": "gp",
+          "features": "physics",
+          "test": {
+            "r2": 0.44882154992398915,
+            "rmse": 0.03966637502666163,
+            "max_abs_error": 0.5792435799329643
+          },
+          "cv5": {
+            "r2": -0.10388951521358436,
+            "rmse": 0.06141738070821495,
+            "max_abs_error": 0.8284398198804446
+          },
+          "fit_time_s": 11.275050750002265,
+          "predict_time_per_1e5_s": 2.5897973750106758
+        },
+        "mlp__physics": {
+          "model": "mlp",
+          "features": "physics",
+          "test": {
+            "r2": 0.6164078982283121,
+            "rmse": 0.03309110176508102,
+            "max_abs_error": 0.520007522358408
+          },
+          "cv5": {
+            "r2": 0.3013685601038659,
+            "rmse": 0.05119992387950957,
+            "max_abs_error": 0.5632326496518285
+          },
+          "fit_time_s": 0.7124904170050286,
+          "predict_time_per_1e5_s": 0.06128612499742303
+        }
+      },
+      "best": "mlp__base",
+      "physics_feature_rmse_change_pct": {
+        "hgb": 3.806819789116278,
+        "gp": -0.010556135651473841,
+        "mlp": 3.7447959832115796
+      }
+    },
+    "T_out_K": {
+      "unit": "K",
+      "models": {
+        "hgb__base": {
+          "model": "hgb",
+          "features": "base",
+          "test": {
+            "r2": 0.9846088341241486,
+            "rmse": 3.246733225985872,
+            "max_abs_error": 17.46056668720439
+          },
+          "cv5": {
+            "r2": 0.9813339423699566,
+            "rmse": 3.544620356271613,
+            "max_abs_error": 13.089380048777912
+          },
+          "fit_time_s": 4.060427749995142,
+          "predict_time_per_1e5_s": 0.6478198750119191
+        },
+        "gp__base": {
+          "model": "gp",
+          "features": "base",
+          "test": {
+            "r2": 0.9999994503314164,
+            "rmse": 0.01940266135942045,
+            "max_abs_error": 0.3135695805813157
+          },
+          "cv5": {
+            "r2": 0.999998856381178,
+            "rmse": 0.027394474803381592,
+            "max_abs_error": 0.3199845474814538
+          },
+          "fit_time_s": 4.598594374998356,
+          "predict_time_per_1e5_s": 1.0369934579939581
+        },
+        "mlp__base": {
+          "model": "mlp",
+          "features": "base",
+          "test": {
+            "r2": 0.9994418383225442,
+            "rmse": 0.6182880513442985,
+            "max_abs_error": 6.70469959922184
+          },
+          "cv5": {
+            "r2": 0.9995035881084801,
+            "rmse": 0.5780488137755476,
+            "max_abs_error": 3.9353730102259306
+          },
+          "fit_time_s": 0.34408562499447726,
+          "predict_time_per_1e5_s": 0.06148608301009517
+        },
+        "hgb__physics": {
+          "model": "hgb",
+          "features": "physics",
+          "test": {
+            "r2": 0.9889075938849474,
+            "rmse": 2.7562824946920363,
+            "max_abs_error": 17.480058958803056
+          },
+          "cv5": {
+            "r2": 0.9856375346512557,
+            "rmse": 3.109266323471457,
+            "max_abs_error": 14.739851727741097
+          },
+          "fit_time_s": 5.065067667004769,
+          "predict_time_per_1e5_s": 0.6699493329942925
+        },
+        "gp__physics": {
+          "model": "gp",
+          "features": "physics",
+          "test": {
+            "r2": 0.9999995161388912,
+            "rmse": 0.018204183486481333,
+            "max_abs_error": 0.3049088682780621
+          },
+          "cv5": {
+            "r2": 0.9999990206627668,
+            "rmse": 0.02535061295029908,
+            "max_abs_error": 0.3207959096725972
+          },
+          "fit_time_s": 4.957350374999805,
+          "predict_time_per_1e5_s": 2.1414443340036087
+        },
+        "mlp__physics": {
+          "model": "mlp",
+          "features": "physics",
+          "test": {
+            "r2": 0.9996014863870909,
+            "rmse": 0.5224351952389312,
+            "max_abs_error": 5.635461963142234
+          },
+          "cv5": {
+            "r2": 0.9995434509417157,
+            "rmse": 0.5543539567961236,
+            "max_abs_error": 4.5254282490398055
+          },
+          "fit_time_s": 0.33462354200310074,
+          "predict_time_per_1e5_s": 0.060666833000141196
+        }
+      },
+      "best": "gp__physics",
+      "physics_feature_rmse_change_pct": {
+        "hgb": -15.105975673283423,
+        "gp": -6.176873629540658,
+        "mlp": -15.502944929464746
+      }
+    },
+    "P_out_bar": {
+      "unit": "bar",
+      "models": {
+        "hgb__base": {
+          "model": "hgb",
+          "features": "base",
+          "test": {
+            "r2": 0.9989641325216294,
+            "rmse": 0.0808813464660977,
+            "max_abs_error": 0.40673714674044703
+          },
+          "cv5": {
+            "r2": 0.998534681698377,
+            "rmse": 0.09560121044956721,
+            "max_abs_error": 0.650790498763925
+          },
+          "fit_time_s": 4.278359582996927,
+          "predict_time_per_1e5_s": 0.665323458990315
+        },
+        "gp__base": {
+          "model": "gp",
+          "features": "base",
+          "test": {
+            "r2": 0.9999999869276973,
+            "rmse": 0.00028732427589378594,
+            "max_abs_error": 0.006509847903366506
+          },
+          "cv5": {
+            "r2": 0.999999949749185,
+            "rmse": 0.0005629281895044214,
+            "max_abs_error": 0.010553531154258167
+          },
+          "fit_time_s": 5.496159458998591,
+          "predict_time_per_1e5_s": 2.015691874999902
+        },
+        "mlp__base": {
+          "model": "mlp",
+          "features": "base",
+          "test": {
+            "r2": 0.9995960043190435,
+            "rmse": 0.05051084505921545,
+            "max_abs_error": 0.45167795315662573
+          },
+          "cv5": {
+            "r2": 0.9995712283452401,
+            "rmse": 0.051714274672658045,
+            "max_abs_error": 0.34944178581467966
+          },
+          "fit_time_s": 0.3328935829922557,
+          "predict_time_per_1e5_s": 0.06399691700062249
+        },
+        "hgb__physics": {
+          "model": "hgb",
+          "features": "physics",
+          "test": {
+            "r2": 0.998927826528573,
+            "rmse": 0.0822865401159775,
+            "max_abs_error": 0.43581736492360434
+          },
+          "cv5": {
+            "r2": 0.9985815169384571,
+            "rmse": 0.09406097609495767,
+            "max_abs_error": 0.6598889074297141
+          },
+          "fit_time_s": 4.155209624994313,
+          "predict_time_per_1e5_s": 0.6403939580050064
+        },
+        "gp__physics": {
+          "model": "gp",
+          "features": "physics",
+          "test": {
+            "r2": 0.9999999857886881,
+            "rmse": 0.00029958037419190676,
+            "max_abs_error": 0.006553646445723871
+          },
+          "cv5": {
+            "r2": 0.9999999454905705,
+            "rmse": 0.0005862964453206398,
+            "max_abs_error": 0.010965050175403945
+          },
+          "fit_time_s": 5.518211082991911,
+          "predict_time_per_1e5_s": 2.824970707995817
+        },
+        "mlp__physics": {
+          "model": "mlp",
+          "features": "physics",
+          "test": {
+            "r2": 0.9996283426349539,
+            "rmse": 0.048447084318312274,
+            "max_abs_error": 0.4638172785442336
+          },
+          "cv5": {
+            "r2": 0.9996541299602227,
+            "rmse": 0.046446594433678684,
+            "max_abs_error": 0.28729649024828063
+          },
+          "fit_time_s": 0.3241122090112185,
+          "predict_time_per_1e5_s": 0.08238316599454265
+        }
+      },
+      "best": "gp__base",
+      "physics_feature_rmse_change_pct": {
+        "hgb": 1.7373519498328438,
+        "gp": 4.265597906753782,
+        "mlp": -4.0857774968598655
+      }
+    },
+    "CH4_slip_dry_pct": {
+      "unit": "%",
+      "models": {
+        "hgb__base": {
+          "model": "hgb",
+          "features": "base",
+          "test": {
+            "r2": 0.9855248882630824,
+            "rmse": 0.19558130657842193,
+            "max_abs_error": 0.9593333934642239
+          },
+          "cv5": {
+            "r2": 0.9832493310861837,
+            "rmse": 0.2119766239358476,
+            "max_abs_error": 0.8172065623787308
+          },
+          "fit_time_s": 5.7074412499932805,
+          "predict_time_per_1e5_s": 0.621347499996773
+        },
+        "gp__base": {
+          "model": "gp",
+          "features": "base",
+          "test": {
+            "r2": 0.9999993734102305,
+            "rmse": 0.0012867910468951458,
+            "max_abs_error": 0.03143495543208985
+          },
+          "cv5": {
+            "r2": 0.9999991534623163,
+            "rmse": 0.0014824758623222004,
+            "max_abs_error": 0.018612497947613882
+          },
+          "fit_time_s": 6.733244332994218,
+          "predict_time_per_1e5_s": 2.2646087920002174
+        },
+        "mlp__base": {
+          "model": "mlp",
+          "features": "base",
+          "test": {
+            "r2": 0.9997560974316416,
+            "rmse": 0.025387770718520712,
+            "max_abs_error": 0.2168521137771151
+          },
+          "cv5": {
+            "r2": 0.9995981051816988,
+            "rmse": 0.0328343253420757,
+            "max_abs_error": 0.20473253471072184
+          },
+          "fit_time_s": 0.37132916699920315,
+          "predict_time_per_1e5_s": 0.05696312499640044
+        },
+        "hgb__physics": {
+          "model": "hgb",
+          "features": "physics",
+          "test": {
+            "r2": 0.9862444011796314,
+            "rmse": 0.19065848217075548,
+            "max_abs_error": 0.8207810302453016
+          },
+          "cv5": {
+            "r2": 0.9844243026944457,
+            "rmse": 0.20440694292010378,
+            "max_abs_error": 0.8094078154353852
+          },
+          "fit_time_s": 5.7327648749924265,
+          "predict_time_per_1e5_s": 0.6456858750025276
+        },
+        "gp__physics": {
+          "model": "gp",
+          "features": "physics",
+          "test": {
+            "r2": 0.9999994108093465,
+            "rmse": 0.0012477980572813678,
+            "max_abs_error": 0.03293113803318093
+          },
+          "cv5": {
+            "r2": 0.999999217862687,
+            "rmse": 0.0014249708677223044,
+            "max_abs_error": 0.018898022788720326
+          },
+          "fit_time_s": 5.41458845899615,
+          "predict_time_per_1e5_s": 1.330442624996067
+        },
+        "mlp__physics": {
+          "model": "mlp",
+          "features": "physics",
+          "test": {
+            "r2": 0.999553229751763,
+            "rmse": 0.03436042309912024,
+            "max_abs_error": 0.2804437168460847
+          },
+          "cv5": {
+            "r2": 0.9996043751455927,
+            "rmse": 0.032577194253228386,
+            "max_abs_error": 0.21735709052689067
+          },
+          "fit_time_s": 0.342751040996518,
+          "predict_time_per_1e5_s": 0.06275275000371039
+        }
+      },
+      "best": "gp__physics",
+      "physics_feature_rmse_change_pct": {
+        "hgb": -2.517021945393616,
+        "gp": -3.030250304263682,
+        "mlp": 35.34241930920648
+      }
+    },
+    "H2_net_kmol_h": {
+      "unit": "kmol/h",
+      "models": {
+        "hgb__base": {
+          "model": "hgb",
+          "features": "base",
+          "test": {
+            "r2": 0.9954907268750137,
+            "rmse": 0.13871531684905053,
+            "max_abs_error": 0.7496464876430338
+          },
+          "cv5": {
+            "r2": 0.9939910215374415,
+            "rmse": 0.15880341447213037,
+            "max_abs_error": 0.6648196909967865
+          },
+          "fit_time_s": 5.410292957996717,
+          "predict_time_per_1e5_s": 0.6512277500005439
+        },
+        "gp__base": {
+          "model": "gp",
+          "features": "base",
+          "test": {
+            "r2": 0.9999998320742924,
+            "rmse": 0.0008465054159945925,
+            "max_abs_error": 0.018154811744940602
+          },
+          "cv5": {
+            "r2": 0.9999996854162125,
+            "rmse": 0.0011571770638694183,
+            "max_abs_error": 0.017625035830622693
+          },
+          "fit_time_s": 5.314862083003391,
+          "predict_time_per_1e5_s": 2.1722589999990305
+        },
+        "mlp__base": {
+          "model": "mlp",
+          "features": "base",
+          "test": {
+            "r2": 0.9997771868563037,
+            "rmse": 0.030834829455837594,
+            "max_abs_error": 0.18245166681965586
+          },
+          "cv5": {
+            "r2": 0.9996573950004354,
+            "rmse": 0.03791895502412316,
+            "max_abs_error": 0.22501709968413053
+          },
+          "fit_time_s": 0.36190666699258145,
+          "predict_time_per_1e5_s": 0.06110029200499412
+        },
+        "hgb__physics": {
+          "model": "hgb",
+          "features": "physics",
+          "test": {
+            "r2": 0.9955669373565886,
+            "rmse": 0.1375381193997651,
+            "max_abs_error": 0.7018837368366668
+          },
+          "cv5": {
+            "r2": 0.9946072670438462,
+            "rmse": 0.15044022344985208,
+            "max_abs_error": 0.7097323938716809
+          },
+          "fit_time_s": 5.951623917004326,
+          "predict_time_per_1e5_s": 0.7067382499953965
+        },
+        "gp__physics": {
+          "model": "gp",
+          "features": "physics",
+          "test": {
+            "r2": 0.9999998293040946,
+            "rmse": 0.0008534590725885113,
+            "max_abs_error": 0.018097266122515165
+          },
+          "cv5": {
+            "r2": 0.9999996991279974,
+            "rmse": 0.0011316771237901142,
+            "max_abs_error": 0.017702354354032224
+          },
+          "fit_time_s": 5.157839042003616,
+          "predict_time_per_1e5_s": 2.0590764160006074
+        },
+        "mlp__physics": {
+          "model": "mlp",
+          "features": "physics",
+          "test": {
+            "r2": 0.9995257188159645,
+            "rmse": 0.04498721365171368,
+            "max_abs_error": 0.33749126780138994
+          },
+          "cv5": {
+            "r2": 0.999598995648657,
+            "rmse": 0.04102362701849503,
+            "max_abs_error": 0.34103517397210936
+          },
+          "fit_time_s": 0.35160020799958147,
+          "predict_time_per_1e5_s": 0.0749260000011418
+        }
+      },
+      "best": "gp__base",
+      "physics_feature_rmse_change_pct": {
+        "hgb": -0.8486427281613418,
+        "gp": 0.8214544718238681,
+        "mlp": 45.897397344601764
+      }
+    },
+    "duty_W": {
+      "unit": "W",
+      "models": {
+        "hgb__base": {
+          "model": "hgb",
+          "features": "base",
+          "test": {
+            "r2": 0.9974242823557524,
+            "rmse": 770430.5659295907,
+            "max_abs_error": 2997085.934243977
+          },
+          "cv5": {
+            "r2": 0.9968497055569174,
+            "rmse": 845939.1896271522,
+            "max_abs_error": 3850282.7401105165
+          },
+          "fit_time_s": 4.2787149579962716,
+          "predict_time_per_1e5_s": 0.6137211249879329
+        },
+        "gp__base": {
+          "model": "gp",
+          "features": "base",
+          "test": {
+            "r2": 0.9999999339361234,
+            "rmse": 3901.8125849527505,
+            "max_abs_error": 72720.17280367017
+          },
+          "cv5": {
+            "r2": 0.9999999255911319,
+            "rmse": 4141.517606553626,
+            "max_abs_error": 47707.814161375165
+          },
+          "fit_time_s": 4.56671866599936,
+          "predict_time_per_1e5_s": 1.1424731250008335
+        },
+        "mlp__base": {
+          "model": "mlp",
+          "features": "base",
+          "test": {
+            "r2": 0.9996418088862197,
+            "rmse": 287304.07229061075,
+            "max_abs_error": 1964273.8925148249
+          },
+          "cv5": {
+            "r2": 0.9995592124913629,
+            "rmse": 316430.4075905481,
+            "max_abs_error": 1939990.0012292862
+          },
+          "fit_time_s": 0.31159462498908397,
+          "predict_time_per_1e5_s": 0.05173879099311307
+        },
+        "hgb__physics": {
+          "model": "hgb",
+          "features": "physics",
+          "test": {
+            "r2": 0.9973867781417276,
+            "rmse": 776019.2940287151,
+            "max_abs_error": 2985560.4661509395
+          },
+          "cv5": {
+            "r2": 0.9968111390739951,
+            "rmse": 851101.5096023602,
+            "max_abs_error": 3667042.1618976593
+          },
+          "fit_time_s": 3.7961710000090534,
+          "predict_time_per_1e5_s": 0.6269361669983482
+        },
+        "gp__physics": {
+          "model": "gp",
+          "features": "physics",
+          "test": {
+            "r2": 0.9999999295807741,
+            "rmse": 4028.3760151190713,
+            "max_abs_error": 81839.19663593173
+          },
+          "cv5": {
+            "r2": 0.9999999366889328,
+            "rmse": 3820.207738998798,
+            "max_abs_error": 46525.89823500812
+          },
+          "fit_time_s": 4.901358500006609,
+          "predict_time_per_1e5_s": 2.4556667500000913
+        },
+        "mlp__physics": {
+          "model": "mlp",
+          "features": "physics",
+          "test": {
+            "r2": 0.9995053193149098,
+            "rmse": 337634.52938003844,
+            "max_abs_error": 2327669.9614173174
+          },
+          "cv5": {
+            "r2": 0.9995529013740961,
+            "rmse": 318687.653783408,
+            "max_abs_error": 2096644.5759184659
+          },
+          "fit_time_s": 0.28457462500955444,
+          "predict_time_per_1e5_s": 0.06878570799017325
+        }
+      },
+      "best": "gp__base",
+      "physics_feature_rmse_change_pct": {
+        "hgb": 0.7254032155877832,
+        "gp": 3.243708594677508,
+        "mlp": 17.518184371058254
+      }
+    },
+    "log10_t_r_hot": {
+      "unit": "-",
+      "models": {
+        "hgb__base": {
+          "model": "hgb",
+          "features": "base",
+          "test": {
+            "r2": 0.9789883933441293,
+            "rmse": 0.10704027287692404,
+            "max_abs_error": 0.4916914883284509
+          },
+          "cv5": {
+            "r2": 0.973996612168638,
+            "rmse": 0.11691912286642642,
+            "max_abs_error": 0.4638819998149355
+          },
+          "fit_time_s": 3.7961448329879204,
+          "predict_time_per_1e5_s": 0.5842528329958441
+        },
+        "gp__base": {
+          "model": "gp",
+          "features": "base",
+          "test": {
+            "r2": 0.9999411501969151,
+            "rmse": 0.005664871768844875,
+            "max_abs_error": 0.1256499289945694
+          },
+          "cv5": {
+            "r2": 0.9999309527627981,
+            "rmse": 0.0059732446965395656,
+            "max_abs_error": 0.08505543223951229
+          },
+          "fit_time_s": 7.701620040999842,
+          "predict_time_per_1e5_s": 1.0306921250012238
+        },
+        "mlp__base": {
+          "model": "mlp",
+          "features": "base",
+          "test": {
+            "r2": 0.9995941827483308,
+            "rmse": 0.014875885578177319,
+            "max_abs_error": 0.11662161216433464
+          },
+          "cv5": {
+            "r2": 0.999431713118793,
+            "rmse": 0.01728440353716348,
+            "max_abs_error": 0.19982543831099164
+          },
+          "fit_time_s": 0.44153112499043345,
+          "predict_time_per_1e5_s": 0.051548917006584816
+        },
+        "hgb__physics": {
+          "model": "hgb",
+          "features": "physics",
+          "test": {
+            "r2": 0.9845863384493672,
+            "rmse": 0.09167913052572572,
+            "max_abs_error": 0.4494981740284665
+          },
+          "cv5": {
+            "r2": 0.9789904863631868,
+            "rmse": 0.10509415951302611,
+            "max_abs_error": 0.4869286759223179
+          },
+          "fit_time_s": 4.132438084008754,
+          "predict_time_per_1e5_s": 0.6131908749957802
+        },
+        "gp__physics": {
+          "model": "gp",
+          "features": "physics",
+          "test": {
+            "r2": 0.9999356858994536,
+            "rmse": 0.00592203100285325,
+            "max_abs_error": 0.13290750051728573
+          },
+          "cv5": {
+            "r2": 0.9999282451880447,
+            "rmse": 0.00608923406949515,
+            "max_abs_error": 0.08552984301842947
+          },
+          "fit_time_s": 6.50745583299431,
+          "predict_time_per_1e5_s": 1.4351360419968842
+        },
+        "mlp__physics": {
+          "model": "mlp",
+          "features": "physics",
+          "test": {
+            "r2": 0.999487044797475,
+            "rmse": 0.01672465993607481,
+            "max_abs_error": 0.14488257664266158
+          },
+          "cv5": {
+            "r2": 0.9992806827865172,
+            "rmse": 0.019446023601684435,
+            "max_abs_error": 0.18009640100035185
+          },
+          "fit_time_s": 0.4271940420003375,
+          "predict_time_per_1e5_s": 0.08422479200817179
+        }
+      },
+      "best": "gp__base",
+      "physics_feature_rmse_change_pct": {
+        "hgb": -14.350806419244378,
+        "gp": 4.539542014396081,
+        "mlp": 12.427995282577431
+      }
+    }
+  },
+  "conformal": {
+    "T_wo_max_K": {
+      "model": "gp__physics",
+      "method": "MAPIE CrossConformalRegressor CV+ (5 folds)",
+      "fit_time_s": 27.761341416000505,
+      "levels": {
+        "0.9": {
+          "picp": 0.95703125,
+          "mpiw": 0.249668596875198
+        },
+        "0.95": {
+          "picp": 0.979248046875,
+          "mpiw": 0.426496774026912
+        }
+      }
+    },
+    "z_frac_T_wo_max": {
+      "model": "mlp__base",
+      "method": "MAPIE CrossConformalRegressor CV+ (5 folds)",
+      "fit_time_s": 2.507219624996651,
+      "levels": {
+        "0.9": {
+          "picp": 0.971435546875,
+          "mpiw": 0.049910563427515764
+        },
+        "0.95": {
+          "picp": 0.9775390625,
+          "mpiw": 0.06429914037754984
+        }
+      }
+    },
+    "T_out_K": {
+      "model": "gp__physics",
+      "method": "MAPIE CrossConformalRegressor CV+ (5 folds)",
+      "fit_time_s": 19.21198804200685,
+      "levels": {
+        "0.9": {
+          "picp": 0.9404296875,
+          "mpiw": 0.06135899071689199
+        },
+        "0.95": {
+          "picp": 0.973876953125,
+          "mpiw": 0.09414947131705664
+        }
+      }
+    },
+    "P_out_bar": {
+      "model": "gp__base",
+      "method": "MAPIE CrossConformalRegressor CV+ (5 folds)",
+      "fit_time_s": 20.372182082996005,
+      "levels": {
+        "0.9": {
+          "picp": 0.96142578125,
+          "mpiw": 0.0009976591469044128
+        },
+        "0.95": {
+          "picp": 0.98291015625,
+          "mpiw": 0.001542054425277931
+        }
+      }
+    },
+    "CH4_slip_dry_pct": {
+      "model": "gp__physics",
+      "method": "MAPIE CrossConformalRegressor CV+ (5 folds)",
+      "fit_time_s": 22.34461591699801,
+      "levels": {
+        "0.9": {
+          "picp": 0.95263671875,
+          "mpiw": 0.00398106977311578
+        },
+        "0.95": {
+          "picp": 0.978271484375,
+          "mpiw": 0.005817880831150624
+        }
+      }
+    },
+    "H2_net_kmol_h": {
+      "model": "gp__base",
+      "method": "MAPIE CrossConformalRegressor CV+ (5 folds)",
+      "fit_time_s": 20.96091150000575,
+      "levels": {
+        "0.9": {
+          "picp": 0.946044921875,
+          "mpiw": 0.002859425407877761
+        },
+        "0.95": {
+          "picp": 0.97998046875,
+          "mpiw": 0.004385584673254759
+        }
+      }
+    },
+    "duty_W": {
+      "model": "gp__base",
+      "method": "MAPIE CrossConformalRegressor CV+ (5 folds)",
+      "fit_time_s": 19.426903333995142,
+      "levels": {
+        "0.9": {
+          "picp": 0.94873046875,
+          "mpiw": 12059.674509041419
+        },
+        "0.95": {
+          "picp": 0.974609375,
+          "mpiw": 17600.090493734973
+        }
+      }
+    },
+    "log10_t_r_hot": {
+      "model": "gp__base",
+      "method": "MAPIE CrossConformalRegressor CV+ (5 folds)",
+      "fit_time_s": 27.382583416998386,
+      "levels": {
+        "0.9": {
+          "picp": 0.95947265625,
+          "mpiw": 0.011149175626508396
+        },
+        "0.95": {
+          "picp": 0.978759765625,
+          "mpiw": 0.01707297648119887
+        }
+      }
+    }
+  },
+  "gp_native_intervals": {
+    "T_wo_max_K": {
+      "features": "physics",
+      "levels": {
+        "0.9": {
+          "picp": 0.943115234375,
+          "mpiw": 0.22949479898321967
+        },
+        "0.95": {
+          "picp": 0.953857421875,
+          "mpiw": 0.27345991964039906
+        }
+      }
+    },
+    "CH4_slip_dry_pct": {
+      "features": "physics",
+      "levels": {
+        "0.9": {
+          "picp": 0.985595703125,
+          "mpiw": 0.005001162556615004
+        },
+        "0.95": {
+          "picp": 0.99072265625,
+          "mpiw": 0.005959252745159224
+        }
+      }
+    },
+    "log10_t_r_hot": {
+      "features": "base",
+      "levels": {
+        "0.9": {
+          "picp": 0.951171875,
+          "mpiw": 0.012426086115542969
+        },
+        "0.95": {
+          "picp": 0.961181640625,
+          "mpiw": 0.014806594858167285
+        }
+      }
+    }
+  },
+  "speed": {
+    "physics_model_s_per_run": 0.14319995799451135,
+    "best_T_wo_surrogate_s_per_run": 3.0744967920036285e-05,
+    "speedup_factor": 4657.671407137456,
+    "physics_base_case_T_wo_max_K": 1146.712500081438,
+    "surrogate_base_case_T_wo_max_K": 1146.7180568479985
+  },
+  "tag": "v2"
+}

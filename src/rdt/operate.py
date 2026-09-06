@@ -48,8 +48,8 @@ TARGET_T_OUT_K = 1105.55   # Plant A measured outlet process-gas temperature (th
 # ---------------------------------------------------------------------------
 # Ranges and base case
 # ---------------------------------------------------------------------------
-def load_ranges(path: Path = RANGES_CSV) -> pd.DataFrame:
-    df = pd.read_csv(path).set_index("parameter")
+def load_ranges(path: Optional[Path] = None) -> pd.DataFrame:
+    df = pd.read_csv(path or RANGES_CSV).set_index("parameter")
     missing = set(INPUT_NAMES) - set(df.index)
     if missing:
         raise ValueError(f"parameter_ranges.csv lacks {sorted(missing)}")
@@ -241,10 +241,10 @@ def git_hash() -> str:
         return "unknown"
 
 
-def run_lhs_campaign(n: int = 2000, seed: int = 0, n_jobs: int = -1, name: str = "lhs_plantA_v1") -> Dict[str, object]:
+def run_lhs_campaign(n: int = 2000, seed: int = 0, n_jobs: int = -1, name: str = "lhs_plantA_v1", ranges_csv: Optional[Path] = None) -> Dict[str, object]:
     """LHS open-loop campaign -> data/lhs_runs/<name>.csv.gz (+ metadata JSON, failed-runs CSV)."""
     LHS_DIR.mkdir(parents=True, exist_ok=True)
-    ranges = load_ranges(); base = base_case(); b = base_run(base)
+    ranges = load_ranges(ranges_csv); base = base_case(); b = base_run(base)
     X = lhs_samples(n, seed, ranges)
     t0 = time.perf_counter()
     df = run_batch(X, b["life_consumption_rate_per_h"], n_jobs)
@@ -256,7 +256,7 @@ def run_lhs_campaign(n: int = 2000, seed: int = 0, n_jobs: int = -1, name: str =
     meta = {"name": name, "n_samples": int(n), "seed": seed, "sampler": "scipy.stats.qmc.LatinHypercube", "git_commit": git_hash(),
             "created": time.strftime("%Y-%m-%d %H:%M:%S"), "wall_time_s": dt, "n_jobs": n_jobs, "n_converged": int(len(ok)),
             "n_failed": int(len(bad)), "convergence_rate": float(len(ok) / n),
-            "ranges": {k: {"min": float(ranges.loc[k, "min"]), "max": float(ranges.loc[k, "max"]), "unit": str(ranges.loc[k, "unit"])} for k in INPUT_NAMES},
+            "ranges_file": str(ranges_csv or RANGES_CSV), "ranges": {k: {"min": float(ranges.loc[k, "min"]), "max": float(ranges.loc[k, "max"]), "unit": str(ranges.loc[k, "unit"])} for k in INPUT_NAMES},
             "base_case": {**base.inputs(), "Q_comb_W": base.Q_comb_W, "life_consumption_rate_per_h": b["life_consumption_rate_per_h"],
                           "T_wo_max_K": b["T_wo_max_K"], "T_out_K": b["T_out_K"]},
             "life_curve": "Yeh 2021 Manaurite XM minimum curve, PLACEHOLDER", "outputs": [c for c in ok.columns if c not in INPUT_NAMES]}
@@ -265,9 +265,9 @@ def run_lhs_campaign(n: int = 2000, seed: int = 0, n_jobs: int = -1, name: str =
 
 
 def run_closed_loop_grid(n_sc: int = 15, n_load: int = 15, n_jobs: int = -1, name: str = "grid_sc_load_v1",
-                         T_target: float = TARGET_T_OUT_K) -> pd.DataFrame:
+                         T_target: float = TARGET_T_OUT_K, ranges_csv: Optional[Path] = None) -> pd.DataFrame:
     """15 x 15 closed-loop grid over steam-to-carbon x load, other inputs at base."""
-    ranges = load_ranges(); base = base_case(); b = base_run(base)
+    ranges = load_ranges(ranges_csv); base = base_case(); b = base_run(base)
     sc = np.linspace(ranges.loc["steam_to_carbon", "min"], ranges.loc["steam_to_carbon", "max"], n_sc)
     ld = np.linspace(ranges.loc["feed_per_tube_fraction", "min"], ranges.loc["feed_per_tube_fraction", "max"], n_load)
     recs = []
@@ -280,3 +280,9 @@ def run_closed_loop_grid(n_sc: int = 15, n_load: int = 15, n_jobs: int = -1, nam
     LHS_DIR.mkdir(parents=True, exist_ok=True)
     df.to_csv(LHS_DIR / f"{name}.csv.gz", index=False, compression="gzip")
     return df
+
+
+def use_config(cfg) -> None:
+    """Point the module at a rdt.config.RunConfig (ranges file)."""
+    global RANGES_CSV
+    RANGES_CSV = Path(cfg.ranges_csv)
