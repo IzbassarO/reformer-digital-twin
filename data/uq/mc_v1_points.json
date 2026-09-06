@@ -1,0 +1,74 @@
+{
+  "S1_base": {
+    "steam_to_carbon": 2.892248062015504,
+    "feed_per_tube_fraction": 1.0,
+    "specific_firing_factor": 0.966220927309312,
+    "inlet_T": 884.55,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.2,
+    "excess_air": 20.0
+  },
+  "RQ3_knee": {
+    "steam_to_carbon": 4.0,
+    "feed_per_tube_fraction": 1.0885395103164828,
+    "specific_firing_factor": 0.850335041024092,
+    "inlet_T": 898.8971824320884,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.2,
+    "excess_air": 5.375803167230923
+  },
+  "RQ3_min_life_iso_H2": {
+    "steam_to_carbon": 3.9998,
+    "feed_per_tube_fraction": 0.948726109638957,
+    "specific_firing_factor": 0.8500175725164976,
+    "inlet_T": 899.9534152453501,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.2,
+    "excess_air": 8.306917347843234
+  },
+  "S5_y4_holdslip_end": {
+    "steam_to_carbon": 2.892248062015504,
+    "feed_per_tube_fraction": 1.0,
+    "specific_firing_factor": 0.9828354721399136,
+    "inlet_T": 884.55,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.1000057077625571,
+    "excess_air": 20.0
+  },
+  "S6_SC2.5": {
+    "steam_to_carbon": 2.5,
+    "feed_per_tube_fraction": 1.0,
+    "specific_firing_factor": 0.8870994422946636,
+    "inlet_T": 884.55,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.2,
+    "excess_air": 20.0
+  },
+  "S6_SC3.5": {
+    "steam_to_carbon": 3.5,
+    "feed_per_tube_fraction": 1.0,
+    "specific_firing_factor": 1.0773227103960377,
+    "inlet_T": 884.55,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.2,
+    "excess_air": 20.0
+  },
+  "load_0.70": {
+    "steam_to_carbon": 2.892248062015504,
+    "feed_per_tube_fraction": 0.7,
+    "specific_firing_factor": 0.8698717139041492,
+    "inlet_T": 884.55,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.2,
+    "excess_air": 20.0
+  },
+  "load_0.85": {
+    "steam_to_carbon": 2.892248062015504,
+    "feed_per_tube_fraction": 0.85,
+    "specific_firing_factor": 0.9141798480429771,
+    "inlet_T": 884.55,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.2,
+    "excess_air": 20.0
+  }
+}

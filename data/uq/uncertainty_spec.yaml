@@ -1,0 +1,133 @@
+sampling:
+  design: scipy.stats.qmc.Sobol, scrambled, seed 0
+  N: 4096
+  note: N = 4096 (power of 2) instead of 4000 for Sobol balance
+control: operating points are evaluated at their nominal (solved) firing; control loops are not re-solved per sample
+groups:
+  kinetics:
+    E1:
+      dist: normal
+      mean: 240.1
+      sigma: 2.2448979591836764
+      unit: kJ/mol
+      source: Xu & Froment 1989 Table 5 95 % CI
+    logk1:
+      dist: normal
+      mean: -3.73471037413917
+      sigma: 0.024721942093891898
+      unit: log10 of k_i at 648 K
+      source: Table 5 95 % CI, normal on log k
+    E2:
+      dist: normal
+      mean: 67.13
+      sigma: 2.517857142857144
+      unit: kJ/mol
+      source: Xu & Froment 1989 Table 5 95 % CI
+    logk2:
+      dist: normal
+      mean: 0.8784068875809957
+      sigma: 0.018883078555711037
+      unit: log10 of k_i at 648 K
+      source: Table 5 95 % CI, normal on log k
+    E3:
+      dist: normal
+      mean: 243.9
+      sigma: 5.688775510204085
+      unit: kJ/mol
+      source: Xu & Froment 1989 Table 5 95 % CI
+    logk3:
+      dist: normal
+      mean: -4.658961368322477
+      sigma: 0.04197789430151137
+      unit: log10 of k_i at 648 K
+      source: Table 5 95 % CI, normal on log k
+    logK_CO:
+      dist: normal
+      mean: 1.6118294794983736
+      sigma: 0.020313495441030414
+      unit: log10 of K_CO at T_ref
+      source: Table 5 95 % CI, normal on log K
+    logK_H2:
+      dist: normal
+      mean: -1.5287082889410615
+      sigma: 0.2438457136184765
+      unit: log10 of K_H2 at T_ref
+      source: Table 5 95 % CI, normal on log K
+    logK_CH4:
+      dist: normal
+      mean: -0.7469044141509684
+      sigma: 0.05294675708908193
+      unit: log10 of K_CH4 at T_ref
+      source: Table 5 95 % CI, normal on log K
+    logK_H2O:
+      dist: normal
+      mean: -0.38174265515959854
+      sigma: 0.047685545264777314
+      unit: log10 of K_H2O at T_ref
+      source: Table 5 95 % CI, normal on log K (symmetric K_H2O bound)
+    log_eta_mult:
+      dist: uniform
+      low: -0.3010299956639812
+      high: 0.3010299956639812
+      unit: log10 multiplier on eta (0.1 / 0.05 top)
+      source: log-uniform [0.5, 2], assumption
+    d_activity:
+      dist: uniform
+      low: -0.03
+      high: 0.03
+      unit: additive on activity 0.20
+      source: assumption, +/-0.03 around the calibrated value
+  heat_transfer:
+    F_gt,L_q,f_htg:
+      dist: multivariate_normal
+      names:
+      - F_gt
+      - L_q
+      - f_htg
+      mean:
+      - 0.32343568209185497
+      - 0.45596009221697514
+      - 1.834547050621761
+      cov:
+      - - 5.2113655810903386e-05
+        - 3.961939842592064e-05
+        - -1.2412627281254957e-05
+      - - 3.961939842592089e-05
+        - 0.0001157656445530415
+        - -0.0009148921082763178
+      - - -1.2412627281257626e-05
+        - -0.0009148921082763201
+        - 0.011113757729231922
+      source: calibration_alpha_top_fixed Jacobian covariance (se x corr)
+    structural_variant:
+      L_q_eff: L_q * load**0.5
+      note: flame length shrinks with load; ASSUMPTION used only for the robustness check
+  creep:
+    log10_tr_scatter:
+      dist: normal
+      mean: 0.0
+      sigma: 0.3
+      unit: log10 multiplier on t_r
+      source: heat-to-heat scatter, factor ~2, placeholder until NIMS heats
+    C_LM:
+      dist: uniform
+      low: 21.96
+      high: 23.96
+      source: Larson-Miller constant 22.96 +/- 1.0; master-curve points refitted with each C
+    wall_thickness_m:
+      dist: uniform
+      low: 0.012
+      high: 0.018
+      source: wall thickness not given by Latham; 12-18 mm
+    lambda_tube_factor:
+      dist: uniform
+      low: 0.85
+      high: 1.15
+      source: tube conductivity +/-15 % around 29.6 W/(m K)
+  measurement:
+    dT_wo_meas_K:
+      dist: uniform
+      low: -10.0
+      high: 10.0
+      unit: K, additive offset on T_wo,max before creep evaluation
+      source: pyrometer / background-correction uncertainty

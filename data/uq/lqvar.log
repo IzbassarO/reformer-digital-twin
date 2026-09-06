@@ -1,0 +1,7 @@
+RQ3_knee T_wo 1124.4 [1100.3, 1155.9] life/kmol rel 0.195 [0.121, 0.355]
+RQ3_min_life_iso_H2 T_wo 1124.2 [1101.5, 1154.1] life/kmol rel 0.233 [0.159, 0.386]
+load_0.70 T_wo 1148.6 [1131.4, 1169.0] life/kmol rel 1.712 [1.306, 2.176]
+load_0.85 T_wo 1146.4 [1128.2, 1168.6] life/kmol rel 1.202 [1.058, 1.353]
+nominal-Lq load_0.70 T_wo 1139.1 life/kmol rel 0.941
+nominal-Lq load_0.85 T_wo 1142.6 life/kmol rel 0.942
+nominal-Lq RQ3_knee T_wo 1127.1 life/kmol rel 0.234

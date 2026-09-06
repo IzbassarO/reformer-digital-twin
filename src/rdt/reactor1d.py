@@ -138,6 +138,7 @@ class CatalystBed:
     activity: float = 1.0
     lambda_s: float = 1.0      # solid (pellet) thermal conductivity [W/(m K)], used by Kunii-Smith only
     emissivity: float = 0.8    # pellet surface emissivity [-], used by Kunii-Smith only
+    kinetic_params: Optional[object] = None   # rdt.kinetics.XuFromentParams override (uncertainty propagation)
 
     def eta_at(self, z: float) -> np.ndarray:
         e = self.eta(z) if callable(self.eta) else self.eta
@@ -539,7 +540,7 @@ def _local(z: float, T: float, P: float, F: np.ndarray, tube: TubeGeometry, bed:
     v_s = G_s / props["rho"]                                             # m/s
 
     p = {s: P * X[s] for s in REACTING}                                  # bar
-    r = np.array(kin.rates(T, p, activity=bed.activity))                 # kmol/(kg_cat h)
+    r = np.array(kin.rates(T, p, activity=bed.activity, params=bed.kinetic_params))   # kmol/(kg_cat h)
     eta = bed.eta_at(z)
     r_eff = eta * r
 

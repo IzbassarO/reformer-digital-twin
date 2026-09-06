@@ -45,6 +45,7 @@ class LathamParams:
     heat_transfer: str = "leva_grummer"
     n_sections: int = 15
     inlet_mode: str = "plug_flow"   # or "well_mixed_top"
+    kinetic_params: Optional[object] = None   # XuFromentParams override (uncertainty propagation)
 
     @property
     def tube_id_m(self) -> float:
@@ -67,7 +68,8 @@ def build_case(row: pd.Series, p: LathamParams = BASELINE):
         e = p.eta_top if z < z_top else p.eta
         return (e, e, e)
 
-    bed = r1.CatalystBed(rho_bed=p.rho_bed, voidage=p.voidage, d_p=p.d_p_m, eta=eta, activity=p.activity)
+    bed = r1.CatalystBed(rho_bed=p.rho_bed, voidage=p.voidage, d_p=p.d_p_m, eta=eta, activity=p.activity,
+                         kinetic_params=p.kinetic_params)
     n = float(row.feed_per_tube_kmol_h)
     F = {"CH4": n * row.feed_x_C1_molpct / 100, "C2H6": n * row.feed_x_C2_molpct / 100,
          "C3H8": n * row.feed_x_C3_molpct / 100, "C4H10": n * row.feed_x_C4_molpct / 100,
