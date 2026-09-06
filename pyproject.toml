@@ -22,6 +22,7 @@ dependencies = [
     "salib",
     "joblib",
     "mapie",
+    "pymoo",
 ]
 
 [project.optional-dependencies]
