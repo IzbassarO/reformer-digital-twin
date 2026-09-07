@@ -1,0 +1,65 @@
+Validation of the Schmidt + Clemens Centralloy master curves
+active alloy for the pipeline: centralloy_g_4852
+
+CHECK 1  100 000 h rupture strength from the fitted lower-scatter-band curves
+-----------------------------------------------------------------------------
+
+Centralloy G 4852  (C = 18.6, WST_G_4852_161109.pdf)
+    T [C]      LMP    sigma(1e5 h) [MPa]   within digitised LMP range
+       850    26.506            31.53                      yes
+       875    27.096            26.81                      yes
+       900    27.686            22.76                      yes
+       925    28.276            19.15                      yes
+       950    28.866            15.83                      yes
+       975    29.456            12.77                      yes
+    quoted 100 000 h strength 18.3 MPa is matched at 931.2 C (+31.2 C vs the 900 C design temperature)
+    at 900 C the same curve gives 22.76 MPa for 100 000 h
+
+Centralloy G 4852 Micro  (C = 22.9, WST_4852_Micro_161109.pdf)
+    T [C]      LMP    sigma(1e5 h) [MPa]   within digitised LMP range
+       850    31.336            37.20        NO (extrapolated)
+       875    32.033            31.44                      yes
+       900    32.731            26.35                      yes
+       925    33.428            21.88                      yes
+       950    34.126            17.98                      yes
+       975    34.823            14.60                      yes
+    quoted 100 000 h strength 21.2 MPa is matched at 929.1 C (+29.1 C vs the 900 C design temperature)
+    at 900 C the same curve gives 26.35 MPa for 100 000 h
+
+Centralloy ET 45 Micro  (C = 19.3, WST_ET_45_micro_161109.pdf)
+    T [C]      LMP    sigma(1e5 h) [MPa]   within digitised LMP range
+       850    27.293            32.00                      yes
+       875    27.900            26.76                      yes
+       900    28.508            22.42                      yes
+       925    29.115            18.76                      yes
+       950    29.723            15.62                      yes
+       975    30.330            12.91                      yes
+    (no quoted 100 000 h strength for this alloy; nothing to match)
+
+  Both quoted values are matched within 2.1 C of each other, i.e. they are a consistent pair read at one temperature, not two independent numbers.
+
+CHECK 2  ingestion regression: synthetic recovery of C and scatter
+------------------------------------------------------------------
+  generated 100 heats x 8 points from the minimum curve of the placeholder (C = 22.96, heat scatter 0.3 decades)
+  recovered C               = 23.000   (target 22.96, error 0.17 %)   PASS
+  recovered heat scatter    = 0.2808 decades   (target 0.3, error 6.40 %)   PASS
+  fitted degree 3, grouped-CV MSE 4.56e-05 in log10 sigma
+
+CHECK 3  base operating point (1147 K, 12.9 MPa) inside the digitised range
+---------------------------------------------------------------------------
+  hoop stress 12.9 MPa at a hot-spot tube-metal temperature of 1147.0 K (873.9 C)
+
+  Centralloy G 4852          C = 18.60   LMP =  29.430   digitised 25.330-32.394   INSIDE (margin +2.963)
+                             t_r = 1.144e+07 h = 1306 years   scatter band 0.313 decades
+  Centralloy G 4852 Micro    C = 22.90   LMP =  35.221   digitised 31.341-39.290   INSIDE (margin +3.880)
+                             t_r = 6.413e+07 h = 7321 years   scatter band 0.444 decades
+  Centralloy ET 45 Micro     C = 19.30   LMP =  30.333   digitised 26.072-34.593   INSIDE (margin +4.260)
+                             t_r = 1.399e+07 h = 1597 years   scatter band 0.452 decades
+  Manaurite XM (Manoir Industries), HP-Nb micro-alloyed 25Cr-35Ni-Nb-Ti centrifugally cast reformer tube C = 22.96   LMP =  35.377   digitised 30.500-40.500   INSIDE (margin +4.877)
+                             t_r = 7.643e+07 h = 8725 years   scatter band 0.301 decades
+
+SUMMARY
+-------
+  1  100 000 h strengths matched near the design temperature : PASS
+  2  ingestion recovers C and scatter within 10 %            : PASS
+  3  base case inside every digitised LMP range              : PASS
