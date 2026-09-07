@@ -1,4 +1,11 @@
-"""Generate paper/tables/*.tex (booktabs) and paper/numbers.tex from the v2 results (read-only on data/)."""
+"""Generate the booktabs tables and number macros of the *archived* sectioned draft from the v2 results.
+
+The manuscript under ``paper/`` is now the consolidated Overleaf pair, which carries its numbers
+inline rather than through ``\\input{numbers}``. This generator therefore writes into
+``paper/archive/draft_step21/`` -- it still reproduces the draft it was written for, and it can no
+longer drop stale ``tables/`` and ``numbers.tex`` files next to the current source of truth. Nothing
+under ``data/`` is modified.
+"""
 
 from __future__ import annotations
 
@@ -12,8 +19,9 @@ import yaml
 
 from rdt import config as C
 
-TAB = C.ROOT / "paper" / "tables"
-NUMBERS = C.ROOT / "paper" / "numbers.tex"
+DRAFT = C.ROOT / "paper" / "archive" / "draft_step21"
+TAB = DRAFT / "tables"
+NUMBERS = DRAFT / "numbers.tex"
 cfg = C.V2
 LV = C.DATA / "literature_validation"
 

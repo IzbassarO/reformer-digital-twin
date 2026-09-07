@@ -53,3 +53,20 @@ H2O                33.62
 Dry-basis H2 fraction : 73.13 %
 CH4 conversion        : 80.34 %
 ```
+
+## Manuscript
+
+The journal manuscript (International Journal of Hydrogen Energy, `elsarticle` with `final,3p,times`) lives in
+`paper/`: `main.tex` and `supplementary.tex`, both self-contained -- the numbers are inline, the bibliography is
+embedded (`thebibliography`, no `.bib`), and the Elsevier highlights are a `highlights` block inside `main.tex`.
+Figures are read from `paper/figures/`. Build with
+
+```bash
+make paper        # latexmk -pdf for main and supplementary
+```
+
+The earlier sectioned draft (`main.tex` + `sections/*.tex` + generated `tables/*.tex` and `numbers.tex`, 11 tables
+in the main text, 41 open `\todo{}` markers) is preserved unchanged in `paper/archive/draft_step21/` and can still
+be rebuilt with `make paper-draft`, which regenerates its tables and macros from the v2 result files through
+`rdt.paper_tables`. A section-by-section comparison of the two is in
+`paper/notes/reconcile_overleaf_vs_repo.md`.

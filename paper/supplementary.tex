@@ -1,109 +1,201 @@
-% Supplementary material -- own numbering (Figures S1-S5, Tables S1-S2). Build: latexmk -pdf supplementary.tex
-\documentclass[preprint,12pt]{elsarticle}
-\usepackage{amsmath}
+% =====================================================================
+% Supplementary material -- Reformer digital twin
+% Overleaf: add this as a second document in the same project (supplementary.tex)
+% and compile it separately. Figures go in the same figures/ folder.
+% =====================================================================
+\documentclass[final,3p,times]{elsarticle}
+
+\usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
-\usepackage{siunitx}
 \usepackage{xcolor}
 \usepackage[hidelinks]{hyperref}
+
 \graphicspath{{figures/}}
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
-\newcommand{\rdtversion}{v2}
-\renewcommand{\thefigure}{S\arabic{figure}}
-\renewcommand{\thetable}{S\arabic{table}}
+\newcommand{\ce}[1]{\mathrm{#1}}
+
 \renewcommand{\thesection}{S\arabic{section}}
-\input{numbers}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+
 \journal{International Journal of Hydrogen Energy}
 
 \begin{document}
+
 \begin{frontmatter}
-\title{Supplementary material to: A physics-informed digital twin for tube-life-aware operation of industrial steam methane reformers under uncertainty}
+\title{Supplementary material for: A physics-informed digital twin for tube-life-aware operation of industrial steam methane reformers under uncertainty}
 \author[su]{Izbassar Orynbassar\corref{cor1}}
-\author[sua]{\todo{Second author name}}
+\ead{iorynbas@syr.edu}
+\author[au]{Madina Sissenbay}
 \cortext[cor1]{Corresponding author.}
-\address[su]{School of Information Studies, Syracuse University, Syracuse, NY, USA}
-\address[sua]{Safi Utebayev Atyrau University of Oil and Gas, Atyrau, Kazakhstan}
+\affiliation[su]{organization={School of Information Studies, Syracuse University},
+  city={Syracuse}, state={NY}, country={USA}}
+\affiliation[au]{organization={Institute of Petrochemical Engineering and Ecology named after N.K. Nadirov,
+  Safi Utebayev Atyrau University of Oil and Gas},
+  city={Atyrau}, country={Kazakhstan}}
 \end{frontmatter}
 
-\section{Digitised verification data}
+% =====================================================================
+\section{Digitisation of the verification curves}
+\label{sec:digitisation}
 
-The verification targets of Section 3.1 are the axial profiles of Fig.~3 of Xu and Froment (1989, Part II). The figure was
-digitised curve by curve \todo{name the tool (e.g. WebPlotDigitizer), the image resolution and the axis-calibration procedure} and
-stored as one tidy CSV per curve in \texttt{data/literature\_validation/digitized/} with the columns \texttt{z\_m}, value and a
-\texttt{source} annotation. Curves: methane conversion, CO$_2$ conversion, process-gas temperature, inner-wall temperature,
-outer-wall temperature and total pressure, over the heated length of \SI{11.12}{m}; the remaining length to \SI{12}{m} is treated as
-adiabatic. The outer-wall curve is interpolated by a shape-preserving cubic (PCHIP) and used as the boundary condition; the
-digitising uncertainty is estimated at \todo{quote the estimated reading uncertainty in K and in conversion} from repeat readings of
-the axis ticks. The feed and geometry are those of Table~2 of the source, with a bed voidage of 0.526 and an equivalent ring diameter
-of \SI{9.44}{mm} fitted to the pressure curve \todo{confirm that fitting the particle diameter to the pressure drop is acceptable}.
+Figure~3 of Xu and Froment~\cite{xu1989b} reports six axial profiles for one industrial reformer tube on three vertical axes: methane and CO$_2$ conversion on the left axis, total pressure in bar and the process-gas, inner-wall and outer-wall temperatures in kelvin on two right axes. The figure was digitised with WebPlotDigitizer (version 5) from a 600~dpi scan of the printed page. Three independent axis calibrations were defined on the same image, one per vertical axis, each anchored on two gridline labels of the horizontal axis (0 and 10~m) and two labels of the corresponding vertical axis (0 and 0.8 for conversion, 24 and 29~bar for pressure, 800 and 1150~K for temperature). Points were placed manually along each curve at intervals of roughly 0.05~m of the tube length, with additional points concentrated at the discontinuity at the end of the heated length ($z = 11.12$~m), giving 118--261 points per curve.
 
-\section{Additional figures}
+The left axis of the original figure is labelled $x/(1+\zeta)$, where $\zeta = 0.056$ is the CO$_2$/CH$_4$ molar ratio of the feed; the digitised ordinates of the two conversion curves are therefore multiplied by $1+\zeta$ to obtain conversions referred to the equivalent methane feed. The residual uncertainty of the digitisation, estimated from the spread of repeated point placements on the gridlines, is about 2~K in temperature, 0.03~bar in pressure and 0.005 in conversion, which is small compared with the model residuals reported in the main text. The digitised curves, the axis calibrations and a tidy merged file with provenance metadata are in \texttt{data/literature\_validation/digitized/} of the repository.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.6\textwidth]{fig00_equilibrium_conversion}
-\caption{Equilibrium methane conversion at \SI{25}{bar} and steam-to-carbon 3 from Cantera (GRI-Mech 3.0), used as a sanity check of
-the thermodynamic basis. Source: \texttt{notebooks/00\_sanity\_check.ipynb}.}
-\end{figure}
+Two features of the digitised data are recorded but not corrected. The digitised process-gas temperature begins at 764~K whereas Table~2 of the same paper states an inlet temperature of 793~K, so all temperature comparisons in the main text exclude $z < 0.3$~m. Both conversion curves begin at about 0.057 rather than at zero; this value lies between the inlet conversion implied by the higher-alkane rule used here (0.018) and the value obtained if all C$_2$--C$_5$ carbon is converted to CO at the inlet (0.091), and the conversion increment $x(z) - x(0.5~\mathrm{m})$ is therefore used as the primary comparison metric.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{fig01_kinetics}
-\caption{Xu--Froment kinetics as implemented: (a) rate coefficients $k_1$--$k_3$ against reciprocal temperature with the Table~4
-values of the source for $k_1$, and (b) rates $r_1$--$r_3$ at \SI{25}{bar} for a feed of CH$_4$:H$_2$O:H$_2$ = 1:3:0.1. Source:
-\texttt{data/kinetics/xu\_froment\_1989.yaml}.}
-\end{figure}
+% =====================================================================
+\section{Operating space and campaign design}
+\label{sec:ranges}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{fig02_reactor_profiles}
-\caption{Stand-alone tube model with a linear outer-wall profile from 1000 to \SI{1150}{K} on the Xu--Froment geometry: (a)
-conversion and CO$_2$ yield, (b) wall and gas temperatures, (c) pressure.}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{fig04_latham_baseline}
-\caption{Coupled model with the literature (uncalibrated) parameters on all four Latham plant cases, including Plant C1 which is
-excluded from calibration. Source: \texttt{latham2008\_plant\_cases.csv}, \texttt{latham\_fit.yaml} (baseline).}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.6\textwidth]{fig10_scenarios_timeseries}
-\caption{One week (days 140--147) of the renewable-following scenario S3: load, firing factor solved by the outlet-temperature
-controller, hot-spot temperature and hourly damage rate. Source: \texttt{data/scenarios/hourly\_v2\_S3\_renewable.csv.gz}.}
-\end{figure}
-
-\section{Operating space}
-
-\begin{table}[htbp]
-\centering
-\caption{Operating inputs and their ranges (v2 operating space); base = calibrated Plant A. Source:
-\texttt{data/design/parameter\_ranges\_v2.csv}.}
+\begin{table}[h]
+\centering\footnotesize
+\caption{Operating space sampled in the design, sensitivity, surrogate and optimisation campaigns. The base column is the calibrated Plant~A state. Ranges are motivated by industrial practice and by the operating points of the sources used for verification and calibration.}
 \label{tab:ranges}
-\small
-\begin{tabular}{llrrrp{5.5cm}}
+\begin{tabular}{llccc p{5.6cm}}
 \toprule
-Input & Unit & Min & Max & Base & Justification (abridged) \\
+Variable & Unit & Min & Max & Base & Basis \\
 \midrule
-steam-to-carbon & -- & 2.5 & 4.0 & 2.89 & carbon-formation limit below $\approx$2.5; 4.0 upper for hydrogen plants \\
-load (feed per tube) & -- & 0.60 & 1.10 & 1.00 & turndown 50--60\,\%; 110\,\% short-term overload \\
-specific firing factor & -- & 0.85 & 1.15 & 1.00 & burner control range \\
-inlet temperature & K & 800 & 900 & 884.6 & Plant A 611 \si{\celsius}; cracking in preheat coils above $\approx$920 K \\
-inlet pressure & bar & 25 & 33 & 30.06 & industrial 20--40 bar \\
-catalyst activity & -- & 0.10 & 0.30 & 0.20 & Latham fitted 0.20 for a mid-campaign catalyst \\
-excess air & \% & 5 & 25 & 21.6 & upper bound raised from 20 to 25\,\% so that the calibrated Plant A value lies inside the space \\
+steam-to-carbon ratio & -- & 2.5 & 4.0 & 2.89 & carbon-formation limit on Ni catalyst below about 2.5; upper value typical of hydrogen plants; 2.7--3.0 in the reference plant~\cite{latham2011}, 3.36 in~\cite{xu1989b} \\
+feed per tube & fraction of base & 0.60 & 1.10 & 1.00 & industrial turndown of about 50--60\,\%; 110\,\% short-term overload \\
+specific firing $Q_{\mathrm{comb}}$/feed & fraction of base & 0.85 & 1.15 & 1.00 & burner control range around the plant value \\
+inlet temperature & K & 800 & 900 & 884.5 & 884.5~K in the reference plant, 793~K in~\cite{xu1989b}; cracking in the preheat coil above about 920~K \\
+inlet pressure & bar & 25 & 33 & 30.1 & industrial range 20--40~bar; 28--30~bar in the reference plant, 29~bar in~\cite{xu1989b} \\
+catalyst activity & -- & 0.10 & 0.30 & 0.20 & 0.20 fitted to the reference plant for a mid-campaign catalyst~\cite{latham2011}; fresh higher, end-of-campaign lower \\
+excess air & \% & 5 & 25 & 21.6 & industrial reformer furnaces 5--20\,\%; upper value extended so that the calibrated base lies inside the sampled space \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\section{Version note}
+The campaigns evaluated on this space are: an open-loop Latin-hypercube design of 2000 points (surrogate training); a Saltelli design of 4096 points for the Sobol indices and as an independent surrogate test set; a closed-loop $15 \times 15$ grid in steam-to-carbon ratio and load at constant outlet temperature (Fig.~5 of the main text); twenty scenario-years of 8760 hourly states; an NSGA-II run of 200 individuals over 300 generations; and a scrambled Sobol Monte Carlo design of 2048 samples propagated through the physics model at eight operating points, with 1024 further samples per uncertainty group for the variance decomposition. All designs use seed~0. The complete pipeline runs in 35~minutes on a ten-core laptop.
 
-All results in the main text are from pipeline version \rdtversion, which differs from the exploratory version v1 in the excess-air
-range (5--25\,\% instead of 5--20\,\%), in the use of the calibrated excess air as the base of the scenarios and the optimisation
-(instead of 20\,\%) and in the Monte Carlo sample size (\nMC{} instead of 4000). A line-by-line comparison of the two versions is
-provided in \texttt{data/design/v1\_vs\_v2\_diff.md}; the largest effect of the change is a base hot spot about 3 K cooler and hence
-a longer base life, which shifts every relative life metric by the same denominator.
+% =====================================================================
+\section{Surrogate performance}
+\label{sec:surrogate}
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Best surrogate per target ($N_{\mathrm{train}} = 2000$ Latin-hypercube points, $N_{\mathrm{test}} = 4096$ Saltelli points): model family and feature set, test $R^2$ and RMSE, five-fold cross-validated RMSE, and empirical coverage (PICP) and mean width (MPIW) of the nominal 90\,\% CV+ conformal interval. ``physics'' denotes the feature set augmented with the equilibrium methane conversion and the specific duty.}
+\label{tab:surrogate}
+\begin{tabular}{llccccc}
+\toprule
+Target & Unit & Model & $R^2$ & RMSE & CV RMSE & PICP$_{90}$ / MPIW$_{90}$ \\
+\midrule
+$T_{\mathrm{wo,max}}$ & K & GP, physics & 1.000 & 0.113 & 0.133 & 0.957 / 0.25 \\
+$z/L$ at $T_{\mathrm{wo,max}}$ & -- & MLP, base & 0.644 & 0.0319 & 0.0522 & 0.971 / 0.050 \\
+$T_{\mathrm{out}}$ & K & GP, physics & 1.000 & 0.0182 & 0.0254 & 0.940 / 0.061 \\
+$p_{\mathrm{out}}$ & bar & GP, base & 1.000 & $2.87\times10^{-4}$ & $5.63\times10^{-4}$ & 0.961 / $1.0\times10^{-3}$ \\
+CH$_4$ slip (dry) & \% & GP, physics & 1.000 & $1.25\times10^{-3}$ & $1.42\times10^{-3}$ & 0.953 / $4.0\times10^{-3}$ \\
+H$_2$ per tube & kmol\,h$^{-1}$ & GP, base & 1.000 & $8.47\times10^{-4}$ & $1.16\times10^{-3}$ & 0.946 / $2.9\times10^{-3}$ \\
+absorbed duty & W & GP, base & 1.000 & $3.9\times10^{3}$ & $4.14\times10^{3}$ & 0.949 / $1.2\times10^{4}$ \\
+$\log_{10} t_r$ at hot spot & -- & GP, base & 0.9999 & $5.66\times10^{-3}$ & $5.97\times10^{-3}$ & 0.959 / 0.011 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The Gaussian process dominates the other families by one to two orders of magnitude in RMSE on every continuous target, which is expected because the physics model is smooth and deterministic and the surrogate is effectively interpolating it; histogram gradient boosting is the weakest, with an RMSE of about 3~K on the hot-spot temperature. The location of the hot spot is the only target that is not learnable: it is bimodal, sitting near $z/L = 0.43$ for most inputs and moving to the outlet plateau for others, and all three families give $R^2$ below 0.65. It is reported for completeness and is not used in the life calculation, which requires only the maximum. Prediction takes 38~$\mu$s per point against 0.25~s for the physics model.
+
+% =====================================================================
+\section{Steam-credit sweep}
+\label{sec:steamcredit}
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Steam-credit sweep of the iso-production (H$_2$ = base $\pm 1$\,\%) life--fuel front. $\alpha = 1$ counts firebox fuel only; $\alpha = 0$ charges steam raising and feed preheat in full. All rows are physics-verified.}
+\label{tab:steam}
+\begin{tabular}{llcccccccc}
+\toprule
+$\alpha$ & Regime & S/C & Load & Firing & Excess air (\%) & Rel. life cost & Total fuel vs base (\%) & $T_{\mathrm{wo,max}}$ (K) \\
+\midrule
+0.00 & min life & 3.99 & 0.96 & 0.909 & 24.6 & 0.059 & $+3.2$ & 1103 \\
+0.00 & knee     & 3.29 & 0.97 & 0.850 & 5.1  & 0.828 & $-6.6$ & 1144 \\
+0.00 & min fuel & 2.66 & 1.00 & 0.888 & 5.0  & 4.539 & $-8.6$ & 1171 \\
+0.25 & min life & 4.00 & 0.96 & 0.943 & 24.9 & 0.057 & $+2.3$ & 1103 \\
+0.25 & knee     & 3.80 & 0.94 & 0.850 & 5.0  & 0.365 & $-7.1$ & 1131 \\
+0.25 & min fuel & 2.92 & 0.99 & 0.865 & 5.0  & 2.016 & $-8.9$ & 1158 \\
+0.50 & min life & 4.00 & 0.96 & 1.039 & 25.0 & 0.057 & $+5.5$ & 1103 \\
+0.50 & knee     & 4.00 & 0.95 & 0.850 & 13.8 & 0.103 & $-7.6$ & 1112 \\
+0.50 & min fuel & 3.63 & 0.95 & 0.850 & 5.0  & 0.480 & $-10.5$ & 1135 \\
+0.75 & min life & 4.00 & 0.96 & 0.911 & 25.0 & 0.057 & $-6.6$ & 1103 \\
+0.75 & knee     & 4.00 & 0.96 & 0.850 & 13.5 & 0.105 & $-12.2$ & 1112 \\
+0.75 & min fuel & 4.00 & 0.93 & 0.850 & 5.0  & 0.276 & $-14.6$ & 1127 \\
+1.00 & min life & 4.00 & 0.96 & 0.958 & 25.0 & 0.057 & $-7.3$ & 1103 \\
+1.00 & knee     & 4.00 & 0.96 & 0.850 & 15.3 & 0.087 & $-17.7$ & 1109 \\
+1.00 & min fuel & 4.00 & 0.93 & 0.850 & 5.0  & 0.276 & $-20.4$ & 1127 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =====================================================================
+\section{Variance decomposition}
+\label{sec:variance}
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Variance decomposition at the S1 base point: one-group-at-a-time share of the joint variance ($N = 1024$ per group) and group total-effect Sobol index computed on a Gaussian-process surrogate of the joint sample ($N = 2048$).}
+\label{tab:variance}
+\begin{tabular}{lcccc}
+\toprule
+Group & share, $\log_{10} t_r$ & $S_T$, $\log_{10} t_r$ & share, $T_{\mathrm{wo,max}}$ & $S_T$, $T_{\mathrm{wo,max}}$ \\
+\midrule
+kinetics       & 0.233 & 0.225 & 0.513 & 0.620 \\
+heat transfer  & 0.050 & 0.114 & 0.111 & 0.302 \\
+creep          & 0.622 & 0.655 & 0.211 & 0.093 \\
+measurement    & 0.094 & 0.036 & 0.202 & 0.092 \\
+\midrule
+sum & 0.999 & & 1.037 & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The one-group-at-a-time shares sum to unity within 0.04, so the four groups act almost additively and the interaction between them is negligible at the base point. The share of the creep group in the hot-spot temperature (0.211) is not a feedback of the creep model on the thermal solution, which does not exist, but the effect of the wall thickness, which belongs to the creep group because it also enters the hoop stress and which changes the conduction drop across the tube wall.
+
+% =====================================================================
+\section{Supplementary figures}
+\label{sec:figures}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.75\textwidth]{fig00_equilibrium_conversion}
+\caption{Equilibrium methane conversion of a CH$_4$/H$_2$O mixture at 25~bar and a steam-to-carbon ratio of 3, computed with Cantera and the GRI-Mech~3.0 thermodynamic data. This is the thermodynamic ceiling against which the reactor model is checked; at 850~$^\circ$C the equilibrium conversion is 0.80 and the dry hydrogen fraction 73\,\%.}
+\label{fig:equilibrium}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{fig01_kinetics}
+\caption{Xu--Froment kinetics as implemented: (a) Arrhenius plot of the rate coefficients $k_1$, $k_2$ and $k_3$ against $1000/T$, with the per-temperature estimates of Table~4 of~\cite{xu1989a} overlaid, and (b) the three reaction rates against temperature at 25~bar for a CH$_4$:H$_2$O:H$_2$ feed of 1:3:0.1.}
+\label{fig:kinetics}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{fig02_reactor_profiles}
+\caption{Stand-alone tube model with a prescribed linear outer-wall profile: (a) methane conversion and CO$_2$ yield, (b) process-gas, inner-wall and outer-wall temperatures and (c) pressure along the tube for the feed of Table~2 of~\cite{xu1989b}. This run precedes the verification of the main text and uses no fitted parameters.}
+\label{fig:profiles}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{fig04_latham_baseline}
+\caption{Coupled furnace--tube model before calibration, with the parameter values of Table~6 of~\cite{latham2011} transferred directly: axial temperature profiles for the plant cases and the measured wall temperatures. Three of the four cases are reproduced within the measurement uncertainty without any fitting.}
+\label{fig:baseline}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{fig10_scenarios_timeseries}
+\caption{One representative week of the renewable-following scenario S3: load, firing factor, hot-spot temperature and hourly damage rate. The damage rate follows the hot spot through the Larson--Miller relation and is therefore strongly non-linear in the load.}
+\label{fig:timeseries}
+\end{figure}
+
+% =====================================================================
+\begin{thebibliography}{9}
+\bibitem{xu1989a} J. Xu, G.~F. Froment, Methane steam reforming, methanation and water-gas shift: I. Intrinsic kinetics, AIChE J. 35 (1989) 88--96.
+\bibitem{xu1989b} J. Xu, G.~F. Froment, Methane steam reforming: II. Diffusional limitations and reactor simulation, AIChE J. 35 (1989) 97--103.
+\bibitem{latham2011} D.~A. Latham, K.~B. McAuley, B.~A. Peppley, T.~M. Raybold, Mathematical modeling of an industrial steam-methane reformer for on-line deployment, Fuel Process. Technol. 92 (2011) 1574--1586.
+\end{thebibliography}
 
 \end{document}
