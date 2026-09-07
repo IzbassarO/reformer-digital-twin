@@ -1,0 +1,166 @@
+# Manufacturer stress-rupture sources for the reformer-tube alloy master curves.
+#
+# Three Schmidt + Clemens "Centralloy" material data sheets. Every field below was READ OFF THE SHEET
+# (page 6, "Parametric stress rupture strength") -- in particular the Larson-Miller constant, which is
+# NOT the same for the three alloys: G 4852 uses C = 18.6, G 4852 Micro C = 22.9, ET 45 Micro C = 19.3.
+#
+# REDISTRIBUTION: the PDFs are (c) Schmidt + Clemens GmbH + Co. KG, "Data Sheet for information only".
+# They are NOT redistributed in this repository. data/creep_derived/datasheets/ is git-ignored; only the
+# digitised curves (data/creep_derived/*_rupture_curve.csv) and this metadata file are version-controlled.
+# To reproduce, place the three PDFs named below in data/creep_derived/datasheets/ and run
+#   python -m rdt.creep_ingest_datasheet --all
+#
+# COORDINATES: PDF user-space points (1/72 in) as reported by pdfplumber, origin at the TOP-LEFT of the
+# page (x to the right, `top` downwards), page size 680.315 x 926.929 pt. The chart is rotated 90 deg on
+# the printed page, so on the page the *stress* axis runs horizontally (log10, decreasing to the right)
+# and the *LMP* axis runs vertically (linear, increasing upwards, i.e. decreasing `top`).
+
+schema_version: 1
+generated_by: rdt.creep_ingest_datasheet
+datasheet_dir: data/creep_derived/datasheets
+
+publisher:
+  name: Schmidt + Clemens GmbH + Co. KG
+  country: Germany
+  url: https://www.schmidt-clemens.com/
+  retrieved_from: >-
+    Internet Archive Wayback Machine capture of the (now withdrawn) public download area
+    www.schmidt-clemens.de/fileadmin/public/pdfs/werkstoffdatenblaetter/ , snapshot 2016-04/05.
+  retrieved_on: 2026-09-07
+  redistribution: >-
+    NOT redistributed. Copyright Schmidt + Clemens GmbH + Co. KG. The PDFs are marked
+    "Data Sheet for information only". Only derived, digitised curves are stored in this repository.
+
+# Common to all three sheets (verified individually on each PDF).
+common:
+  chart_title: Parametric stress rupture strength
+  chart_page: 6
+  curves_digitised: [average, minimum]
+  curve_legend:
+    average: "Average"
+    minimum: "Lower Scatter Band"
+  lower_scatter_band_definition: >-
+    "Lower Scatter Band represents 95% confidence level" (printed on the chart, page 6 of every sheet).
+    Digitised here as the `minimum` curve.
+  lmp_definition: LMP = T (C + log10 t_r) / 1000, with T in K and t_r in h (printed on the chart).
+  lmp_scale: 0.001
+  publication_date: September 2009
+  revision: Rev. 02
+  pdf_creation_date: 2009-11-09
+  pdf_modification_date: 2011-11-16
+  page_width_pt: 680.315
+  page_height_pt: 926.929
+  y_axis_label: initial stress, MPa
+  x_axis_label: Larson Miller Parameter (LMP)
+
+sources:
+
+  - key: G4852
+    alloy: Centralloy G 4852
+    alloy_full: Centralloy(R) G 4852
+    designation: GX40NiCrSiNb35-25
+    aci_type: HP-Nb
+    aci_type_note: >-
+      35Ni-25Cr niobium-stabilised HP-modified cast alloy; the ACI HP-Nb equivalent. This is the alloy
+      adopted as the base case in rdt.config (RunConfig.creep_alloy).
+    datasheet_file: WST_G_4852_161109.pdf
+    datasheet_sha256: null            # filled in by rdt.creep_ingest_datasheet --all
+    publication_date: September 2009
+    revision: Rev. 02
+    chart_title: Parametric stress rupture strength
+    page: 6
+    larson_miller_C: 18.6
+    larson_miller_C_source: >-
+      Printed on page 6 of the sheet: "LMP = T (18.6 + log tr)/1000". NOTE: this is NOT 22.9 -- only the
+      micro-alloyed G 4852 Micro sheet prints 22.9. Read off the sheet, not assumed.
+    axis:
+      # Two calibration ticks per axis, taken from the printed gridlines (not from label glyph centres).
+      stress_MPa:
+        transform: log10
+        ticks:
+          - {value: 100.0, x_pt: 181.7}
+          - {value: 1.0,   x_pt: 555.6}
+        range: [1.0, 100.0]
+      lmp:
+        transform: linear
+        ticks:
+          - {value: 25.0, top_pt: 762.4}
+          - {value: 32.0, top_pt: 244.1}
+        range: [25.0, 32.0]
+    plot_frame_pt: {x0: 181.7, x1: 555.6, top: 206.3, bottom: 764.9}
+    curve_stroke_cmyk:
+      average: [1.0, 0.51, 0.0, 0.0]
+      minimum: [0.4, 0.0, 0.0, 0.0]
+
+  - key: G4852Micro
+    alloy: Centralloy G 4852 Micro
+    alloy_full: Centralloy(R) G 4852 Micro
+    designation: GX45NiCrSiNbTi35-25
+    aci_type: HP-Nb micro-alloyed
+    aci_type_note: >-
+      35Ni-25Cr HP-modified alloy micro-alloyed with Nb + Ti. No separate ACI grade; an HP micro-alloy.
+    datasheet_file: WST_4852_Micro_161109.pdf
+    datasheet_sha256: null
+    publication_date: September 2009
+    revision: Rev. 02
+    chart_title: Parametric stress rupture strength
+    page: 6
+    larson_miller_C: 22.9
+    larson_miller_C_source: >-
+      Printed on page 6 of the sheet: "LMP = T (22.9 + log tr)/1000". This is the only one of the three
+      sheets that prints 22.9.
+    axis:
+      stress_MPa:
+        transform: log10
+        ticks:
+          - {value: 100.0, x_pt: 181.7}
+          - {value: 1.0,   x_pt: 555.6}
+        range: [1.0, 100.0]
+      lmp:
+        transform: linear
+        ticks:
+          - {value: 31.0, top_pt: 762.4}
+          - {value: 40.0, top_pt: 206.3}
+        range: [31.0, 40.0]
+    plot_frame_pt: {x0: 181.7, x1: 555.6, top: 206.3, bottom: 764.8}
+    curve_stroke_cmyk:
+      average: [1.0, 0.51, 0.0, 0.0]
+      minimum: [0.4, 0.0, 0.0, 0.0]
+
+  - key: ET45Micro
+    alloy: Centralloy ET 45 Micro
+    alloy_full: Centralloy(R) ET 45 Micro
+    designation: GX45NiCrSiNb45-35
+    aci_type: null
+    aci_type_note: >-
+      CORRECTION TO THE ORIGINAL TASK BRIEF: ET 45 Micro is NOT an HK40-type alloy. The sheet gives the
+      designation GX45NiCrSiNb45-35, i.e. a 45Ni-35Cr niobium micro-alloyed grade ("Alloy 45"), which is
+      a considerably more highly alloyed material than ACI HK40 (GX40CrNi25-20, 25Cr-20Ni). There is no
+      ACI grade for it. It is retained here as the high-alloy end member of the three-alloy comparison;
+      it is NOT a proxy for HK40. If an HK40 curve is needed, use NIMS Creep Data Sheet 16B instead.
+    datasheet_file: WST_ET_45_micro_161109.pdf
+    datasheet_sha256: null
+    publication_date: September 2009
+    revision: Rev. 02
+    chart_title: Parametric stress rupture strength
+    page: 6
+    larson_miller_C: 19.3
+    larson_miller_C_source: >-
+      Printed on page 6 of the sheet: "LMP = T (19.3 + log tr)/1000".
+    axis:
+      stress_MPa:
+        transform: log10
+        ticks:
+          - {value: 100.0, x_pt: 181.3}
+          - {value: 1.0,   x_pt: 555.2}
+        range: [1.0, 100.0]
+      lmp:
+        transform: linear
+        ticks:
+          - {value: 26.0, top_pt: 763.6}
+          - {value: 35.0, top_pt: 207.5}
+        range: [26.0, 35.0]
+    plot_frame_pt: {x0: 181.3, x1: 555.2, top: 207.5, bottom: 766.9}
+    curve_stroke_cmyk:
+      average: [1.0, 0.51, 0.0, 0.0]
+      minimum: [0.4, 0.0, 0.0, 0.0]

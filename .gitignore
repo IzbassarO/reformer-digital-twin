@@ -27,3 +27,20 @@ models/*.joblib
 
 # Logs
 *.log
+
+models/**
+!models/README.md
+
+# LaTeX build artefacts (paper/)
+paper/*.aux
+paper/*.out
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.blg
+paper/*.spl
+paper/*.toc
+
+# Manufacturer material data sheets (Schmidt+Clemens Centralloy). Downloaded locally for
+# curve digitisation only; the PDFs are copyright S+C and are NOT redistributed here.
+data/creep_derived/datasheets/
+data/creep_derived/datasheets/*.pdf
