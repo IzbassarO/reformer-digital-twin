@@ -131,6 +131,14 @@ $\log_{10} t_r$ at hot spot & -- & GP, base & 0.9999 & $5.66\times10^{-3}$ & $5.
 \end{tabular}
 \end{table}
 
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{fig09_surrogate_parity}
+\caption{Parity of the selected surrogates against the physics model on the independent Saltelli test set for (a) the hot-spot temperature, (b) dry methane slip and (c) $\log_{10} t_r$ at the hot spot, with nominal 90\,\% CV+ conformal intervals.}
+\label{fig:surrogate}
+\end{figure}
+
+
 The Gaussian process dominates the other families by one to two orders of magnitude in RMSE on every continuous target, which is expected because the physics model is smooth and deterministic and the surrogate is effectively interpolating it; histogram gradient boosting is the weakest, with an RMSE of about 3~K on the hot-spot temperature. The location of the hot spot is the only target that is not learnable: it is bimodal, sitting near $z/L = 0.43$ for most inputs and moving to the outlet plateau for others, and all three families give $R^2$ below 0.65. It is reported for completeness and is not used in the life calculation, which requires only the maximum. Prediction takes 38~$\mu$s per point against 0.25~s for the physics model.
 
 % =====================================================================
@@ -240,6 +248,14 @@ sum & 0.997 & & 1.037 & \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{fig15_variance_shares}
+\caption{One-group-at-a-time shares of the variance of $\log_{10} t_r$ and of the hot-spot temperature at the S1 base point; numerical values in Table~\ref{tab:variance}.}
+\label{fig:shares}
+\end{figure}
+
 
 The one-group-at-a-time shares sum to unity within 0.04, so the four groups act almost additively and the interaction between them is negligible at the base point. The share of the creep group in the hot-spot temperature (0.211) is not a feedback of the creep model on the thermal solution, which does not exist, but the effect of the wall thickness, which belongs to the creep group because it also enters the hoop stress and which changes the conduction drop across the tube wall.
 
