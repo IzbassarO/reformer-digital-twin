@@ -216,23 +216,24 @@ def lhs_samples(n: int, seed: int = 0, ranges: Optional[pd.DataFrame] = None) ->
     return pd.DataFrame(X, columns=INPUT_NAMES)
 
 
-def _worker(x: Dict[str, float], base_rate: float) -> Dict[str, float]:
-    return run_case(x, base_case(), creep.active_curve(), base_rate)
+def _worker(x: Dict[str, float], base_rate: float, alloy: str) -> Dict[str, float]:
+    return run_case(x, base_case(), creep.curve_for(alloy), base_rate)
 
 
 def run_batch(X: pd.DataFrame, base_rate: float, n_jobs: int = -1, closed_loop: bool = False,
               T_target: float = TARGET_T_OUT_K) -> pd.DataFrame:
     from joblib import Parallel, delayed
     recs = X.to_dict(orient="records")
+    alloy = creep.alloy_key()   # resolved in the parent; a reused worker pool has a stale environment
     if closed_loop:
-        rows = Parallel(n_jobs=n_jobs)(delayed(_worker_closed)(x, base_rate, T_target) for x in recs)
+        rows = Parallel(n_jobs=n_jobs)(delayed(_worker_closed)(x, base_rate, T_target, alloy) for x in recs)
     else:
-        rows = Parallel(n_jobs=n_jobs)(delayed(_worker)(x, base_rate) for x in recs)
+        rows = Parallel(n_jobs=n_jobs)(delayed(_worker)(x, base_rate, alloy) for x in recs)
     return pd.DataFrame(rows)
 
 
-def _worker_closed(x, base_rate, T_target):
-    return solve_firing_for_outlet_T(x, T_target, base_case(), creep.active_curve(), base_rate)
+def _worker_closed(x, base_rate, T_target, alloy):
+    return solve_firing_for_outlet_T(x, T_target, base_case(), creep.curve_for(alloy), base_rate)
 
 
 def git_hash() -> str:

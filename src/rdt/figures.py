@@ -1,6 +1,8 @@
 """Journal-style regeneration of all paper figures from the results of a :class:`rdt.config.RunConfig`.
 
 ``make_all(cfg)`` archives the existing PNGs in ``paper/figures/v1/`` (once) and writes ``figNN_*.pdf`` and ``.png``
+into ``cfg.figures_dir`` (``paper/figures/`` for v1/v2, ``paper/figures/<tag>/`` from v3 on, so that a later
+version can never overwrite the figures a published version was produced with).
 using :mod:`rdt.plotting`. Figures 00-06 are physics/validation figures (recomputed, independent of the campaign
 version); figures 07-15 read the ``*_<tag>`` result files. No in-figure titles: descriptions belong in captions.
 """
@@ -275,10 +277,11 @@ CAMPAIGN_FIGS = {"fig07_operating_maps": fig07_maps, "fig08_sobol": fig08_sobol,
 
 def make_all(cfg: C.RunConfig = C.V2, only=None, log=print) -> List[Path]:
     archive_v1(); made = []
+    out_dir = Path(cfg.figures_dir); out_dir.mkdir(parents=True, exist_ok=True)
     for name, fn in {**PHYSICS_FIGS, **CAMPAIGN_FIGS}.items():
         if only and name not in only: continue
         try:
-            paths = fn(FIG_DIR / name) if name in PHYSICS_FIGS else fn(FIG_DIR / name, cfg)
+            paths = fn(out_dir / name) if name in PHYSICS_FIGS else fn(out_dir / name, cfg)
             made.extend(paths); log(f"{name}: ok")
         except Exception as e:  # noqa: BLE001
             log(f"{name}: FAILED {type(e).__name__}: {e}")

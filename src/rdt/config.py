@@ -114,6 +114,16 @@ class RunConfig:
         return DATA / "uq" / f"uq_summary_{self.tag}.json"
 
     @property
+    def uq_spec(self) -> Path:
+        # v1/v2 wrote a single untagged spec; keep that name for them and tag it from v3 on so that
+        # a later run can never overwrite the spec a published version was produced with.
+        return DATA / "uq" / ("uncertainty_spec.yaml" if self.tag in ("v1", "v2") else f"uncertainty_spec_{self.tag}.yaml")
+
+    @property
+    def figures_dir(self) -> Path:
+        return ROOT / "paper" / "figures" / ("" if self.tag in ("v1", "v2") else self.tag)
+
+    @property
     def runtimes_json(self) -> Path:
         return DATA / f"pipeline_{self.tag}_runtimes.json"
 

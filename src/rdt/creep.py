@@ -509,3 +509,13 @@ def active_alloy() -> AlloyCurves:
 def active_curve(kind: str = "minimum") -> LarsonMillerCurve:
     """The master curve used for life calculations (the lower scatter band by default)."""
     return active_alloy().curve(kind)
+
+
+def curve_for(key: str, kind: str = "minimum") -> LarsonMillerCurve:
+    """Master curve of a named alloy, for code that must not rely on the ambient selection.
+
+    Parallel workers take this rather than :func:`active_curve`: joblib reuses an existing process pool,
+    and a reused worker keeps the environment it was spawned with, so a selection made after the pool
+    started would not reach it. Callers capture :func:`alloy_key` in the parent and pass it down.
+    """
+    return load_alloy(key).curve(kind)

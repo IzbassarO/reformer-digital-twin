@@ -159,7 +159,7 @@ def params_from(theta: Dict[str, float], base_params: lc.LathamParams, load: flo
 _CURVE_CACHE: Dict[Tuple[str, float], creep.LarsonMillerCurve] = {}
 
 
-def curve_with_C(C: float) -> creep.LarsonMillerCurve:
+def curve_with_C(C: float, alloy: Optional[str] = None) -> creep.LarsonMillerCurve:
     """The active master curve re-expressed with a different Larson-Miller constant.
 
     For the legacy placeholder the curve is defined by (T, sigma, t_r) points, so a new C changes the LMP
@@ -167,9 +167,9 @@ def curve_with_C(C: float) -> creep.LarsonMillerCurve:
     directly as log10(sigma) = P3(LMP); C then enters only the conversion between LMP and rupture time,
     and the polynomial is carried over unchanged.
     """
-    key = (creep.alloy_key(), round(float(C), 3))
+    key = (alloy or creep.alloy_key(), round(float(C), 3))
     if key not in _CURVE_CACHE:
-        c0 = creep.active_curve()
+        c0 = creep.curve_for(key[0])
         c = creep.LarsonMillerCurve(C=key[1], scale=c0.scale, degree=c0.degree, points=c0.points, alloy=c0.alloy,
                                     source=c0.source, curve_kind=c0.curve_kind)
         if c0.points:
@@ -180,24 +180,25 @@ def curve_with_C(C: float) -> creep.LarsonMillerCurve:
     return _CURVE_CACHE[key]
 
 
-def evaluate_one(point: Dict[str, float], theta: Dict[str, float], lq_variant: bool = False) -> Dict[str, float]:
+def evaluate_one(point: Dict[str, float], theta: Dict[str, float], lq_variant: bool = False,
+                 alloy: Optional[str] = None) -> Dict[str, float]:
     base = op.base_case()
     x = dict(point); x["catalyst_activity"] = float(x["catalyst_activity"]) + float(theta["d_activity"])
     p = params_from(theta, base.params, float(x["feed_per_tube_fraction"]), lq_variant)
     b2 = replace(base, params=p)
-    r = op.run_case(x, b2, creep.active_curve())
+    r = op.run_case(x, b2, creep.curve_for(alloy) if alloy else creep.active_curve())
     if not r["converged"]:
         return {"converged": False}
     T_wo = r["T_wo_max_K"] + float(theta["dT_wo_meas_K"])
-    curve = curve_with_C(theta["C_LM"])
+    curve = curve_with_C(theta["C_LM"], alloy)
     t_r = float(curve.time_to_rupture(T_wo, r["sigma_hot_MPa"])) * 10 ** float(theta["log10_tr_scatter"])
     return {"converged": True, "T_wo_max_K": T_wo, "T_wo_max_model_K": r["T_wo_max_K"], "T_out_K": r["T_out_K"], "CH4_slip_dry_pct": r["CH4_slip_dry_pct"],
             "H2_net_kmol_h": r["H2_net_kmol_h"], "sigma_hot_MPa": r["sigma_hot_MPa"], "log10_t_r": math.log10(t_r), "life_rate_per_h": 1.0 / t_r,
             "life_rate_per_kmol_H2": 1.0 / t_r / r["H2_net_kmol_h"]}
 
 
-def _worker(point, theta, lq_variant):
-    return evaluate_one(point, theta, lq_variant)
+def _worker(point, theta, lq_variant, alloy=None):
+    return evaluate_one(point, theta, lq_variant, alloy)
 
 
 def run_point(name: str, point: Dict[str, float], X: pd.DataFrame, lq_variant: bool = False, n_jobs: int = -1,
@@ -208,7 +209,8 @@ def run_point(name: str, point: Dict[str, float], X: pd.DataFrame, lq_variant: b
     if path.exists():
         return pd.read_csv(path)
     t0 = time.perf_counter()
-    rows = Parallel(n_jobs=n_jobs)(delayed(_worker)(point, th, lq_variant) for th in X.to_dict(orient="records"))
+    alloy = creep.alloy_key()
+    rows = Parallel(n_jobs=n_jobs)(delayed(_worker)(point, th, lq_variant, alloy) for th in X.to_dict(orient="records"))
     df = pd.concat([X.reset_index(drop=True), pd.DataFrame(rows)], axis=1)
     df["point"] = name; df["lq_variant"] = lq_variant; df["sample"] = np.arange(len(df)); df.attrs["wall_time_s"] = time.perf_counter() - t0
     df.to_csv(path, index=False, compression="gzip")
@@ -334,8 +336,9 @@ SUMMARY_JSON = OUT_DIR / "uq_summary_v1.json"
 
 
 def use_config(cfg) -> None:
-    global REGIMES_CSV, MC_TAG, SUMMARY_JSON, N_MC
+    global REGIMES_CSV, MC_TAG, SUMMARY_JSON, N_MC, SPEC_YAML
     REGIMES_CSV = Path(cfg.regimes_csv); MC_TAG = cfg.mc_tag; SUMMARY_JSON = Path(cfg.uq_summary); N_MC = int(cfg.n_mc)
+    SPEC_YAML = Path(cfg.uq_spec)
 
 
 POINT_NAMES = ["S1_base", "RQ3_knee", "RQ3_min_life_iso_H2", "S5_y4_holdslip_end", "S6_SC2.5", "S6_SC3.5", "load_0.70", "load_0.85"]

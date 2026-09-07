@@ -106,7 +106,8 @@ def physics_verify(df: pd.DataFrame, tw: sc.TwinSurrogate, ref: BaseRef, T_shift
     """Re-evaluate rows with the physics model; add *_phys columns, discrepancies and constraint flags."""
     from joblib import Parallel, delayed
     X = df[list(op.INPUT_NAMES)].to_dict(orient="records")
-    rows = Parallel(n_jobs=-1)(delayed(_phys)(x) for x in X)
+    alloy = creep.alloy_key()
+    rows = Parallel(n_jobs=-1)(delayed(_phys)(x, alloy) for x in X)
     ph = pd.DataFrame(rows, index=df.index)
     out = df.copy()
     out["H2_net_kmol_h_phys"] = ph.H2_net_kmol_h; out["T_wo_max_K_phys"] = ph.T_wo_max_K; out["T_out_K_phys"] = ph.T_out_K
@@ -121,8 +122,8 @@ def physics_verify(df: pd.DataFrame, tw: sc.TwinSurrogate, ref: BaseRef, T_shift
     return out
 
 
-def _phys(x):
-    r = op.run_case(x, op.base_case(), creep.active_curve())
+def _phys(x, alloy=None):
+    r = op.run_case(x, op.base_case(), creep.curve_for(alloy) if alloy else creep.active_curve())
     keys = ("H2_net_kmol_h", "T_wo_max_K", "T_out_K", "CH4_slip_dry_pct", "sigma_hot_MPa", "converged")
     return {k: r.get(k, np.nan) for k in keys}
 

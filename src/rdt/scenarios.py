@@ -111,7 +111,8 @@ class TwinSurrogate:
         keys = [tuple(r) for r in A.to_numpy()]
         distinct = sorted(set(keys))
         self.n_physics_calls += len(distinct)
-        res = Parallel(n_jobs=-1)(delayed(_physics_row)(dict(zip(op.INPUT_NAMES, k))) for k in distinct)
+        alloy = creep.alloy_key()
+        res = Parallel(n_jobs=-1)(delayed(_physics_row)(dict(zip(op.INPUT_NAMES, k)), alloy) for k in distinct)
         lut = dict(zip(distinct, res))
         rows = [lut[k] for k in keys]
         df = pd.DataFrame(rows, index=X.index)
@@ -134,8 +135,8 @@ class TwinSurrogate:
         return 0.5 * (a + b)
 
 
-def _physics_row(x: Dict[str, float]) -> Dict[str, float]:
-    r = op.run_case(x, op.base_case(), creep.active_curve())
+def _physics_row(x: Dict[str, float], alloy: Optional[str] = None) -> Dict[str, float]:
+    r = op.run_case(x, op.base_case(), creep.curve_for(alloy) if alloy else creep.active_curve())
     if not r["converged"]:
         return {k: np.nan for k in SURROGATE_TARGETS}
     return {k: r[k] for k in SURROGATE_TARGETS}
