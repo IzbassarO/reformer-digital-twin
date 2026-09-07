@@ -1,10 +1,11 @@
 # Reconciliation: repository sectioned draft vs consolidated Overleaf pair
 
-Compared without modifying either version.
+Compared without modifying either version. The Overleaf pair was staged in a `chem/` folder at the
+time of this comparison; step 2 moved it to `paper/` and the paths below have been updated to match.
 
 | | repository draft | Overleaf pair |
 |---|---|---|
-| Entry point | `paper/main.tex` + `paper/sections/*.tex` + `paper/tables/*.tex` + `paper/numbers.tex` | `chem/main.tex` (single file) |
+| Entry point | `paper/main.tex` + `paper/sections/*.tex` + `paper/tables/*.tex` + `paper/numbers.tex` | `paper/main.tex` (single file) |
 | Class options | `[preprint,12pt]`, `lineno` active | `[final,3p,times]`, `lineno` commented out |
 | Bibliography | `\bibliography{references}` + `main.bbl` | `thebibliography` embedded, no `.bib` |
 | Numbers | macros from `paper/numbers.tex` (auto-generated) | hard-coded in the text |
@@ -92,15 +93,18 @@ Eight tables in the Overleaf main text, three moved to the supplement, exactly a
 No figure moved between main text and supplement; five labels were renamed and the five supplement
 figures gained labels.
 
-### Figure files in `chem/figures/` and their use
+### Figure files and their use
+
+The Overleaf project shipped its own `figures/`; those 17 PDFs proved byte-identical to
+`paper/figures/`, so the staged copy was dropped and the paths below refer to `paper/figures/`.
 
 17 PDF files are present.
 
-- **Referenced by `chem/main.tex` (12):** `fig01_schematic`, `fig03_validation_xf1989`,
+- **Referenced by `paper/main.tex` (12):** `fig01_schematic`, `fig03_validation_xf1989`,
   `fig05_latham_calibrated`, `fig06_creep_life_profile`, `fig07_operating_maps`, `fig08_sobol`,
   `fig09_surrogate_parity`, `fig11_scenarios_summary`, `fig12_pareto`, `fig13_steam_credit`,
   `fig14_uq_distributions`, `fig15_variance_shares`.
-- **Referenced by `chem/supplementary.tex` (5):** `fig00_equilibrium_conversion`, `fig01_kinetics`,
+- **Referenced by `paper/supplementary.tex` (5):** `fig00_equilibrium_conversion`, `fig01_kinetics`,
   `fig02_reactor_profiles`, `fig04_latham_baseline`, `fig10_scenarios_timeseries`.
 - **Referenced by neither: none.** Every file is used exactly once.
 - **Referenced but missing from `figures/`: none.**
@@ -108,7 +112,7 @@ figures gained labels.
   without pruning.
 
 Note that these are the **v2** figure PDFs. The v3 re-run wrote its figures to
-`paper/figures/v3/`, which is a separate set and is not what `chem/figures/` holds.
+`paper/figures/v3/`, which is a separate set and is not what the manuscript points at.
 
 ---
 
