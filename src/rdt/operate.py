@@ -11,8 +11,9 @@ Inputs (see ``data/design/parameter_ranges.csv`` / ``operating_space.yaml``):
   flow and composition follow from complete combustion.
 
 Fixed: wall 15 mm, calibrated furnace/tube parameters (``latham_fit.yaml``, ``calibration_alpha_top_fixed``).
-Life metrics use the Yeh (2021) Manaurite XM placeholder curve and are reported as the consumption rate
-``1/t_r`` relative to the Plant A base case.
+Life metrics use the Larson-Miller master curve selected by the run configuration (``cfg.creep_alloy``,
+see :func:`rdt.creep.available_alloys`) and are reported as the consumption rate ``1/t_r`` relative to the
+Plant A base case.
 """
 
 from __future__ import annotations
@@ -137,7 +138,7 @@ def run_case(x: Mapping[str, float], base: Optional[BaseCase] = None,
              curve: Optional[creep.LarsonMillerCurve] = None, base_rate: Optional[float] = None) -> Dict[str, float]:
     """Run the coupled model for one input point and return a flat dict of inputs and outputs."""
     base = base or base_case()
-    curve = curve or creep.LarsonMillerCurve.from_yaml()
+    curve = curve or creep.active_curve()
     out = {k: float(x[k]) for k in INPUT_NAMES}
     t0 = time.perf_counter()
     try:
@@ -184,7 +185,7 @@ def solve_firing_for_outlet_T(x: Mapping[str, float], T_target: float = TARGET_T
                               curve=None, base_rate: Optional[float] = None, bracket=(0.6, 1.6), xtol: float = 1e-4) -> Dict[str, float]:
     """Adjust ``specific_firing_factor`` (brentq) so that the outlet process-gas temperature equals ``T_target``."""
     base = base or base_case()
-    curve = curve or creep.LarsonMillerCurve.from_yaml()
+    curve = curve or creep.active_curve()
     cache = {}
 
     def g(f):
@@ -216,7 +217,7 @@ def lhs_samples(n: int, seed: int = 0, ranges: Optional[pd.DataFrame] = None) ->
 
 
 def _worker(x: Dict[str, float], base_rate: float) -> Dict[str, float]:
-    return run_case(x, base_case(), creep.LarsonMillerCurve.from_yaml(), base_rate)
+    return run_case(x, base_case(), creep.active_curve(), base_rate)
 
 
 def run_batch(X: pd.DataFrame, base_rate: float, n_jobs: int = -1, closed_loop: bool = False,
@@ -231,7 +232,7 @@ def run_batch(X: pd.DataFrame, base_rate: float, n_jobs: int = -1, closed_loop: 
 
 
 def _worker_closed(x, base_rate, T_target):
-    return solve_firing_for_outlet_T(x, T_target, base_case(), creep.LarsonMillerCurve.from_yaml(), base_rate)
+    return solve_firing_for_outlet_T(x, T_target, base_case(), creep.active_curve(), base_rate)
 
 
 def git_hash() -> str:
@@ -259,7 +260,7 @@ def run_lhs_campaign(n: int = 2000, seed: int = 0, n_jobs: int = -1, name: str =
             "ranges_file": str(ranges_csv or RANGES_CSV), "ranges": {k: {"min": float(ranges.loc[k, "min"]), "max": float(ranges.loc[k, "max"]), "unit": str(ranges.loc[k, "unit"])} for k in INPUT_NAMES},
             "base_case": {**base.inputs(), "Q_comb_W": base.Q_comb_W, "life_consumption_rate_per_h": b["life_consumption_rate_per_h"],
                           "T_wo_max_K": b["T_wo_max_K"], "T_out_K": b["T_out_K"]},
-            "life_curve": "Yeh 2021 Manaurite XM minimum curve, PLACEHOLDER", "outputs": [c for c in ok.columns if c not in INPUT_NAMES]}
+            "life_curve": creep.active_curve().source or creep.alloy_key(), "outputs": [c for c in ok.columns if c not in INPUT_NAMES]}
     (LHS_DIR / f"{name}_meta.json").write_text(json.dumps(meta, indent=2))
     return {"data": ok, "failed": bad, "meta": meta}
 

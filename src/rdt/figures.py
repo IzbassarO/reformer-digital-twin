@@ -135,7 +135,7 @@ def fig05_latham_calibrated(stem):
 
 def fig06_creep_profile(stem):
     from rdt import creep, latham_cases as lc, operate as op
-    p = op.calibrated_params(); df = lc.load_cases(); row = df[df.case == "Plant_A"].iloc[0]; res = lc.run_case(row, p); curve = creep.LarsonMillerCurve.from_config()
+    p = op.calibrated_params(); df = lc.load_cases(); row = df[df.case == "Plant_A"].iloc[0]; res = lc.run_case(row, p); curve = creep.active_curve()
     T_mid = 0.5 * (res.T_wo + res.T_wi); lo = creep.life_along_tube(res.z, res.T_wo, res.tube.P, p.tube_od_m, p.wall_thickness_m, curve); lm = creep.life_along_tube(res.z, T_mid, res.tube.P, p.tube_od_m, p.wall_thickness_m, curve)
     with P.style():
         fig, ax = P.figure(P.SINGLE, 7 * P.CM); zf = res.z_frac

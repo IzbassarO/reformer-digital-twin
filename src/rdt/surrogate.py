@@ -10,7 +10,7 @@ Seven operating inputs (see :mod:`rdt.operate`) plus two optional physics-inform
 
 Models per target: HistGradientBoosting, Gaussian process (Matern 5/2 + white noise, on a subset), MLP.
 Uncertainty: MAPIE ``CrossConformalRegressor`` (CV+, 5 folds) on the best model per target; GP native intervals
-for comparison. Life targets rest on the Yeh (2021) Manaurite XM placeholder curve.
+for comparison. Life targets rest on the master curve selected by the run configuration.
 """
 
 from __future__ import annotations

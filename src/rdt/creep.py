@@ -12,7 +12,9 @@ Data (Larson-Miller constant, master-curve rupture points) are loaded from YAML 
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
+from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
@@ -295,3 +297,215 @@ def synthetic_nims_dataset(n_heats: int = 40, n_per_heat: int = 10, sigma_heat: 
             rows.append({"heat_id": f"H{h:03d}", "alloy": alloy, "T_C": T_C, "sigma_MPa": sig, "t_r_h": 10 ** logt_obs, "elongation_pct": np.nan, "RoA_pct": np.nan,
                          "source_sheet": "synthetic", "page": "", "note": "generated"})
     return pd.DataFrame(rows, columns=TEMPLATE_COLUMNS)
+
+
+# ---------------------------------------------------------------------------
+# Manufacturer data-sheet master curves (Schmidt + Clemens Centralloy)
+# ---------------------------------------------------------------------------
+# Curves digitised by rdt.creep_ingest_datasheet from the "Parametric stress rupture strength" chart
+# of each data sheet; see data/creep_derived/sources.yaml. Each alloy carries its own Larson-Miller
+# constant, read off its own sheet (G 4852: 18.6, G 4852 Micro: 22.9, ET 45 Micro: 19.3).
+SOURCES_YAML = DATA_DIR / "sources.yaml"
+LEGACY_ALLOY = "legacy_yeh_manaurite_xm"     # the v1/v2 placeholder, kept so those results reproduce
+DEFAULT_ALLOY = "centralloy_g_4852"          # base alloy from v3 onwards (HP-Nb)
+ALLOY_ENV = "RDT_CREEP_ALLOY"                # honoured by joblib worker processes, which re-import
+LEGACY_SCATTER_DECADES = 0.3                 # the assumption the data-sheet scatter band replaces
+
+
+def datasheet_C(alloy: str, sources: Union[str, Path] = SOURCES_YAML) -> float:
+    """Larson-Miller constant printed on the data sheet of ``alloy`` (exact name match)."""
+    d = yaml.safe_load(Path(sources).read_text())
+    for s in d["sources"]:
+        if s["alloy"] == alloy:
+            return float(s["larson_miller_C"])
+    raise KeyError(f"{alloy!r} not in {sources}; known: {[s['alloy'] for s in d['sources']]}")
+
+
+@dataclass
+class ScatterModel:
+    """Rupture-time scatter taken from the width of the printed scatter band.
+
+    The data sheets draw an *Average* curve and a *Lower Scatter Band* (95 % confidence). Measured
+    **vertically** the two differ in stress, which is not directly usable; measured **horizontally**, at
+    constant stress, they differ in Larson-Miller parameter, and that gap converts straight into rupture
+    time. From ``LMP = scale T (C + log10 t_r)`` at fixed stress and temperature,
+
+        delta_log10_tr = (LMP_avg - LMP_min) / (scale * T)
+
+    so the gap in LMP is a temperature-independent property of the pair of curves, and the scatter in
+    decades of life follows by dividing by ``scale * T``. ``delta_lmp`` is tabulated against the LMP of
+    the average curve; ``assumed`` marks the legacy constant-0.3-decade placeholder.
+    """
+
+    alloy: str
+    scale: float
+    lmp: np.ndarray                     # LMP on the average curve
+    delta_lmp: np.ndarray               # LMP_avg - LMP_min at the same stress
+    stress_MPa: np.ndarray              # the constant-stress levels the gap was measured at
+    assumed: bool = False
+    note: str = ""
+
+    def delta_lmp_at(self, lmp):
+        """Horizontal gap [LMP units] at the given LMP, clamped to the digitised range."""
+        return np.interp(np.asarray(lmp, float), self.lmp, self.delta_lmp)
+
+    def decades(self, T_K, lmp=None):
+        """Scatter in decades of rupture time at temperature ``T_K`` (and optionally a given LMP)."""
+        g = self.delta_lmp.mean() if lmp is None else self.delta_lmp_at(lmp)
+        return g / (self.scale * np.asarray(T_K, float))
+
+    def summary(self, T_K: float) -> Dict[str, float]:
+        """Range of the scatter in decades over the digitised LMP range at temperature ``T_K``."""
+        d = self.delta_lmp / (self.scale * T_K)
+        return {"T_K": float(T_K), "min_decades": float(d.min()), "median_decades": float(np.median(d)),
+                "max_decades": float(d.max()), "mean_decades": float(d.mean()),
+                "at_lmp_min": float(d[0]), "at_lmp_max": float(d[-1]),
+                "lmp_range": (float(self.lmp[0]), float(self.lmp[-1])),
+                "delta_lmp_min": float(self.delta_lmp.min()), "delta_lmp_max": float(self.delta_lmp.max()),
+                "assumed": self.assumed}
+
+    def describe(self, T_K: float, n: int = 6) -> str:
+        s = self.summary(T_K)
+        head = (f"scatter from the data-sheet band, {self.alloy}: {s['min_decades']:.3f}-{s['max_decades']:.3f} "
+                f"decades of t_r at {T_K:.0f} K (median {s['median_decades']:.3f})")
+        rows = [f"    LMP {l:6.2f}   dLMP {g:6.4f}   {g / (self.scale * T_K):6.3f} decades"
+                for l, g in zip(np.linspace(self.lmp[0], self.lmp[-1], n),
+                                self.delta_lmp_at(np.linspace(self.lmp[0], self.lmp[-1], n)))]
+        return "\n".join([head, *rows])
+
+
+@dataclass
+class AlloyCurves:
+    """The pair of master curves of one alloy plus the scatter model derived from their separation."""
+
+    alloy: str
+    C: float
+    scale: float
+    average: LarsonMillerCurve
+    minimum: LarsonMillerCurve
+    scatter: ScatterModel
+    source_file: str = ""
+    method: str = ""
+    extracted_on: str = ""
+
+    @property
+    def lmp_range(self) -> Tuple[float, float]:
+        """LMP range covered by both digitised curves (outside it the master curve is extrapolated)."""
+        return (max(self.average.lmp_range[0], self.minimum.lmp_range[0]),
+                min(self.average.lmp_range[1], self.minimum.lmp_range[1]))
+
+    def curve(self, kind: str = "minimum") -> LarsonMillerCurve:
+        if kind not in ("average", "minimum"):
+            raise ValueError("kind must be 'average' or 'minimum'")
+        return self.average if kind == "average" else self.minimum
+
+
+def _fit_from_lmp(lmp: np.ndarray, sigma: np.ndarray, C: float, scale: float, degree: int,
+                  alloy: str, source: str, kind: str) -> LarsonMillerCurve:
+    """Fit ``log10(sigma) = poly(LMP)`` directly to a digitised curve (no (T, sigma, t_r) triples)."""
+    obj = LarsonMillerCurve(C=C, scale=scale, degree=degree, points=[], alloy=alloy, source=source, curve_kind=kind)
+    obj.coeffs = np.polyfit(lmp, np.log10(sigma), degree)
+    obj.lmp_range = (float(lmp.min()), float(lmp.max()))
+    return obj
+
+
+def alloy_curves_from_csv(path: Union[str, Path], C: Optional[float] = None, degree: int = 3,
+                          n_scatter: int = 200, sources: Union[str, Path] = SOURCES_YAML) -> AlloyCurves:
+    """Build both master curves and the scatter model from a ``*_rupture_curve.csv`` written by
+    :mod:`rdt.creep_ingest_datasheet`.
+
+    ``log10(sigma) = P3(LMP)`` is fitted separately to the average and to the minimum (lower scatter
+    band) curve, both with the alloy's own Larson-Miller constant taken from the data sheet.
+    """
+    df = pd.read_csv(path)
+    alloy = str(df.alloy.iloc[0])
+    C = float(datasheet_C(alloy, sources) if C is None else C)
+    scale = 1e-3
+    src = f"{df.source_file.iloc[0]} p.{df.page.iloc[0]} ({df.method.iloc[0]}, {df.extracted_on.iloc[0]})"
+    fits = {}
+    for kind in ("average", "minimum"):
+        g = df[df.curve == kind].sort_values("lmp")
+        if g.empty:
+            raise ValueError(f"{path}: no {kind!r} curve")
+        fits[kind] = _fit_from_lmp(g.lmp.to_numpy(float), g.stress_mpa.to_numpy(float), C, scale, degree,
+                                   alloy, src, kind)
+
+    # Horizontal gap at constant stress, over the stress range the two curves share.
+    a, m = fits["average"], fits["minimum"]
+    lo = max(10 ** a.log10_stress(a.lmp_range[1]), 10 ** m.log10_stress(m.lmp_range[1]))
+    hi = min(10 ** a.log10_stress(a.lmp_range[0]), 10 ** m.log10_stress(m.lmp_range[0]))
+    sigma = np.logspace(np.log10(lo), np.log10(hi), n_scatter)
+    lmp_a = np.array([a.lmp_of_stress(float(s)) for s in sigma])
+    lmp_m = np.array([m.lmp_of_stress(float(s)) for s in sigma])
+    order = np.argsort(lmp_a)
+    scatter = ScatterModel(alloy=alloy, scale=scale, lmp=lmp_a[order], delta_lmp=(lmp_a - lmp_m)[order],
+                           stress_MPa=sigma[order], assumed=False,
+                           note=f"horizontal separation of the Average and Lower Scatter Band curves of {src}")
+    return AlloyCurves(alloy=alloy, C=C, scale=scale, average=a, minimum=m, scatter=scatter,
+                       source_file=str(df.source_file.iloc[0]), method=str(df.method.iloc[0]),
+                       extracted_on=str(df.extracted_on.iloc[0]))
+
+
+def _legacy_alloy_curves() -> AlloyCurves:
+    """The Yeh (2021) Manaurite XM placeholder, with its assumed constant 0.3-decade scatter.
+
+    Kept selectable so that the v1 and v2 result files remain reproducible.
+    """
+    a = LarsonMillerCurve.from_yaml(DEFAULT_CURVE_FILE, curve="average")
+    m = LarsonMillerCurve.from_yaml(DEFAULT_CURVE_FILE, curve="minimum")
+    lmp = np.linspace(*m.lmp_range, 200)
+    scatter = ScatterModel(alloy=a.alloy, scale=m.scale, lmp=lmp,
+                           delta_lmp=np.full_like(lmp, LEGACY_SCATTER_DECADES * m.scale * 1150.0),
+                           stress_MPa=10 ** m.log10_stress(lmp), assumed=True,
+                           note=f"PLACEHOLDER: assumed constant {LEGACY_SCATTER_DECADES} decades of heat-to-heat "
+                                f"scatter (v1/v2), not measured; expressed at 1150 K")
+    return AlloyCurves(alloy=a.alloy, C=m.C, scale=m.scale, average=a, minimum=m, scatter=scatter,
+                       source_file=DEFAULT_CURVE_FILE.name, method="figure digitisation", extracted_on="")
+
+
+def available_alloys() -> Dict[str, Path]:
+    """Selectable alloy keys mapped to the file they load from."""
+    out = {LEGACY_ALLOY: DEFAULT_CURVE_FILE}
+    for p in sorted(DATA_DIR.glob("*_rupture_curve.csv")):
+        out[p.name[: -len("_rupture_curve.csv")]] = p
+    return out
+
+
+@lru_cache(maxsize=None)
+def load_alloy(key: str) -> AlloyCurves:
+    """Load an alloy by key (see :func:`available_alloys`); cached per process."""
+    if key == LEGACY_ALLOY:
+        return _legacy_alloy_curves()
+    path = DATA_DIR / f"{key}_rupture_curve.csv"
+    if not path.exists():
+        raise KeyError(f"unknown alloy {key!r}; available: {sorted(available_alloys())}")
+    return alloy_curves_from_csv(path)
+
+
+_ACTIVE_ALLOY = DEFAULT_ALLOY
+
+
+def alloy_key() -> str:
+    """Key of the alloy currently selected, honouring ``RDT_CREEP_ALLOY``.
+
+    The environment variable is what carries the selection into joblib worker processes, which
+    re-import this module and would otherwise fall back to :data:`DEFAULT_ALLOY`.
+    """
+    return os.environ.get(ALLOY_ENV) or _ACTIVE_ALLOY
+
+
+def use_config(cfg) -> None:
+    """Point the module at a :class:`rdt.config.RunConfig` (selects the alloy master curve)."""
+    global _ACTIVE_ALLOY
+    _ACTIVE_ALLOY = str(getattr(cfg, "creep_alloy", DEFAULT_ALLOY))
+    os.environ[ALLOY_ENV] = _ACTIVE_ALLOY
+
+
+def active_alloy() -> AlloyCurves:
+    """Both curves plus the scatter model of the currently selected alloy."""
+    return load_alloy(alloy_key())
+
+
+def active_curve(kind: str = "minimum") -> LarsonMillerCurve:
+    """The master curve used for life calculations (the lower scatter band by default)."""
+    return active_alloy().curve(kind)

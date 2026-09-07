@@ -5,7 +5,7 @@ activity and either firing or a control mode). Each hour is evaluated as a stead
 through the GP surrogates (:mod:`rdt.surrogate`); hours whose inputs fall outside the surrogate training bounds
 are evaluated with the physics model (:mod:`rdt.operate`). Control modes invert the outlet-temperature or the
 CH4-slip surrogate for the firing factor by vectorised bisection. Creep damage per hour is
-``dD = 1 h / t_r(T_wo,max, sigma_hoop)`` with the Yeh (2021) Manaurite XM placeholder Larson-Miller curve and is
+``dD = 1 h / t_r(T_wo,max, sigma_hoop)`` with the Larson-Miller master curve selected by the run configuration and is
 accumulated linearly (Robinson). Every 24th hour is re-evaluated with the physics model as a check.
 
 Scope limitation: quasi-steady creep only. Start-up/shutdown thermal fatigue, creep-fatigue interaction,
@@ -45,7 +45,7 @@ class TwinSurrogate:
     def __init__(self):
         self.metrics = json.loads(sg.METRICS_JSON.read_text())
         self.base = op.base_case()
-        self.curve = creep.LarsonMillerCurve.from_yaml()
+        self.curve = creep.active_curve()
         self.lo, self.up = op.bounds_arrays()
         self.models: Dict[str, dict] = {}
         for tgt in SURROGATE_TARGETS:
@@ -135,7 +135,7 @@ class TwinSurrogate:
 
 
 def _physics_row(x: Dict[str, float]) -> Dict[str, float]:
-    r = op.run_case(x, op.base_case(), creep.LarsonMillerCurve.from_yaml())
+    r = op.run_case(x, op.base_case(), creep.active_curve())
     if not r["converged"]:
         return {k: np.nan for k in SURROGATE_TARGETS}
     return {k: r[k] for k in SURROGATE_TARGETS}
@@ -352,6 +352,6 @@ def run_all_scenarios(tw: Optional["TwinSurrogate"] = None) -> Dict[str, object]
         r["hourly"].to_csv(hourly_path(name), index=False, compression="gzip")
     meta = {"created": time.strftime("%Y-%m-%d %H:%M:%S"), "wall_time_s": time.perf_counter() - t0, "excess_air_pct": EXCESS_AIR_SCEN, "T_out_target_K": T_OUT_TARGET,
             "slip_target_pct": slip0, "steady_closed_form": ss, "S4_events": ev, "S5_campaigns": camp, "n_physics_calls": tw.n_physics_calls, "tag": TAG,
-            "life_curve": "Yeh 2021 Manaurite XM minimum curve, PLACEHOLDER", "scope": "quasi-steady creep only; start-up/shutdown thermal fatigue excluded"}
+            "life_curve": creep.active_curve().source or creep.alloy_key(), "scope": "quasi-steady creep only; start-up/shutdown thermal fatigue excluded"}
     json.dump(meta, open(SUMMARY_META, "w"), indent=2, default=float)
     return {"summary": summ, "meta": meta, "results": results}

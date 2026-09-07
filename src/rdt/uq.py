@@ -2,7 +2,7 @@
 
 Uncertainty groups (see ``data/uq/uncertainty_spec.yaml``): kinetics (Xu-Froment 95 % intervals, effectiveness
 multiplier, activity), heat transfer / furnace (calibration covariance of F_gt, L_q, f_htg; structural variant
-``L_q_eff = L_q * load**0.5``), creep (heat-to-heat scatter, Larson-Miller constant, wall thickness, tube
+``L_q_eff = L_q * load**0.5``), creep (rupture-time scatter from the data-sheet band, Larson-Miller constant, wall thickness, tube
 conductivity) and measurement (tube-wall temperature offset). A scrambled Sobol design (N = 4096) is propagated
 through the coupled physics model at several fixed operating points (control is not re-solved per sample); the
 base point is evaluated with the same samples so that life ratios are paired.
@@ -32,6 +32,7 @@ from rdt import scenarios as sc
 ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = ROOT / "data" / "uq"
 SPEC_YAML = OUT_DIR / "uncertainty_spec.yaml"
+SCATTER_REF_T_K = 1147.0          # base-case hot-spot tube-metal temperature; the scatter band is reported there
 N_MC = 4096
 SEED = 0
 
@@ -74,8 +75,17 @@ def build_spec(save: bool = True) -> Dict[str, object]:
     spec["groups"]["heat_transfer"] = {"F_gt,L_q,f_htg": {"dist": "multivariate_normal", "names": names, "mean": [cal["params"][k] for k in names], "cov": cov.tolist(),
                                                            "source": "calibration_alpha_top_fixed Jacobian covariance (se x corr)"},
                                        "structural_variant": {"L_q_eff": "L_q * load**0.5", "note": "flame length shrinks with load; ASSUMPTION used only for the robustness check"}}
-    spec["groups"]["creep"] = {"log10_tr_scatter": {"dist": "normal", "mean": 0.0, "sigma": 0.3, "unit": "log10 multiplier on t_r", "source": "heat-to-heat scatter, factor ~2, placeholder until NIMS heats"},
-                               "C_LM": {"dist": "uniform", "low": 21.96, "high": 23.96, "source": "Larson-Miller constant 22.96 +/- 1.0; master-curve points refitted with each C"},
+    al = creep.active_alloy(); sc = al.scatter.summary(SCATTER_REF_T_K)
+    # Scatter band of the data sheet rather than the old assumed 0.3 decades: the Average and Lower
+    # Scatter Band curves are separated horizontally by delta_log10_tr = (LMP_avg - LMP_min)/(scale T).
+    # The sheet calls the lower band the 95 % confidence level, so that separation is taken as 1.645 sigma.
+    scat_src = (f"assumed placeholder, {creep.LEGACY_SCATTER_DECADES} decades" if al.scatter.assumed else
+                f"data-sheet scatter band of {al.alloy} ({al.source_file}): {sc['min_decades']:.3f}-{sc['max_decades']:.3f} "
+                f"decades of t_r over LMP {sc['lmp_range'][0]:.2f}-{sc['lmp_range'][1]:.2f} at {SCATTER_REF_T_K:.0f} K, "
+                f"median {sc['median_decades']:.3f}; taken as the 95 % (1.645 sigma) level")
+    scat_sigma = sc["median_decades"] if al.scatter.assumed else sc["median_decades"] / 1.645
+    spec["groups"]["creep"] = {"log10_tr_scatter": {"dist": "normal", "mean": 0.0, "sigma": float(scat_sigma), "unit": "log10 multiplier on t_r", "source": scat_src},
+                               "C_LM": {"dist": "uniform", "low": al.C - 1.0, "high": al.C + 1.0, "source": f"Larson-Miller constant {al.C} +/- 1.0 from {al.source_file}; the master curve is a function of LMP, so C shifts only the time-to-LMP conversion"},
                                "wall_thickness_m": {"dist": "uniform", "low": 0.012, "high": 0.018, "source": "wall thickness not given by Latham; 12-18 mm"},
                                "lambda_tube_factor": {"dist": "uniform", "low": 0.85, "high": 1.15, "source": "tube conductivity +/-15 % around 29.6 W/(m K)"}}
     spec["groups"]["measurement"] = {"dT_wo_meas_K": {"dist": "uniform", "low": -10.0, "high": 10.0, "unit": "K, additive offset on T_wo,max before creep evaluation", "source": "pyrometer / background-correction uncertainty"}}
@@ -126,7 +136,7 @@ def nominal(spec: Dict[str, object]) -> Dict[str, float]:
     nom.update({f"logK_{j}": math.log10(kp.K_ref[j]) for j in ("CO", "H2", "CH4", "H2O")})
     nom.update({"log_eta_mult": 0.0, "d_activity": 0.0})
     nom.update(dict(zip(spec["_cov_names"], spec["_mean_ht"])))
-    nom.update({"log10_tr_scatter": 0.0, "C_LM": 22.96, "wall_thickness_m": 0.015, "lambda_tube_factor": 1.0, "dT_wo_meas_K": 0.0})
+    nom.update({"log10_tr_scatter": 0.0, "C_LM": creep.active_alloy().C, "wall_thickness_m": 0.015, "lambda_tube_factor": 1.0, "dT_wo_meas_K": 0.0})
     return nom
 
 
@@ -146,14 +156,27 @@ def params_from(theta: Dict[str, float], base_params: lc.LathamParams, load: flo
                    wall_thickness_m=float(theta["wall_thickness_m"]), lambda_tube=29.6 * float(theta["lambda_tube_factor"]), kinetic_params=kinetic_params_from(theta))
 
 
-_CURVE_CACHE: Dict[float, creep.LarsonMillerCurve] = {}
+_CURVE_CACHE: Dict[Tuple[str, float], creep.LarsonMillerCurve] = {}
 
 
 def curve_with_C(C: float) -> creep.LarsonMillerCurve:
-    key = round(float(C), 3)
+    """The active master curve re-expressed with a different Larson-Miller constant.
+
+    For the legacy placeholder the curve is defined by (T, sigma, t_r) points, so a new C changes the LMP
+    of every point and the polynomial must be refitted. A digitised data-sheet curve is instead given
+    directly as log10(sigma) = P3(LMP); C then enters only the conversion between LMP and rupture time,
+    and the polynomial is carried over unchanged.
+    """
+    key = (creep.alloy_key(), round(float(C), 3))
     if key not in _CURVE_CACHE:
-        c0 = creep.LarsonMillerCurve.from_yaml()
-        _CURVE_CACHE[key] = creep.LarsonMillerCurve(C=key, scale=c0.scale, degree=c0.degree, points=c0.points, alloy=c0.alloy, curve_kind=c0.curve_kind).fit()
+        c0 = creep.active_curve()
+        c = creep.LarsonMillerCurve(C=key[1], scale=c0.scale, degree=c0.degree, points=c0.points, alloy=c0.alloy,
+                                    source=c0.source, curve_kind=c0.curve_kind)
+        if c0.points:
+            c.fit()
+        else:
+            c.coeffs = c0.coeffs.copy(); c.lmp_range = c0.lmp_range
+        _CURVE_CACHE[key] = c
     return _CURVE_CACHE[key]
 
 
@@ -162,7 +185,7 @@ def evaluate_one(point: Dict[str, float], theta: Dict[str, float], lq_variant: b
     x = dict(point); x["catalyst_activity"] = float(x["catalyst_activity"]) + float(theta["d_activity"])
     p = params_from(theta, base.params, float(x["feed_per_tube_fraction"]), lq_variant)
     b2 = replace(base, params=p)
-    r = op.run_case(x, b2, creep.LarsonMillerCurve.from_yaml())
+    r = op.run_case(x, b2, creep.active_curve())
     if not r["converged"]:
         return {"converged": False}
     T_wo = r["T_wo_max_K"] + float(theta["dT_wo_meas_K"])

@@ -4,7 +4,8 @@ Stages (each writes ``*_<tag>`` files next to the v1 files and never overwrites 
 ``design`` (LHS campaign, closed-loop S/C x load grid, Saltelli/Sobol screening), ``surrogate`` (GP/HGB/MLP
 surrogates with CV+ conformal intervals), ``scenarios`` (RQ2 hourly histories), ``pareto`` (RQ3 NSGA-II and the
 steam-credit sweep), ``uq`` (RQ4 Monte Carlo and analysis), ``figures`` (journal-style figures from the results).
-Runtimes per stage are recorded in ``data/pipeline_<tag>_runtimes.json``.
+Runtimes per stage are recorded in ``data/pipeline_<tag>_runtimes.json``. The run configuration also selects the
+creep master curve, so ``--version v3`` runs on the Centralloy G 4852 data-sheet curves rather than the placeholder.
 """
 
 from __future__ import annotations
@@ -26,7 +27,8 @@ def _log(msg: str) -> None:
 
 def apply_config(cfg: C.RunConfig) -> None:
     from rdt import operate, optimize, scenarios, steam_credit, surrogate, uq
-    for m in (operate, surrogate, scenarios, optimize, steam_credit, uq):
+    from rdt import creep
+    for m in (creep, operate, surrogate, scenarios, optimize, steam_credit, uq):
         m.use_config(cfg)
 
 
@@ -123,9 +125,9 @@ def run(stages, cfg: C.RunConfig) -> dict:
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Reformer digital twin pipeline")
     ap.add_argument("--stage", default="all", help="one of " + ", ".join(STAGES) + " or 'all' or a comma list")
-    ap.add_argument("--version", default="v2", choices=["v1", "v2"])
+    ap.add_argument("--version", default="v2", choices=sorted(C.BY_TAG))
     a = ap.parse_args(argv)
-    cfg = C.V2 if a.version == "v2" else C.V1
+    cfg = C.BY_TAG[a.version]
     stages = list(STAGES) if a.stage == "all" else [s.strip() for s in a.stage.split(",")]
     for s in stages:
         if s not in STAGES:

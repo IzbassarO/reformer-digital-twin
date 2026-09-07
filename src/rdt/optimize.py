@@ -2,7 +2,7 @@
 
 Decision variables: load fraction, steam-to-carbon, inlet temperature, excess air, firing factor (inlet pressure
 and catalyst activity fixed at base). Objectives: maximise H2 per tube, minimise fuel per kmol H2
-(Q_comb / H2 rate), minimise life-consumption rate per kmol H2 (1/t_r / H2, Yeh placeholder curve, relative to the
+(Q_comb / H2 rate), minimise life-consumption rate per kmol H2 (1/t_r / H2, configured master curve, relative to the
 base case). Constraints: dry CH4 slip <= base, T_wo,max <= 1193 K (920 degC, design-limit ASSUMPTION for HP-Nb
 tubes), outlet T <= 1125 K. The final Pareto set is re-evaluated with the physics model and members that violate
 a constraint under physics are dropped.
@@ -122,7 +122,7 @@ def physics_verify(df: pd.DataFrame, tw: sc.TwinSurrogate, ref: BaseRef, T_shift
 
 
 def _phys(x):
-    r = op.run_case(x, op.base_case(), creep.LarsonMillerCurve.from_yaml())
+    r = op.run_case(x, op.base_case(), creep.active_curve())
     keys = ("H2_net_kmol_h", "T_wo_max_K", "T_out_K", "CH4_slip_dry_pct", "sigma_hot_MPa", "converged")
     return {k: r.get(k, np.nan) for k in keys}
 
