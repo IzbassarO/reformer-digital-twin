@@ -148,7 +148,7 @@ def git_hash() -> str:
 PRODUCERS = [
     ("data/literature_validation/digitized/", "manual WebPlotDigitizer export + validate_xf1989 tidy step"), ("data/literature_validation/xf1989_fit.yaml", "notebooks/03_validation_xf1989.ipynb (rdt.validate_xf1989)"),
     ("data/literature_validation/latham2008_plant_cases.csv", "scratch build script from thesis Appendix H (see README section)"), ("data/literature_validation/latham_fit.yaml", "notebooks/04-06 (rdt.latham_cases, rdt.latham_calibration, rdt.creep)"),
-    ("data/kinetics/", "hand transcription of Xu & Froment 1989 Table 5-7"), ("data/creep_derived/", "rdt.creep (Yeh digitisation, NIMS ingestion template/config)"),
+    ("data/kinetics/", "hand transcription of Xu & Froment 1989 Table 5-7"), ("data/creep_derived/", "rdt.creep_ingest_datasheet (Schmidt+Clemens Centralloy data sheets), rdt.creep (Yeh digitisation, NIMS ingestion template/config)"),
     ("data/design/parameter_ranges", "hand-written operating-space definition"), ("data/design/sobol_", "rdt.pipeline stage design (rdt.operate)"), ("data/design/surrogate_metrics_", "rdt.pipeline stage surrogate (rdt.surrogate)"),
     ("data/design/v1_vs_v2_diff.md", "rdt.report.write_diff_report"), ("data/design/operating_space.yaml", "hand-written"),
     ("data/lhs_runs/", "rdt.pipeline stage design (rdt.operate: LHS, closed-loop grid, Saltelli)"), ("data/scenarios/", "rdt.pipeline stage scenarios (rdt.scenarios)"),

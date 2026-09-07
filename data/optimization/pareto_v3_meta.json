@@ -1,0 +1,163 @@
+{
+  "iso_production": {
+    "n_in_band": 2,
+    "min_life_idx": 15,
+    "min_fuel_idx": 132,
+    "min_life": {
+      "life_rel_base": 0.12256367188164068,
+      "fuel_penalty_pct": -15.584155243418795,
+      "H2_rel_base_pct": 0.3514207888264842
+    },
+    "min_fuel": {
+      "fuel_rel_base_pct": -20.00995003352487,
+      "life_rel_base": 0.33449199475831964,
+      "H2_rel_base_pct": -0.8584030081212446
+    }
+  },
+  "base_domination": {
+    "n_dominating": 37,
+    "n_pareto": 198,
+    "base_is_dominated": true,
+    "max_H2_gain_pct": 23.49588923756125,
+    "max_fuel_saving_pct": 20.008573529277108,
+    "max_life_saving_pct": 87.74363281183594
+  },
+  "discrepancy_max": {
+    "H2_net_kmol_h": 0.007551715265108783,
+    "fuel_MJ_per_kmol_H2": 0.0791909679773255,
+    "life_rate_per_kmol_H2_rel_base": 0.028653295147260782
+  },
+  "n_pareto": 200,
+  "n_feasible_phys": 198,
+  "wall_time_s": 19.625588582999626,
+  "n_evals": 60000,
+  "robustness": {
+    "shift_-20K": {
+      "n_pareto": 200,
+      "mean_nn_distance_norm": 0.053822394379521805,
+      "max_nn_distance_norm": 0.37766260554354364,
+      "decision_ranges": {
+        "feed_per_tube_fraction": [
+          0.6000019171631638,
+          1.099999707591624
+        ],
+        "steam_to_carbon": [
+          3.9316207607732636,
+          3.999999910922015
+        ],
+        "inlet_T": [
+          800.0046982161776,
+          899.9999964886326
+        ],
+        "excess_air": [
+          5.000001699007653,
+          24.999971308930782
+        ],
+        "specific_firing_factor": [
+          0.8500000015109083,
+          1.1499994428679898
+        ]
+      },
+      "wall_time_s": 15.847408292000182
+    },
+    "shift_+20K": {
+      "n_pareto": 200,
+      "mean_nn_distance_norm": 0.056587318380280055,
+      "max_nn_distance_norm": 0.34301577562787533,
+      "decision_ranges": {
+        "feed_per_tube_fraction": [
+          0.6000079542463276,
+          1.0999998759889047
+        ],
+        "steam_to_carbon": [
+          3.9763328163479374,
+          3.9999998417108364
+        ],
+        "inlet_T": [
+          800.0002851077494,
+          899.999974158871
+        ],
+        "excess_air": [
+          5.000011228986473,
+          24.994483799460493
+        ],
+        "specific_firing_factor": [
+          0.8500027873622175,
+          1.1499999062582975
+        ]
+      },
+      "wall_time_s": 12.34493300000031
+    }
+  },
+  "settings": {
+    "pop": 200,
+    "gens": 300,
+    "seed": 0,
+    "T_wo_limit_K": 1193.0,
+    "T_out_limit_K": 1125.0,
+    "slip_limit_pct": 7.81372102120694,
+    "excess_air_base": 21.64128020288727
+  },
+  "base_reference": {
+    "inputs": {
+      "steam_to_carbon": 2.892248062015504,
+      "feed_per_tube_fraction": 1.0,
+      "specific_firing_factor": 1.0,
+      "inlet_T": 884.55,
+      "inlet_P": 30.06,
+      "catalyst_activity": 0.2,
+      "excess_air": 21.64128020288727
+    },
+    "H2": 14.81510339468536,
+    "fuel_MJ_per_kmol_H2": 158.37863724198897,
+    "slip": 7.81372102120694,
+    "T_wo_max": 1146.712500081438,
+    "T_out": 1109.196026902705,
+    "Q_comb_W": 218996949.3832803
+  },
+  "decision_ranges_pareto": {
+    "feed_per_tube_fraction": [
+      0.6000160772751695,
+      1.0999999998465717
+    ],
+    "steam_to_carbon": [
+      3.9554,
+      4.0
+    ],
+    "inlet_T": [
+      800.0032099276174,
+      899.9999718212571
+    ],
+    "excess_air": [
+      5.000050354177301,
+      24.99999367282054
+    ],
+    "specific_firing_factor": [
+      0.8500001818562194,
+      1.1499997573298164
+    ]
+  },
+  "tag": "v3",
+  "decision_bounds": {
+    "feed_per_tube_fraction": [
+      0.6,
+      1.1
+    ],
+    "steam_to_carbon": [
+      2.5,
+      4.0
+    ],
+    "inlet_T": [
+      800.0,
+      900.0
+    ],
+    "excess_air": [
+      5.0,
+      25.0
+    ],
+    "specific_firing_factor": [
+      0.85,
+      1.15
+    ]
+  }
+}

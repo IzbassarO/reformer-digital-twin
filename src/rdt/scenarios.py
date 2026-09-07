@@ -336,7 +336,7 @@ def run_all_scenarios(tw: Optional["TwinSurrogate"] = None) -> Dict[str, object]
     rows = []
     for name, r in results.items():
         rows.append({"scenario": name, "control": r["control"], "annual_H2_kmol_per_tube": r["annual_H2_kmol"], "annual_damage_D": r["annual_damage"],
-                     "years_to_D1_yeh_placeholder": r["years_to_D1"], "life_consumption_per_kmol_H2_rel_S1": (r["annual_damage"] / r["annual_H2_kmol"]) / (D1 / H1),
+                     "years_to_D1_active_curve": r["years_to_D1"], "life_consumption_per_kmol_H2_rel_S1": (r["annual_damage"] / r["annual_H2_kmol"]) / (D1 / H1),
                      "D_avg_condition": r["D_avg_condition"], "avg_condition_error": r["avg_condition_error"], "T_wo_max_mean_K": r["T_wo_max_mean_K"], "T_wo_max_max_K": r["T_wo_max_max_K"],
                      "firing_mean": r["firing_mean"], "T_out_mean_K": r["T_out_mean_K"], "CH4_slip_mean_pct": r["CH4_slip_mean_pct"], "n_physics_hours": r["n_physics_hours"],
                      "verify_max_abs_dT_wo_K": r["verify_max_abs_dT_wo_K"], "verify_max_abs_dT_out_K": r["verify_max_abs_dT_out_K"], "notes": r["notes"]})

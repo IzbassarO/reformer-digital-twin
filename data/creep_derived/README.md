@@ -39,3 +39,32 @@ Two notes on the alloy identities:
 **The PDFs are copyright Schmidt + Clemens and are not redistributed here.**
 `data/creep_derived/datasheets/` is git-ignored. To reproduce the digitisation, place the three files
 named in `sources.yaml` there and run `python -m rdt.creep_ingest_datasheet --all`.
+
+### Derived files
+| File | Written by | Contents |
+|---|---|---|
+| `centralloy_g_4852_rupture_curve.csv` | `rdt.creep_ingest_datasheet` | Average and lower-scatter-band curves, LMP 25.32-32.39 |
+| `centralloy_g_4852_micro_rupture_curve.csv` | `rdt.creep_ingest_datasheet` | LMP 31.33-39.29 |
+| `centralloy_et_45_micro_rupture_curve.csv` | `rdt.creep_ingest_datasheet` | LMP 26.07-34.59 |
+| `validation_v3.txt` | `rdt.creep_validate` | The three validation checks (see below) |
+
+Columns: `alloy, curve (average|minimum), lmp, stress_mpa, source_file, page, method (vector|raster),
+extracted_on`. The extractor has two independent paths - analytic Bezier flattening of the vector chart,
+and a 600 dpi raster trace - which agree to 0.06 % median and 1.6 % worst case in stress on all six
+curves. `rdt.creep.alloy_curves_from_csv` fits `log10(sigma) = P3(LMP)` to each curve with the alloy's
+own constant, and derives the scatter from the **horizontal** separation of the two curves at constant
+stress, `delta_log10_tr = (LMP_avg - LMP_min)/(scale T)`. At 1147 K that gives
+
+| Alloy | Scatter over the digitised range | Median |
+|---|---|---|
+| G 4852 | 0.243-0.364 decades | 0.298 |
+| G 4852 Micro | 0.427-0.558 decades | 0.461 |
+| ET 45 Micro | 0.337-0.491 decades | 0.414 |
+
+replacing the assumed constant 0.3 decades of v1/v2 (still selectable as `legacy_yeh_manaurite_xm`).
+
+`python -m rdt.creep_validate` checks that the fitted lower-scatter-band curves reproduce the quoted
+100 000 h strengths (18.3 MPa for G 4852 and 21.2 MPa for G 4852 Micro, both matched at about 930 C
+rather than at 900 C), that `ingest_nims` still recovers C and scatter within 10 % on synthetic data,
+and that the base operating point (1147 K, 12.9 MPa) is interpolation on every digitised curve.
+`python -m rdt.alloy_comparison` re-scores the headline result ratios on each alloy.

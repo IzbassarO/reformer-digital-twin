@@ -1,0 +1,230 @@
+{
+  "alphas": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "base": {
+    "firebox_MJ_per_kmol_H2": 158.37863724198897,
+    "process_heat_MJ_per_kmol_H2": 89.50893378150943
+  },
+  "per_alpha": {
+    "0.0": {
+      "n_front": 120,
+      "n_feasible_phys": 120,
+      "wall_time_s": 15.837888540999302,
+      "base_fuel_total_MJ_per_kmol_H2": 247.8875710234984,
+      "min_life": {
+        "steam_to_carbon": 3.9995,
+        "load": 0.9629010788877496,
+        "firing": 0.9299813643038297,
+        "inlet_T": 886.2678950233301,
+        "excess_air": 24.568463775240346,
+        "life_rel_base": 0.0942641157345474,
+        "fuel_total_rel_base_pct": 4.083932092741116,
+        "T_wo_max_K": 1103.4567522492987,
+        "H2_rel_base_pct": -0.5340031950818447
+      },
+      "min_fuel": {
+        "steam_to_carbon": 2.6395,
+        "load": 0.9993808579353758,
+        "firing": 0.8869328775496084,
+        "inlet_T": 899.9862256291829,
+        "excess_air": 5.001974573559945,
+        "life_rel_base": 3.6473793001999386,
+        "fuel_total_rel_base_pct": -8.672420976762552,
+        "T_wo_max_K": 1171.8611922595646,
+        "H2_rel_base_pct": -0.9743242554290377
+      },
+      "knee": {
+        "steam_to_carbon": 3.362,
+        "load": 0.9670689407235092,
+        "firing": 0.8507834253078657,
+        "inlet_T": 899.7888609428835,
+        "excess_air": 5.037380813054754,
+        "life_rel_base": 0.7829971573791977,
+        "fuel_total_rel_base_pct": -6.3497845280869765,
+        "T_wo_max_K": 1142.0443516470057,
+        "H2_rel_base_pct": -0.8328295852820244
+      },
+      "SC_range_front": [
+        2.6395,
+        4.0
+      ]
+    },
+    "0.25": {
+      "n_front": 120,
+      "n_feasible_phys": 120,
+      "wall_time_s": 15.490554291999615,
+      "base_fuel_total_MJ_per_kmol_H2": 225.51033757812104,
+      "min_life": {
+        "steam_to_carbon": 3.9981,
+        "load": 0.9587277849794569,
+        "firing": 0.9079894999564905,
+        "inlet_T": 899.6233714855134,
+        "excess_air": 24.733899825991877,
+        "life_rel_base": 0.09301756083152372,
+        "fuel_total_rel_base_pct": 0.5310522381797522,
+        "T_wo_max_K": 1103.1343379140976,
+        "H2_rel_base_pct": -0.9880308833884355
+      },
+      "min_fuel": {
+        "steam_to_carbon": 2.9612,
+        "load": 0.9852685814739656,
+        "firing": 0.8663232534501996,
+        "inlet_T": 899.9705012131222,
+        "excess_air": 5.000035120170862,
+        "life_rel_base": 1.7064369197314109,
+        "fuel_total_rel_base_pct": -8.866324829869543,
+        "T_wo_max_K": 1156.9060071865101,
+        "H2_rel_base_pct": -0.9546033947094967
+      },
+      "knee": {
+        "steam_to_carbon": 3.8355,
+        "load": 0.9380576600636171,
+        "firing": 0.850002592655114,
+        "inlet_T": 899.8880353497074,
+        "excess_air": 5.007720188550063,
+        "life_rel_base": 0.4163589771769508,
+        "fuel_total_rel_base_pct": -7.017705865986146,
+        "T_wo_max_K": 1130.3432462264395,
+        "H2_rel_base_pct": -0.8282976727828406
+      },
+      "SC_range_front": [
+        2.9612,
+        4.0
+      ]
+    },
+    "0.5": {
+      "n_front": 120,
+      "n_feasible_phys": 120,
+      "wall_time_s": 14.811976458000572,
+      "base_fuel_total_MJ_per_kmol_H2": 203.13310413274368,
+      "min_life": {
+        "steam_to_carbon": 4.0,
+        "load": 0.9587658974644193,
+        "firing": 0.9077194753095418,
+        "inlet_T": 899.9912941315699,
+        "excess_air": 24.784979040684632,
+        "life_rel_base": 0.09258302311187856,
+        "fuel_total_rel_base_pct": -2.754170354999952,
+        "T_wo_max_K": 1103.0552890515955,
+        "H2_rel_base_pct": -0.9762394180236944
+      },
+      "min_fuel": {
+        "steam_to_carbon": 3.6875,
+        "load": 0.9448161430455881,
+        "firing": 0.8500001255479473,
+        "inlet_T": 899.985152419525,
+        "excess_air": 5.000088205065624,
+        "life_rel_base": 0.5042510492380634,
+        "fuel_total_rel_base_pct": -10.427240060462806,
+        "T_wo_max_K": 1133.8210135497197,
+        "H2_rel_base_pct": -0.991454231208877
+      },
+      "knee": {
+        "steam_to_carbon": 3.9999,
+        "load": 0.9455187633312742,
+        "firing": 0.8500003933116825,
+        "inlet_T": 899.305992808299,
+        "excess_air": 10.962488632815404,
+        "life_rel_base": 0.1952857860356914,
+        "fuel_total_rel_base_pct": -8.403769178119635,
+        "T_wo_max_K": 1116.4492830442098,
+        "H2_rel_base_pct": -0.9834410343779743
+      },
+      "SC_range_front": [
+        3.6874,
+        4.0
+      ]
+    },
+    "0.75": {
+      "n_front": 120,
+      "n_feasible_phys": 120,
+      "wall_time_s": 11.129006209000181,
+      "base_fuel_total_MJ_per_kmol_H2": 180.75587068736633,
+      "min_life": {
+        "steam_to_carbon": 4.0,
+        "load": 0.959093069940404,
+        "firing": 0.9085488108748542,
+        "inlet_T": 899.9137782549989,
+        "excess_air": 24.87944553608331,
+        "life_rel_base": 0.09225196761249176,
+        "fuel_total_rel_base_pct": -6.783008693143722,
+        "T_wo_max_K": 1102.9982823942628,
+        "H2_rel_base_pct": -0.9444324565129891
+      },
+      "min_fuel": {
+        "steam_to_carbon": 4.0,
+        "load": 0.9275796677523034,
+        "firing": 0.850001244787074,
+        "inlet_T": 899.9991757322999,
+        "excess_air": 5.000824667868216,
+        "life_rel_base": 0.3423105156025277,
+        "fuel_total_rel_base_pct": -14.639637581609598,
+        "T_wo_max_K": 1126.749439154859,
+        "H2_rel_base_pct": -0.9549044395559481
+      },
+      "knee": {
+        "steam_to_carbon": 4.0,
+        "load": 0.9578933650665703,
+        "firing": 0.8500032249927729,
+        "inlet_T": 899.8622363549888,
+        "excess_air": 14.299057756788843,
+        "life_rel_base": 0.1432798520103363,
+        "fuel_total_rel_base_pct": -12.014251524336094,
+        "T_wo_max_K": 1110.8842148286487,
+        "H2_rel_base_pct": -0.771736561032077
+      },
+      "SC_range_front": [
+        3.9963,
+        4.0
+      ]
+    },
+    "1.0": {
+      "n_front": 120,
+      "n_feasible_phys": 120,
+      "wall_time_s": 10.530538750000233,
+      "base_fuel_total_MJ_per_kmol_H2": 158.37863724198897,
+      "min_life": {
+        "steam_to_carbon": 3.9999,
+        "load": 0.960925026922574,
+        "firing": 0.9016009500578603,
+        "inlet_T": 899.8788565727898,
+        "excess_air": 23.716228868397227,
+        "life_rel_base": 0.0963603354074264,
+        "fuel_total_rel_base_pct": -12.705250814898184,
+        "T_wo_max_K": 1103.8282321229647,
+        "H2_rel_base_pct": -0.7533757419138087
+      },
+      "min_fuel": {
+        "steam_to_carbon": 3.9999,
+        "load": 0.9296469123667466,
+        "firing": 0.8500069141820721,
+        "inlet_T": 899.9998975872007,
+        "excess_air": 5.000525530232494,
+        "life_rel_base": 0.3414528875514342,
+        "fuel_total_rel_base_pct": -20.37465689560516,
+        "T_wo_max_K": 1126.7504756433593,
+        "H2_rel_base_pct": -0.7594476266520767
+      },
+      "knee": {
+        "steam_to_carbon": 3.9999,
+        "load": 0.9554813695587772,
+        "firing": 0.8500007110247254,
+        "inlet_T": 899.9596805484603,
+        "excess_air": 14.297853877092667,
+        "life_rel_base": 0.14410244952268686,
+        "fuel_total_rel_base_pct": -17.979186636346235,
+        "T_wo_max_K": 1110.936688463524,
+        "H2_rel_base_pct": -0.9812497353586358
+      },
+      "SC_range_front": [
+        3.9996,
+        4.0
+      ]
+    }
+  }
+}

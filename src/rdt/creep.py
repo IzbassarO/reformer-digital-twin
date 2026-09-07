@@ -108,7 +108,11 @@ class LarsonMillerCurve:
 
     @classmethod
     def from_config(cls, config: Union[str, Path] = DATA_DIR / "creep_config.yaml") -> "LarsonMillerCurve":
-        """Load the curve named by ``active:`` in ``data/creep_derived/creep_config.yaml`` (one-line switch)."""
+        """Load the curve named by ``active:`` in ``data/creep_derived/creep_config.yaml`` (one-line switch).
+
+        Superseded for pipeline runs by :func:`active_curve`, which follows ``RunConfig.creep_alloy``;
+        kept for interactive use of the YAML curve files.
+        """
         cfg = yaml.safe_load(Path(config).read_text())
         return cls.from_yaml(Path(config).parent / cfg["active"])
 

@@ -1,0 +1,74 @@
+{
+  "S1_base": {
+    "steam_to_carbon": 2.892248062015504,
+    "feed_per_tube_fraction": 1.0,
+    "specific_firing_factor": 0.9780424587994436,
+    "inlet_T": 884.55,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.2,
+    "excess_air": 21.64128020288727
+  },
+  "RQ3_knee": {
+    "steam_to_carbon": 4.0,
+    "feed_per_tube_fraction": 1.099985516239765,
+    "specific_firing_factor": 0.8657920615819497,
+    "inlet_T": 892.699079068949,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.2,
+    "excess_air": 5.424300915576476
+  },
+  "RQ3_min_life_iso_H2": {
+    "steam_to_carbon": 4.0,
+    "feed_per_tube_fraction": 0.9713035425542104,
+    "specific_firing_factor": 0.8721526883486205,
+    "inlet_T": 896.7056964785735,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.2,
+    "excess_air": 17.604844743980763
+  },
+  "S5_y4_holdslip_end": {
+    "steam_to_carbon": 2.892248062015504,
+    "feed_per_tube_fraction": 1.0,
+    "specific_firing_factor": 0.9954222992995257,
+    "inlet_T": 884.55,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.1000057077625571,
+    "excess_air": 21.64128020288727
+  },
+  "S6_SC2.5": {
+    "steam_to_carbon": 2.5,
+    "feed_per_tube_fraction": 1.0,
+    "specific_firing_factor": 0.8973752289333217,
+    "inlet_T": 884.55,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.2,
+    "excess_air": 21.64128020288727
+  },
+  "S6_SC3.5": {
+    "steam_to_carbon": 3.5,
+    "feed_per_tube_fraction": 1.0,
+    "specific_firing_factor": 1.09151247292956,
+    "inlet_T": 884.55,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.2,
+    "excess_air": 21.64128020288727
+  },
+  "load_0.70": {
+    "steam_to_carbon": 2.892248062015504,
+    "feed_per_tube_fraction": 0.7,
+    "specific_firing_factor": 0.8774519844521363,
+    "inlet_T": 884.55,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.2,
+    "excess_air": 21.64128020288727
+  },
+  "load_0.85": {
+    "steam_to_carbon": 2.892248062015504,
+    "feed_per_tube_fraction": 0.85,
+    "specific_firing_factor": 0.9236741052939124,
+    "inlet_T": 884.55,
+    "inlet_P": 30.06,
+    "catalyst_activity": 0.2,
+    "excess_air": 21.64128020288727
+  }
+}

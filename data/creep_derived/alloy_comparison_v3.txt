@@ -1,0 +1,45 @@
+Alloy sensitivity of the headline ratios (v3 results, base alloy centralloy_g_4852)
+Operating points, temperatures, stresses and hydrogen rates are held fixed; only the
+Larson-Miller master curve is swapped.
+
+                                  C      S2/S1      S3/S1  ageing y4/y1  knee/base  S/C 3.5 / 2.5  base t_r [y]  scatter [dec]  base LMP in range
+alloy                                                                                                                                            
+G 4852 (HP-Nb)               18.600      1.010      1.013         2.591      0.281          0.738      1339.059          0.313               True
+G 4852 Micro                 22.900      0.993      0.986         3.138      0.224          0.716      7542.742          0.444               True
+ET 45 Micro                  19.300      1.010      1.013         2.668      0.267          0.730      1640.858          0.452               True
+Yeh placeholder (legacy)     22.960      0.991      0.983         3.154      0.225          0.718      8981.708          0.301               True
+
+Spread across the four curves:
+  S2/S1            0.991 .. 1.010   spread   1.8 %   within 1.0 % of 1 on every curve - no material difference
+  S3/S1            0.983 .. 1.013   spread   3.0 %   within 1.7 % of 1 on every curve - no material difference
+  ageing y4/y1     2.591 .. 3.154   spread  19.5 %   same side of 1 - direction holds
+  knee/base        0.224 .. 0.281   spread  22.7 %   same side of 1 - direction holds
+  S/C 3.5 / 2.5    0.716 .. 0.738   spread   3.0 %   same side of 1 - direction holds
+
+  ratios with a material effect on every curve: ageing y4/y1, knee/base, S/C 3.5 / 2.5
+  their direction is the same on every curve   : YES
+
+  NOTE: S2/S1, S3/S1 cross unity between alloys. They sit within a few per cent
+  of 1 on every curve, so the paper should report them as 'no material difference between
+  these scenarios' rather than asserting a direction that depends on the alloy.
+
+  Caveat: the table above holds the operating points fixed, so the knee is the base alloy's
+  knee re-scored on each curve. Where a run optimised its own knee, the ratio moves far less:
+                            alloy  knee/base (own curve)  S/C  firing  T_wo_max_K       H2
+    tag                                                                                   
+    v2   Yeh placeholder (legacy)                 0.2801  4.0  0.8708   1130.4566  17.2210
+    v3             G 4852 (HP-Nb)                 0.2810  4.0  0.8658   1126.9325  17.0636
+
+    re-optimised knee/base spans 0.280-0.281, a spread of 0.3 % against 22.7 % with the point held fixed;
+    the optimiser recovers nearly all of the difference by re-locating the knee.
+
+\begin{tabular}{lrrrrrr}
+\toprule
+Alloy & $C$ & S2/S1 & S3/S1 & ageing y4/y1 & knee/base & S/C 3.5 / 2.5 \\
+\midrule
+G 4852 (HP-Nb) & 18.6 & 1.010 & 1.013 & 2.591 & 0.281 & 0.738 \\
+G 4852 Micro & 22.9 & 0.993 & 0.986 & 3.138 & 0.224 & 0.716 \\
+ET 45 Micro & 19.3 & 1.010 & 1.013 & 2.668 & 0.267 & 0.730 \\
+Yeh placeholder (legacy) & 23.0 & 0.991 & 0.983 & 3.154 & 0.225 & 0.718 \\
+\bottomrule
+\end{tabular}
