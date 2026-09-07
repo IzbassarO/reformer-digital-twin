@@ -9,7 +9,7 @@ description = "Physics-informed digital twin of an industrial steam methane refo
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
-authors = [{ name = "Izbassar Orynbassarov" }]
+authors = [{ name = "Izbassar Orynbassar" }]
 dependencies = [
     "cantera==3.2.0",
     "coolprop==8.0.0",
