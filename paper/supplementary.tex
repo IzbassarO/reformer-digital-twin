@@ -253,6 +253,38 @@ $\alpha$ & Regime & S/C & Load & Firing & Excess air (\%) & Rel. life cost & Tot
 \end{table}
 
 % =====================================================================
+\section{Sensitivity indices}
+\label{sec:sobolsupp}
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{Sobol first-order ($S_1$) and total-effect ($S_T$) indices with 95\,\% confidence half-widths from a Saltelli design ($N = 256$) over the operating space of Table~\ref{tab:ranges}.}
+\label{tab:sobol}
+\begin{tabular}{lcccccc}
+\toprule
+Input & $S_1$ ($T_{\mathrm{wo,max}}$) & $S_T$ ($T_{\mathrm{wo,max}}$) & $S_1$ ($\log_{10} t_r$) & $S_T$ ($\log_{10} t_r$) & $S_1$ (CH$_4$ slip) & $S_T$ (CH$_4$ slip) \\
+\midrule
+steam-to-carbon & 0.29 $\pm$ 0.09 & 0.28 $\pm$ 0.05 & 0.25 $\pm$ 0.09 & 0.25 $\pm$ 0.05 & 0.04 $\pm$ 0.03 & 0.04 $\pm$ 0.01 \\
+load            & 0.03 $\pm$ 0.03 & 0.03 $\pm$ 0.01 & 0.03 $\pm$ 0.03 & 0.03 $\pm$ 0.01 & 0.19 $\pm$ 0.07 & 0.19 $\pm$ 0.03 \\
+firing          & 0.34 $\pm$ 0.09 & 0.35 $\pm$ 0.06 & 0.28 $\pm$ 0.08 & 0.29 $\pm$ 0.06 & 0.54 $\pm$ 0.12 & 0.54 $\pm$ 0.10 \\
+inlet $T$       & 0.06 $\pm$ 0.05 & 0.06 $\pm$ 0.01 & 0.05 $\pm$ 0.04 & 0.05 $\pm$ 0.01 & 0.08 $\pm$ 0.06 & 0.09 $\pm$ 0.02 \\
+inlet $p$       & 0.02 $\pm$ 0.02 & 0.02 $\pm$ 0.00 & 0.17 $\pm$ 0.07 & 0.17 $\pm$ 0.03 & 0.03 $\pm$ 0.03 & 0.03 $\pm$ 0.01 \\
+activity        & 0.07 $\pm$ 0.04 & 0.08 $\pm$ 0.02 & 0.06 $\pm$ 0.04 & 0.06 $\pm$ 0.01 & 0.00 $\pm$ 0.01 & 0.00 $\pm$ 0.00 \\
+excess air      & 0.19 $\pm$ 0.06 & 0.19 $\pm$ 0.03 & 0.16 $\pm$ 0.06 & 0.16 $\pm$ 0.03 & 0.11 $\pm$ 0.04 & 0.11 $\pm$ 0.02 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Beyond the three leading drivers quoted in the main text, inlet temperature, catalyst activity and
+load each contribute below 0.1 to the variance of the hot-spot temperature, and inlet pressure is
+negligible for it. Excess air matters because at fixed fuel it lowers the adiabatic flame
+temperature and raises the flue-gas flow, both of which move heat release down the tube. First-order
+and total-effect indices agree within their confidence intervals for every input, so interactions
+are weak over the operating space and the influence of each variable can be read from one-at-a-time
+maps. The methane slip is governed by the firing factor ($S_T = 0.54$) and the load, as expected for
+an approach-to-equilibrium quantity.
+
+% =====================================================================
 \section{Variance decomposition}
 \label{sec:variance}
 
