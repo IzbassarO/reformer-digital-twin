@@ -1,0 +1,183 @@
+\begin{thebibliography}{10}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \def\href#1#2{#2} \def\path#1{#1}\fi
+
+\bibitem{xu1989a}
+J.~Xu, G.~F. Froment, \href{http://dx.doi.org/10.1002/aic.690350109}{Methane steam reforming, methanation and water-gas shift: {I}. intrinsic kinetics}, AIChE Journal 35~(1) (1989) 88--96.
+\newblock \href {https://doi.org/10.1002/aic.690350109} {\path{doi:10.1002/aic.690350109}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1002/aic.690350109}
+
+\bibitem{xu1989b}
+J.~Xu, G.~F. Froment, \href{http://dx.doi.org/10.1002/aic.690350110}{Methane steam reforming: {II}. diffusional limitations and reactor simulation}, AIChE Journal 35~(1) (1989) 97--103.
+\newblock \href {https://doi.org/10.1002/aic.690350110} {\path{doi:10.1002/aic.690350110}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1002/aic.690350110}
+
+\bibitem{plehiers1989}
+P.~M. Plehiers, G.~F. Froment, \href{http://dx.doi.org/10.1002/ceat.270120105}{Coupled simulation of heat transfer and reaction in a steam reforming furnace}, Chemical Engineering \& Technology 12~(1) (1989) 20--26.
+\newblock \href {https://doi.org/10.1002/ceat.270120105} {\path{doi:10.1002/ceat.270120105}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1002/ceat.270120105}
+
+\bibitem{pantoleontos2012}
+G.~Pantoleontos, E.~S. Kikkinides, M.~C. Georgiadis, \href{http://dx.doi.org/10.1016/j.ijhydene.2012.02.125}{A heterogeneous dynamic model for the simulation and optimisation of the steam methane reforming reactor}, International Journal of Hydrogen Energy 37~(21) (2012) 16346--16358.
+\newblock \href {https://doi.org/10.1016/j.ijhydene.2012.02.125} {\path{doi:10.1016/j.ijhydene.2012.02.125}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1016/j.ijhydene.2012.02.125}
+
+\bibitem{latham2011}
+D.~A. Latham, K.~B. McAuley, B.~A. Peppley, T.~M. Raybold, \href{http://dx.doi.org/10.1016/j.fuproc.2011.04.001}{Mathematical modeling of an industrial steam-methane reformer for on-line deployment}, Fuel Processing Technology 92~(8) (2011) 1574--1586.
+\newblock \href {https://doi.org/10.1016/j.fuproc.2011.04.001} {\path{doi:10.1016/j.fuproc.2011.04.001}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1016/j.fuproc.2011.04.001}
+
+\bibitem{zamaniyan2008}
+A.~Zamaniyan, H.~Ebrahimi, J.~S.~S. Mohammadzadeh, \href{http://dx.doi.org/10.1016/j.cep.2007.03.005}{A unified model for top fired methane steam reformers using three-dimensional zonal analysis}, Chemical Engineering and Processing: Process Intensification 47~(5) (2008) 946--956.
+\newblock \href {https://doi.org/10.1016/j.cep.2007.03.005} {\path{doi:10.1016/j.cep.2007.03.005}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1016/j.cep.2007.03.005}
+
+\bibitem{lao2016}
+L.~Lao, A.~Aguirre, A.~Tran, Z.~Wu, H.~Durand, P.~D. Christofides, \href{http://dx.doi.org/10.1016/j.ces.2016.03.038}{{CFD} modeling and control of a steam methane reforming reactor}, Chemical Engineering Science 148 (2016) 78--92.
+\newblock \href {https://doi.org/10.1016/j.ces.2016.03.038} {\path{doi:10.1016/j.ces.2016.03.038}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1016/j.ces.2016.03.038}
+
+\bibitem{tran2017}
+A.~Tran, A.~Aguirre, M.~Crose, H.~Durand, P.~D. Christofides, \href{http://dx.doi.org/10.1016/j.compchemeng.2017.04.013}{Temperature balancing in steam methane reforming furnace via an integrated {CFD}/data-based optimization approach}, Computers \& Chemical Engineering 104 (2017) 185--200.
+\newblock \href {https://doi.org/10.1016/j.compchemeng.2017.04.013} {\path{doi:10.1016/j.compchemeng.2017.04.013}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1016/j.compchemeng.2017.04.013}
+
+\bibitem{kumar2015}
+A.~Kumar, M.~Baldea, T.~F. Edgar, O.~A. Ezekoye, \href{http://dx.doi.org/10.1021/ie504087z}{Smart manufacturing approach for efficient operation of industrial steam-methane reformers}, Industrial \& Engineering Chemistry Research 54~(16) (2015) 4360--4370.
+\newblock \href {https://doi.org/10.1021/ie504087z} {\path{doi:10.1021/ie504087z}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1021/ie504087z}
+
+\bibitem{kumar2017}
+A.~Kumar, M.~Baldea, T.~F. Edgar, \href{http://dx.doi.org/10.1016/j.compchemeng.2017.01.002}{A physics-based model for industrial steam-methane reformer optimization with non-uniform temperature field}, Computers \& Chemical Engineering 105 (2017) 224--236.
+\newblock \href {https://doi.org/10.1016/j.compchemeng.2017.01.002} {\path{doi:10.1016/j.compchemeng.2017.01.002}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1016/j.compchemeng.2017.01.002}
+
+\bibitem{nims1990}
+{National Institute for Materials Science}, \href{https://doi.org/10.11503/nims.1020}{Data sheets on the elevated-temperature properties of centrifugally cast 25cr-20ni-0.4c steel tubes for use in reformer furnaces ({SCH} 22-{CF})}, NIMS Creep Data Sheet 16B, National Institute for Materials Science (NIMS), Tsukuba, Japan, hK40-type alloy. Digital edition credits K. Sawada, K. Kimura, F. Abe, Y. Taniuchi, K. Sekido, T. Nojima, T. Ohba, H. Kushima, H. Miyazaki, H. Hongo and T. Watanabe (1990).
+\newblock \href {https://doi.org/10.11503/nims.1020} {\path{doi:10.11503/nims.1020}}.
+\newline\urlprefix\url{https://doi.org/10.11503/nims.1020}
+
+\bibitem{nims1991}
+{National Institute for Materials Science}, \href{https://doi.org/10.11503/nims.1042}{Data sheets on the elevated-temperature properties of centrifugally cast tubes and cast block of 25cr-35ni-0.4c steel for reformer furnaces ({SCH} 24)}, NIMS Creep Data Sheet 38A, National Institute for Materials Science (NIMS), Tsukuba, Japan, hP40-type alloy. Digital edition credits K. Sawada, K. Kimura, F. Abe, Y. Taniuchi, K. Sekido, T. Nojima, T. Ohba, H. Kushima, H. Miyazaki, H. Hongo and T. Watanabe (1991).
+\newblock \href {https://doi.org/10.11503/nims.1042} {\path{doi:10.11503/nims.1042}}.
+\newline\urlprefix\url{https://doi.org/10.11503/nims.1042}
+
+\bibitem{latham2008}
+D.~Latham, \href{http://hdl.handle.net/1974/1650}{Mathematical modelling of an industrial steam methane reformer}, {M.Sc.E.} thesis, department of chemical engineering, Queen's University, Kingston, Ontario, Canada, supervisors: K. B. McAuley and B. A. Peppley. Open access via QSpace (Queen's University research repository), handle 1974/1650; deposited 2009-01-08 (Dec. 2008).
+\newline\urlprefix\url{http://hdl.handle.net/1974/1650}
+
+\bibitem{ray2003}
+A.~K. Ray, S.~K. Sinha, Y.~N. Tiwari, J.~Swaminathan, G.~Das, S.~Chaudhuri, R.~Singh, \href{http://dx.doi.org/10.1016/S1350-6307(02)00029-8}{Analysis of failed reformer tubes}, Engineering Failure Analysis 10~(3) (2003) 351--362.
+\newblock \href {https://doi.org/10.1016/S1350-6307(02)00029-8} {\path{doi:10.1016/S1350-6307(02)00029-8}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1016/S1350-6307(02)00029-8}
+
+\bibitem{whittaker2013}
+M.~Whittaker, B.~Wilshire, J.~Brear, \href{http://dx.doi.org/10.1016/j.msea.2013.05.041}{Creep fracture of the centrifugally-cast superaustenitic steels, {HK40} and {HP40}}, Materials Science and Engineering: A 580 (2013) 391--396.
+\newblock \href {https://doi.org/10.1016/j.msea.2013.05.041} {\path{doi:10.1016/j.msea.2013.05.041}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1016/j.msea.2013.05.041}
+
+\bibitem{haidemenopoulos2021}
+G.~N. Haidemenopoulos, A.~D. Zervaki, H.~Kamoutsi, K.~Polychronopoulou, \href{http://dx.doi.org/10.1080/26889277.2021.1994841}{Creep rupture in {HP-Nb} refractory steel tubes due to short-term overheating}, European Journal of Materials 1~(1) (2021) 1--22, open access.
+\newblock \href {https://doi.org/10.1080/26889277.2021.1994841} {\path{doi:10.1080/26889277.2021.1994841}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1080/26889277.2021.1994841}
+
+\bibitem{guguloth2023}
+K.~Guguloth, N.~Roy, \href{http://dx.doi.org/10.1016/j.ijpvp.2023.104938}{Creep life estimation of reformer alloy using $\theta$-projection method -- a neuro fuzzy approach}, International Journal of Pressure Vessels and Piping 203 (2023) 104938.
+\newblock \href {https://doi.org/10.1016/j.ijpvp.2023.104938} {\path{doi:10.1016/j.ijpvp.2023.104938}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1016/j.ijpvp.2023.104938}
+
+\bibitem{yeh2021}
+C.-L. Yeh, \href{http://dx.doi.org/10.3390/app11010231}{Effect of burner operation on the catalyst tube lifetime of a steam methane reformer: A numerical study}, Applied Sciences 11~(1) (2021) 231, open access.
+\newblock \href {https://doi.org/10.3390/app11010231} {\path{doi:10.3390/app11010231}}.
+\newline\urlprefix\url{http://dx.doi.org/10.3390/app11010231}
+
+\bibitem{larson1952}
+F.~R. Larson, J.~Miller, A time-temperature relationship for rupture and creep stresses, Transactions of the ASME 74 (1952) 765--775, tODO: no DOI registered.
+
+\bibitem{robinson1952}
+E.~L. Robinson, Effect of temperature variation on the long-time rupture strength of steels, Transactions of the ASME 74 (1952) 777--781, tODO: no DOI registered; verify page range.
+
+\bibitem{api530}
+{American Petroleum Institute}, Calculation of heater-tube thickness in petroleum refineries, API Standard 530, 7th edition, American Petroleum Institute, Washington, DC, tODO: confirm edition used (2015).
+
+\bibitem{yerimah2025}
+L.~E. Yerimah, M.~Mehana, R.~P. Singh, P.~Sharan, \href{http://dx.doi.org/10.1021/acs.iecr.5c01681}{Uncertainty-aware hydrogen production optimization from a steam methane reformer with a water gas shift reactor and pressure swing adsorption}, Industrial \& Engineering Chemistry Research 64~(37) (2025) 18298--18314.
+\newblock \href {https://doi.org/10.1021/acs.iecr.5c01681} {\path{doi:10.1021/acs.iecr.5c01681}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1021/acs.iecr.5c01681}
+
+\bibitem{jafarizadeh2024}
+A.~Jafarizadeh, M.~Panjepour, M.~D. Emami, \href{http://dx.doi.org/10.1016/j.ijhydene.2024.11.352}{Advanced modelling and optimization of steam methane reforming: From {CFD} simulation to machine learning -- driven optimization}, International Journal of Hydrogen Energy 96 (2024) 1262--1280.
+\newblock \href {https://doi.org/10.1016/j.ijhydene.2024.11.352} {\path{doi:10.1016/j.ijhydene.2024.11.352}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1016/j.ijhydene.2024.11.352}
+
+\bibitem{nabavi2025}
+S.~R. Nabavi, Z.~Guo, Z.~Wang, \href{https://arxiv.org/abs/2507.07641}{Machine learning-assisted surrogate modeling with multi-objective optimization and decision-making of a steam methane reforming reactor} (2025).
+\newblock \href {http://arxiv.org/abs/2507.07641} {\path{arXiv:2507.07641}}.
+\newline\urlprefix\url{https://arxiv.org/abs/2507.07641}
+
+\bibitem{goodwin2024}
+D.~G. Goodwin, H.~K. Moffat, I.~Schoegl, R.~L. Speth, B.~W. Weber, \href{https://zenodo.org/doi/10.5281/zenodo.14455267}{Cantera: An object-oriented software toolkit for chemical kinetics, thermodynamics, and transport processes}, cantera (2024).
+\newblock \href {https://doi.org/10.5281/ZENODO.14455267} {\path{doi:10.5281/ZENODO.14455267}}.
+\newline\urlprefix\url{https://zenodo.org/doi/10.5281/zenodo.14455267}
+
+\bibitem{ergun1952}
+S.~Ergun, Fluid flow through packed columns, Chemical Engineering Progress 48~(2) (1952) 89--94, tODO: no DOI registered.
+
+\bibitem{leva1948}
+M.~Leva, M.~Grummer, \href{http://dx.doi.org/10.1021/ie50459a012}{Heat transfer to gases through packed tubes}, Industrial \& Engineering Chemistry 40~(3) (1948) 415--419.
+\newblock \href {https://doi.org/10.1021/ie50459a012} {\path{doi:10.1021/ie50459a012}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1021/ie50459a012}
+
+\bibitem{dewasch1972}
+A.~de~Wasch, G.~Froment, \href{http://dx.doi.org/10.1016/0009-2509(72)87012-X}{Heat transfer in packed beds}, Chemical Engineering Science 27~(3) (1972) 567--576.
+\newblock \href {https://doi.org/10.1016/0009-2509(72)87012-x} {\path{doi:10.1016/0009-2509(72)87012-x}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1016/0009-2509(72)87012-X}
+
+\bibitem{kunii1960}
+S.~Yagi, D.~Kunii, \href{http://dx.doi.org/10.1002/aic.690060119}{Studies on heat transfer near wall surface in packed beds}, AIChE Journal 6~(1) (1960) 97--104.
+\newblock \href {https://doi.org/10.1002/aic.690060119} {\path{doi:10.1002/aic.690060119}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1002/aic.690060119}
+
+\bibitem{hottel1967}
+H.~C. Hottel, A.~F. Sarofim, Radiative Transfer, McGraw-Hill, New York, 1967, tODO: no DOI.
+
+\bibitem{roesler1967}
+F.~Roesler, \href{http://dx.doi.org/10.1016/0009-2509(67)80023-x}{Theory of radiative heat transfer in co-current tube furnaces}, Chemical Engineering Science 22~(10) (1967) 1325--1336.
+\newblock \href {https://doi.org/10.1016/0009-2509(67)80023-x} {\path{doi:10.1016/0009-2509(67)80023-x}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1016/0009-2509(67)80023-x}
+
+\bibitem{pedregosa2011}
+F.~Pedregosa, G.~Varoquaux, A.~Gramfort, V.~Michel, B.~Thirion, O.~Grisel, M.~Blondel, P.~Prettenhofer, R.~Weiss, V.~Dubourg, J.~Vanderplas, A.~Passos, D.~Cournapeau, M.~Brucher, M.~Perrot, {\'E}.~Duchesnay, Scikit-learn: Machine learning in {Python}, Journal of Machine Learning Research 12 (2011) 2825--2830.
+
+\bibitem{barber2021}
+R.~F. Barber, E.~J. Cand{\`e}s, A.~Ramdas, R.~J. Tibshirani, Predictive inference with the jackknife+, The Annals of Statistics 49~(1) (2021) 486--507.
+\newblock \href {https://doi.org/10.1214/20-AOS1965} {\path{doi:10.1214/20-AOS1965}}.
+
+\bibitem{taquet2022}
+V.~Taquet, V.~Blot, T.~Morzadec, L.~Lacombe, N.~Brunel, \href{https://arxiv.org/abs/2207.12274}{{MAPIE}: an open-source library for distribution-free uncertainty quantification} (2022).
+\newblock \href {http://arxiv.org/abs/2207.12274} {\path{arXiv:2207.12274}}.
+\newline\urlprefix\url{https://arxiv.org/abs/2207.12274}
+
+\bibitem{saltelli2010}
+A.~Saltelli, P.~Annoni, I.~Azzini, F.~Campolongo, M.~Ratto, S.~Tarantola, \href{http://dx.doi.org/10.1016/j.cpc.2009.09.018}{Variance based sensitivity analysis of model output. design and estimator for the total sensitivity index}, Computer Physics Communications 181~(2) (2010) 259--270.
+\newblock \href {https://doi.org/10.1016/j.cpc.2009.09.018} {\path{doi:10.1016/j.cpc.2009.09.018}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1016/j.cpc.2009.09.018}
+
+\bibitem{herman2017}
+J.~Herman, W.~Usher, \href{http://dx.doi.org/10.21105/joss.00097}{Salib: An open-source python library for sensitivity analysis}, The Journal of Open Source Software 2~(9) (2017) 97, sALib.
+\newblock \href {https://doi.org/10.21105/joss.00097} {\path{doi:10.21105/joss.00097}}.
+\newline\urlprefix\url{http://dx.doi.org/10.21105/joss.00097}
+
+\bibitem{deb2002}
+K.~Deb, A.~Pratap, S.~Agarwal, T.~Meyarivan, A fast and elitist multiobjective genetic algorithm: {NSGA-II}, IEEE Transactions on Evolutionary Computation 6~(2) (2002) 182--197.
+\newblock \href {https://doi.org/10.1109/4235.996017} {\path{doi:10.1109/4235.996017}}.
+
+\bibitem{blank2020}
+J.~Blank, K.~Deb, \href{http://dx.doi.org/10.1109/ACCESS.2020.2990567}{Pymoo: Multi-objective optimization in python}, IEEE Access 8 (2020) 89497--89509, pymoo.
+\newblock \href {https://doi.org/10.1109/access.2020.2990567} {\path{doi:10.1109/access.2020.2990567}}.
+\newline\urlprefix\url{http://dx.doi.org/10.1109/ACCESS.2020.2990567}
+
+\end{thebibliography}

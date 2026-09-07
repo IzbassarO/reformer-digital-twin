@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Best surrogate per target ($N_{train}$ = 2000 LHS, $N_{test}$ = 4096 Saltelli points), test $R^2$ and RMSE, 5-fold CV RMSE, and empirical coverage (PICP) and mean width (MPIW) of the nominal 90\,\% CV+ conformal interval. Source: \texttt{data/design/surrogate\_metrics\_v2.json}.}
+\label{tab:surr}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllrrrrr}
+\toprule
+Target & Unit & Model & $R^2$ & RMSE & CV RMSE & PICP$_{90}$ & MPIW$_{90}$ \\
+\midrule
+T\_wo\_max\_K & K & gp\_\_physics & 1 & 0.113 & 0.133 & 0.957 & 0.25 \\
+z\_frac\_T\_wo\_max & -- & mlp\_\_base & 0.6436 & 0.0319 & 0.0522 & 0.971 & 0.0499 \\
+T\_out\_K & K & gp\_\_physics & 1 & 0.0182 & 0.0254 & 0.940 & 0.0614 \\
+P\_out\_bar & bar & gp\_\_base & 1 & 0.000287 & 0.000563 & 0.961 & 0.000998 \\
+CH4\_slip\_dry\_pct & \% & gp\_\_physics & 1 & 0.00125 & 0.00142 & 0.953 & 0.00398 \\
+H2\_net\_kmol\_h & kmol h$^{-1}$ & gp\_\_base & 1 & 0.000847 & 0.00116 & 0.946 & 0.00286 \\
+duty\_W & W & gp\_\_base & 1 & 3.9e+03 & 4.14e+03 & 0.949 & 1.21e+04 \\
+log10\_t\_r\_hot & -- & gp\_\_base & 0.9999 & 0.00566 & 0.00597 & 0.959 & 0.0111 \\
+\bottomrule
+\end{tabular}}
+\end{table}

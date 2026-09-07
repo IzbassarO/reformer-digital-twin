@@ -1,0 +1,219 @@
+\section{Methods}
+\label{sec:methods}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig01_schematic}
+\caption{(a) Cross-section of a top-fired box reformer: burners in the roof between rows of catalyst tubes, flames releasing heat
+in the upper part of the firebox, flue gas flowing downward co-currently with the process gas and leaving through tunnels at the
+floor. (b) Module chain of the digital twin: operating inputs are mapped through the furnace and tube models, which exchange the
+outer-wall temperature profile and the heat flux, to the creep-life module; surrogates and uncertainty quantification wrap the chain.}
+\label{fig:schematic}
+\end{figure}
+
+The twin is implemented as a Python package (\texttt{rdt}) whose modules follow the chain of Fig.~\ref{fig:schematic}b. All
+physical data (kinetic parameters, plant operating points, creep curves) are read from annotated YAML and CSV files; no number is
+hard-coded in the model code. Thermodynamic properties, heat capacities and reaction equilibrium constants are taken from Cantera
+\cite{goodwin2024} with the GRI-Mech~3.0 species data so that kinetics and energy balance are mutually consistent.
+
+\subsection{Reactor tube model}
+\label{sec:tube}
+
+The tube is described by a steady one-dimensional pseudo-homogeneous plug-flow model with axial coordinate $z$ from the inlet
+(top) to the outlet. The state consists of the molar flows $F_i$ of CH$_4$, H$_2$O, H$_2$, CO, CO$_2$ and N$_2$, the process-gas
+temperature $T$ and the pressure $p$. The intrinsic kinetics are those of Xu and Froment \cite{xu1989a} for steam reforming (r1),
+water-gas shift (r2) and overall reforming to CO$_2$ (r3):
+\begin{align}
+r_1 &= \frac{k_1}{p_{\mathrm{H_2}}^{2.5}}\,\frac{p_{\mathrm{CH_4}}\,p_{\mathrm{H_2O}} - p_{\mathrm{H_2}}^{3}\,p_{\mathrm{CO}}/K_1}{\mathrm{DEN}^2}, \\
+r_2 &= \frac{k_2}{p_{\mathrm{H_2}}}\,\frac{p_{\mathrm{CO}}\,p_{\mathrm{H_2O}} - p_{\mathrm{H_2}}\,p_{\mathrm{CO_2}}/K_2}{\mathrm{DEN}^2}, \\
+r_3 &= \frac{k_3}{p_{\mathrm{H_2}}^{3.5}}\,\frac{p_{\mathrm{CH_4}}\,p_{\mathrm{H_2O}}^{2} - p_{\mathrm{H_2}}^{4}\,p_{\mathrm{CO_2}}/K_3}{\mathrm{DEN}^2}, \\
+\mathrm{DEN} &= 1 + K_{\mathrm{CO}}\,p_{\mathrm{CO}} + K_{\mathrm{H_2}}\,p_{\mathrm{H_2}} + K_{\mathrm{CH_4}}\,p_{\mathrm{CH_4}} + K_{\mathrm{H_2O}}\,p_{\mathrm{H_2O}}/p_{\mathrm{H_2}},
+\end{align}
+with partial pressures in bar. The rate coefficients $k_j$ and adsorption constants $K_i$ follow the Arrhenius and van't Hoff forms
+with the pre-exponential factors, activation energies and adsorption enthalpies of Table~5 of \cite{xu1989a}, re-parameterised at
+the reference temperatures 648 K and 823 K used in that table so that the reported confidence intervals can be propagated directly
+(Section~\ref{sec:uq}). The equilibrium constants $K_1$--$K_3$ are computed from Gibbs energies of formation rather than from the
+fitted expressions of the original paper, which removes a source of inconsistency with the energy balance. A floor of
+\SI{e-6}{bar} on $p_{\mathrm{H_2}}$ avoids the singularity of the rate expressions at a hydrogen-free inlet.
+
+The balances per tube are
+\begin{align}
+\frac{\mathrm{d}F_i}{\mathrm{d}z} &= A_{cs}\,\rho_b \sum_j \nu_{ij}\,\eta_j\,r_j, \label{eq:species}\\
+\sum_i F_i\,c_{p,i}\,\frac{\mathrm{d}T}{\mathrm{d}z} &= \pi d_i\,U\,\bigl(T_{wo}(z) - T\bigr) - A_{cs}\,\rho_b \sum_j \eta_j\,r_j\,\Delta H_j(T), \label{eq:energy}\\
+-\frac{\mathrm{d}p}{\mathrm{d}z} &= \frac{1-\phi}{\phi^{3}}\left(1.75 + 150\,\frac{1-\phi}{Re_p}\right)\frac{\rho_g v_s^{2}}{d_p}, \label{eq:ergun}
+\end{align}
+where $A_{cs}$ is the cross-section, $\rho_b$ the bed density, $\nu_{ij}$ the stoichiometric coefficients, $\eta_j$ the effectiveness
+factors, $\phi$ the bed voidage, $d_p$ the equivalent particle diameter, $v_s$ the superficial velocity and $Re_p$ the particle
+Reynolds number; Eq.~\eqref{eq:ergun} is the Ergun equation \cite{ergun1952}. Intraparticle diffusion limitation is severe in
+reformer catalysts, and rather than solving the pellet problem we use the constant effectiveness factors adopted by Latham et al.
+\cite{latham2011}: $\eta_j = 0.1$ along the tube and 0.05 in the first \SI{10}{\percent} of the length, where the feed contains
+no hydrogen and the rate expressions are stiff \todo{confirm the 0.05/0.1 profile and its justification against Latham et al. (2011)}.
+Higher alkanes in the feed (C$_2$--C$_5$) are converted to CO and H$_2$ at the inlet by the rule used by Latham
+\cite{latham2008} \todo{state the exact inlet conversion rule and confirm its stoichiometry}.
+
+The overall heat-transfer coefficient referred to the inner surface combines the bed-side film coefficient $\alpha_i$ and the
+conduction through the tube wall,
+\begin{equation}
+\frac{1}{U} = \frac{1}{\alpha_i} + \frac{d_i}{2\lambda_t}\ln\frac{d_o}{d_i}, \qquad
+T_{wi} = T_{wo} - q''_o\,\frac{d_o}{2\lambda_t}\ln\frac{d_o}{d_i},
+\label{eq:U}
+\end{equation}
+with tube conductivity $\lambda_t = \SI{29.6}{W.m^{-1}.K^{-1}}$ from \cite{latham2008}. The film coefficient uses the Leva--Grummer
+correlation \cite{leva1948} in the form written by Latham et al. \cite{latham2011}, multiplied by a heat-transfer factor
+$f_{htg}$ which is estimated from plant data (Section~\ref{sec:calibration}). The alternative chain of Xu and Froment
+\cite{xu1989b}, based on De~Wasch and Froment \cite{dewasch1972} and Kunii and Smith \cite{kunii1960}, is implemented as an option
+and discussed in Section~\ref{sec:verification}. Equations~\eqref{eq:species}--\eqref{eq:ergun} are integrated with the LSODA solver of
+SciPy for a prescribed outer-wall profile $T_{wo}(z)$ (stand-alone mode) or as part of the coupled system below.
+
+\subsection{Furnace model and coupling}
+\label{sec:furnace}
+
+The furnace is a top-fired box with rows of burners in the roof between rows of tubes (Fig.~\ref{fig:schematic}a; Latham's geometry
+has 7 rows of 48 tubes and 8 rows of 12 burners \cite{latham2008}). Instead of the zone method of Hottel and Sarofim
+\cite{hottel1967} used by Plehiers and Froment \cite{plehiers1989}, we use a one-dimensional ``long-furnace'' model in the sense of
+Roesler \cite{roesler1967}: the flue gas is a plug flow travelling downward co-currently with the process gas, and the radiative
+exchange between the gas and the tube surface is lumped into one effective exchange factor $F_{gt}$. Per unit height $z$ (zero at
+the roof),
+\begin{align}
+\dot n_{fg}\,c_{p,fg}\,\frac{\mathrm{d}T_{fg}}{\mathrm{d}z} &= r(z) - q(z)\,\pi d_o N_t, \label{eq:fg}\\
+q(z) &= \sigma F_{gt}\bigl(T_{fg}^{4} - T_{wo}^{4}\bigr) + h_c\bigl(T_{fg} - T_{wo}\bigr), \label{eq:q}\\
+q(z) &= U\,\bigl(T_{wo} - T\bigr)\,\frac{d_i}{d_o}, \label{eq:coupling}
+\end{align}
+where $N_t$ is the number of tubes, $q$ the flux per unit outer tube area and $h_c$ a convective coefficient from a flat-plate
+correlation \todo{state the convective correlation and its magnitude relative to radiation}. The heat-release density $r(z)$ is a
+downward-opening parabola that is zero at $z = L_q L$, releases the fraction $\alpha_{top}$ of the heat in the top fifteenth of the
+furnace height and integrates to $(1-f_{loss})\,Q_{comb}$, with $f_{loss} = 0.02$ for casing losses; this is the continuous form of
+the sectional heat-release profile of Latham \cite{latham2008}. The dimensionless flame length $L_q$ and $\alpha_{top}$ are
+calibration parameters. Because a pure plug flow starts at the adiabatic flame temperature of the fuel mixture and would give an
+unphysical cold inlet region before the first heat release, the top zone is treated as well mixed: the fraction $\alpha_{top}$ of
+the heat is released instantly at the roof. The combustion heat $Q_{comb}$ and the flue-gas flow and composition follow from the
+lower heating value and complete combustion of the fuel gas and pressure-swing-adsorption off-gas with the specified excess air.
+
+Equation~\eqref{eq:coupling} closes the system: at every $z$ the outer-wall temperature $T_{wo}$ is the root of the flux balance
+between Eqs.~\eqref{eq:q} and \eqref{eq:coupling}, found by a bracketed root search inside the right-hand side of the ODE system, so
+that the furnace and tube equations are integrated together in one downward sweep. The global energy closure of the coupled solution
+is verified to $10^{-5}$ of the combustion heat.
+
+\subsection{Tube wall and creep life}
+\label{sec:creep}
+
+The creep-life module converts the outer-wall temperature profile into a life estimate. The hoop stress is computed from the
+mean-diameter formula of API 530 \cite{api530}, $\sigma_h = p\,(d_o - t)/(2t)$ with wall thickness $t$, evaluated at the pressure of
+the process gas at each elevation; thin-wall and Lam\'e variants are implemented for comparison and differ by less than
+\todo{quote the difference} at the tube geometry used. The wall thickness is not given by Latham and is taken as \SI{15}{mm}
+\todo{confirm a typical wall thickness for a 12.5 m HP-Nb tube of this diameter} and varied in the uncertainty analysis. The
+temperature entering the life calculation is the outer-wall temperature, which is conservative with respect to the mid-wall
+temperature; the difference is shown in Fig.~\ref{fig:creepprofile}.
+
+The rupture time follows the Larson--Miller parameter \cite{larson1952},
+\begin{equation}
+\mathrm{LMP} = 10^{-3}\,T\,\bigl(C + \log_{10} t_r\bigr), \qquad \log_{10}\sigma = P_3(\mathrm{LMP}),
+\label{eq:lmp}
+\end{equation}
+with $T$ in K, $t_r$ in h, $C = 22.96$ and a cubic master curve $P_3$ fitted to the minimum-property rupture points of the
+manufacturer's curve for Manaurite XM reproduced by Yeh \cite{yeh2021}. This curve is a \emph{placeholder}: the alloy of the
+Latham plant is not stated, and the manufacturer's curve carries no scatter information. The module is written so that the curve
+can be replaced by a heat-normalised fit to the NIMS creep data sheets for the 25Cr--35Ni--Nb alloys \cite{nims1990,nims1991}
+(Section~\ref{sec:data}). Damage under a piecewise-constant history is accumulated with the linear life-fraction rule of Robinson
+\cite{robinson1952}, $D = \sum_k \Delta t_k / t_r(T_k, \sigma_k)$, and rupture is predicted at $D = 1$. Throughout the paper, life is
+reported as a \emph{consumption rate} $1/t_r$ at the hot spot, or as damage per kmol of hydrogen, relative to the calibrated base
+case, because ratios of rupture times are far less sensitive to the placeholder curve than absolute values are.
+
+\subsection{Data}
+\label{sec:data}
+
+\paragraph{Verification data} The industrial simulation of Xu and Froment \cite{xu1989b} (Fig.~3 of that paper) provides axial
+profiles of methane and CO$_2$ conversion, process-gas, inner-wall and outer-wall temperatures and pressure for one operating point
+with the feed of their Table~2. The curves were digitised from the published figure \todo{name the digitising tool and the
+resolution} and stored as tidy CSV files with the digitisation metadata (Supplementary Section~S1). The outer-wall curve serves as
+the boundary condition and the remaining curves as targets.
+
+\paragraph{Plant data} Latham \cite{latham2008} reports, in Appendix H, four operating points of an industrial top-fired reformer
+(Plants A, B and two states of Plant C) with inlet conditions, feed and fuel compositions, outlet temperature and composition,
+flue-gas outlet temperature and the tube-wall temperatures measured by infrared pyrometer at two peep-hole elevations (3.66 and
+\SI{8.53}{m} from the top of the \SI{12.5}{m} heated length). Table~\ref{tab:latham} lists the cases. The stated measurement
+uncertainties are \SI{2}{K} for the outlet temperature, \SI{3}{K} for the wall temperatures and \SI{8}{K} for the flue gas
+\todo{confirm these uncertainties against the thesis and whether they are one-sigma}. Plant C1 is excluded from calibration because
+its feed flow is inconsistent (equal to the air flow and \SI{22}{\percent} larger than Plant A at a lower rate) and is likely a
+transcription error in the source \todo{confirm the exclusion of Plant C1}. The excess air of each case is derived from the
+reported fuel, off-gas and air flows and is \SI{21.6}{\percent} for Plant A.
+
+\paragraph{Creep data} The placeholder Larson--Miller curve is transcribed from Yeh \cite{yeh2021}. A transcription template and a
+schema for the NIMS data sheets are provided, and an ingestion routine fits $C$ and the master curve by cross-validation with
+per-heat offsets; it is validated on a synthetic data set with known $C$ and scatter (recovered within \SI{10}{\percent}) but has not
+yet been applied to real NIMS data, which must be transcribed from the printed sheets \todo{state the status of the NIMS
+transcription at submission}.
+
+\subsection{Calibration and cross-validation}
+\label{sec:calibration}
+
+Four parameters are uncertain in the coupled model and cannot be taken from the literature: the exchange factor $F_{gt}$, the flame
+length $L_q$, the top-zone release fraction $\alpha_{top}$ and the heat-transfer factor $f_{htg}$. They are estimated by weighted
+non-linear least squares on the three plant cases, with residuals in the outlet temperature, the outlet pressure, the outlet wet
+composition, the flue-gas outlet temperature and the two wall temperatures (nine residuals per case), each scaled by its
+measurement uncertainty. The trust-region-reflective algorithm with bounds is started from a Latin-hypercube set of initial points
+to guard against local minima, and the parameter covariance is obtained from the Jacobian at the optimum with a $t$-based
+\SI{95}{\percent} interval. Predictive performance is assessed by leave-one-case-out cross-validation: the parameters are refitted
+on two cases and the held-out case is predicted. The four-parameter fit places $\alpha_{top}$ at its bound with a correlation of
+0.985 to $L_q$, so the adopted configuration fixes $\alpha_{top} = 0.182$ \todo{state the origin of the value 0.182} and estimates
+the remaining three; the increase in $\chi^2$ is reported in Section~\ref{sec:verification}.
+
+\subsection{Surrogates and conformal prediction}
+\label{sec:surrogate}
+
+The coupled model takes 1--3 s per operating point, which is adequate for calibration but not for hourly annual histories,
+evolutionary optimisation or Monte Carlo. Surrogates are trained on a Latin-hypercube design of \nLHS{} points over the seven
+operating inputs (Table~S1 of the Supplementary material) \todo{decide whether the ranges table goes in the main text or the supplement} for eight
+outputs (hot-spot temperature $T_{wo,max}$ and its position, outlet temperature and pressure, dry methane slip, net hydrogen, duty,
+and $\log_{10} t_r$ at the hot spot). Three model families are compared with scikit-learn \cite{pedregosa2011}: Gaussian-process
+regression with a Mat\'ern 5/2 kernel on a 1000-point subset, histogram gradient boosting and a multilayer perceptron, each with and
+without two physics-derived features (the equilibrium methane conversion at outlet conditions and the specific duty). The model
+with the lowest five-fold cross-validated error is selected per target and evaluated on an independent Saltelli design of
+\nSaltelli{} points. Prediction intervals are obtained by the cross-conformal (CV+) method \cite{barber2021} as implemented in MAPIE
+\cite{taquet2022}, which provides finite-sample marginal coverage without a distributional assumption; the Gaussian-process
+native intervals are reported for comparison.
+
+\subsection{Sensitivity, scenarios, optimisation and uncertainty propagation}
+\label{sec:campaigns}
+
+\paragraph{RQ1} Global sensitivity uses the variance-based Sobol indices \cite{saltelli2010} estimated with SALib
+\cite{herman2017} on the Saltelli design evaluated with the physics model, together with an open-loop Latin-hypercube campaign and a
+closed-loop grid in steam-to-carbon ratio and load in which the firing is solved so that the outlet temperature equals the Plant A
+value (\SI{1105.55}{K}).
+
+\paragraph{RQ2} Annual histories of 8760 hourly quasi-steady states are evaluated through the surrogates, with every 24th hour and
+every hour outside the training bounds re-evaluated by the physics model. Two control modes are represented by inverting the
+surrogates for the firing factor with a vectorised bisection: holding the outlet temperature at its base value, or holding the dry
+methane slip. The scenarios are S1 steady base; S2 daily load-following (full load 06--22 h, \SI{70}{\percent} at night, ramps of
+0.10 per hour); S3 renewable-following (a bounded Ornstein--Uhlenbeck load process between 0.60 and 1.10 with mean 0.85); S4
+over-firing events (24 events per year of \SI{+10}{\percent} firing for 2 h, six events of \SI{+25}{\percent} for 1 h, and a
+flame-impingement proxy adding \SI{40}{K} to the hot spot for 24 h per year); S5 catalyst ageing, with the activity falling
+linearly from 0.30 to 0.10 over four years under each control mode; and S6 steady operation at steam-to-carbon 2.5 and 3.5. Damage
+is accumulated hourly by Eq.~\eqref{eq:lmp} and Robinson's rule, and each scenario is also evaluated at its annual-mean inputs to
+quantify the error of a steady-state assessment. Start-up and shutdown transients, thermal fatigue and creep--fatigue interaction are
+outside the scope.
+
+\paragraph{RQ3} The non-dominated sorting genetic algorithm NSGA-II \cite{deb2002} in pymoo \cite{blank2020} maximises net hydrogen
+per tube and minimises firebox fuel per kmol H$_2$ and life consumption per kmol H$_2$ over five decision variables (load,
+steam-to-carbon ratio, inlet temperature, excess air, firing) subject to methane slip not above the base value, hot-spot
+temperature not above \SI{1193}{K} \todo{justify the 1193 K limit, e.g. the design metal temperature of the alloy} and outlet
+temperature not above \SI{1125}{K}, using the Gaussian-process surrogates (population 200, 300 generations). Every Pareto member is
+re-evaluated with the physics model and the constraints are re-checked. Because firebox fuel per kmol H$_2$ ignores the cost of
+raising the additional steam, a \emph{steam credit} $\alpha$ is introduced: the total fuel counts firebox fuel plus a fraction
+$(1-\alpha)$ of the heat needed to raise the process steam and preheat the feed, so that $\alpha = 1$ recovers the firebox-only
+objective and $\alpha = 0$ charges steam in full \todo{confirm the steam-credit definition and the enthalpy basis for steam raising}.
+The iso-production front (hydrogen within \SI{1}{\percent} of the base) is recomputed for $\alpha$ from 0 to 1.
+
+\paragraph{RQ4} \label{sec:uq} Uncertain inputs are grouped into kinetics (the six rate parameters and four adsorption constants of
+Xu and Froment with normal distributions from their reported \SI{95}{\percent} intervals, a log-uniform factor of 0.5--2 on the
+effectiveness factors and $\pm 0.03$ on the catalyst activity), heat transfer (the calibrated $F_{gt}$, $L_q$ and $f_{htg}$ with
+their joint covariance), creep (a normal scatter of 0.3 decades on $\log_{10} t_r$ representing a factor of two between heats, $C$
+uniform within $\pm 1$ of 22.96 with the master curve refitted for each $C$, wall thickness 12--18 mm and tube conductivity
+$\pm 15$\,\%) and measurement (a uniform $\pm 10$ K offset on the pyrometer-referenced hot-spot temperature). A scrambled Sobol
+design of \nMC{} samples is propagated through the physics model at eight operating points taken from RQ2 and RQ3; the same sample
+is used at every point so that ratios between points are paired. Variance is decomposed by varying one group at a time (1024
+samples per group) and, independently, by Sobol indices computed on a Gaussian-process surrogate of the joint sample. Finally, the
+fraction of paired samples for which each qualitative conclusion of RQ2 and RQ3 holds is reported, both with the calibrated flame
+length and with a structural variant in which the flame length shrinks with load as $L_q\,\mathrm{load}^{0.5}$
+\todo{justify or replace the load exponent 0.5 of the flame-length variant}. The complete pipeline from design to figures runs in
+\pipelineMin{} minutes on a laptop.

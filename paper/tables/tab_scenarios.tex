@@ -1,0 +1,25 @@
+\begin{table}[htbp]
+\centering
+\caption{RQ2 scenario summary for one year (8760 h) of the Plant A twin at 21.6\,\% excess air: hydrogen per tube, Robinson damage $D$, life consumption per kmol H$_2$ relative to S1, ratio of the annual-mean-condition damage estimate to the hourly-accumulated damage, mean and maximum hot-spot temperature and mean firing factor. Life uses the Yeh Manaurite XM placeholder curve. Source: \texttt{data/scenarios/summary\_v2.csv}.}
+\label{tab:scen}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrrr}
+\toprule
+Scenario & H$_2$ (10$^3$ kmol) & $D$ (--) & Rel.\ life cost & Avg.-cond.\ ratio & $\bar T_{wo,max}$ (K) & max $T_{wo,max}$ (K) & Firing \\
+\midrule
+S1 steady base & 128.5 & 9.08e-05 & 1.000 & 1.000 & 1143 & 1143 & 0.978 \\
+S2 daily load-following & 115.7 & 8.1e-05 & 0.991 & 0.982 & 1141 & 1143 & 0.944 \\
+S3 renewable-following & 109.7 & 7.61e-05 & 0.983 & 0.982 & 1140 & 1146 & 0.927 \\
+S4a mild over-firing (48 h) & 128.6 & 9.14e-05 & 1.007 & 0.993 & 1144 & 1157 & 0.979 \\
+S4b severe over-firing (6 h) & 128.5 & 9.11e-05 & 1.004 & 0.996 & 1143 & 1179 & 0.978 \\
+S4c hot band +40 K (24 h) & 128.5 & 9.33e-05 & 1.028 & 0.980 & 1144 & 1183 & 0.978 \\
+S6 steam-to-carbon 2.5 & 119.9 & 9.83e-05 & 1.161 & 1.000 & 1144 & 1144 & 0.897 \\
+S6 steam-to-carbon 3.5 & 139.8 & 8.23e-05 & 0.834 & 1.000 & 1142 & 1142 & 1.092 \\
+S5 ageing, hold slip, year 1 & 128.5 & 6.49e-05 & 0.715 & 0.997 & 1138 & 1139 & 0.974 \\
+S5 ageing, hold slip, year 4 & 128.5 & 0.000205 & 2.255 & 0.949 & 1156 & 1164 & 0.989 \\
+S5 ageing, hold $T_{out}$, year 1 & 129.0 & 7e-05 & 0.768 & 0.998 & 1139 & 1140 & 0.982 \\
+S5 ageing, hold $T_{out}$, year 4 & 127.4 & 0.000169 & 1.875 & 0.967 & 1153 & 1159 & 0.969 \\
+\bottomrule
+\end{tabular}}
+\end{table}

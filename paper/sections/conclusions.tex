@@ -1,0 +1,30 @@
+\section{Conclusions}
+\label{sec:conclusions}
+
+A physics-informed digital twin of an industrial top-fired steam methane reformer has been built from published kinetics, plant data
+and creep curves, coupling a one-dimensional tube model, a long-furnace model, a Larson--Miller life module, Gaussian-process
+surrogates with conformal prediction intervals and Monte Carlo uncertainty propagation in one open, versioned pipeline.
+
+\begin{itemize}
+\item The tube model reproduces the industrial case of Xu and Froment within \xfRMSET{} K in gas temperature once the film
+  coefficient is matched, and the heat-transfer correlations printed in that paper are found to overpredict the film coefficient by an
+  order of magnitude at industrial Reynolds numbers. The coupled model calibrated on three plant operating points reproduces outlet
+  temperatures within 4 K and wall temperatures within 12 K, with identifiable parameters and a systematic residual at the upper
+  elevation that points to the flame-length response to load.
+\item Firing intensity, steam-to-carbon ratio and excess air explain \SI{82}{\percent} of the variance of the hot-spot temperature
+  with negligible interactions; inlet pressure enters the life only through the hoop stress.
+\item Under outlet-temperature control, load-following and renewable-following cost less than \SI{2}{\percent} of the steady life per
+  kmol of hydrogen, short over-firing events at most \SI{3}{\percent}, and steam-to-carbon ratio $\pm 17$\,\%; catalyst ageing
+  under a methane-slip target multiplies the life cost by \SxAgeSlip{} in four years.
+\item The calibrated base is Pareto-dominated: a knee regime gives \kneeHtwo{}\,\% hydrogen at \kneeFuel{}\,\% fuel per kmol and
+  \kneeLife{} of the life cost, and at constant production the life cost can be cut to \isoLife{}. The optimal steam-to-carbon ratio
+  depends entirely on the steam credit, moving from 4.0 to 2.7 when steam raising is charged in full.
+\item The \SI{90}{\percent} uncertainty on the absolute rupture time spans a factor of 50, dominated by creep-curve scatter
+  (\shareCreep{}\,\%), while paired ratios between regimes remain tight. The ageing, knee and steam-to-carbon conclusions hold in
+  \SI{81}{\percent} to \SI{91}{\percent} of the samples; the flexible-operation conclusion does not survive a load-dependent flame
+  length.
+\end{itemize}
+
+The next steps are the transcription of the NIMS rupture data for the HP-Nb alloys into the prepared ingestion path, a per-tube
+extension with a measured wall-temperature distribution, and, above all, a multi-elevation pyrometer survey at several firing
+rates to identify the flame-length response that decides the life cost of flexible operation.

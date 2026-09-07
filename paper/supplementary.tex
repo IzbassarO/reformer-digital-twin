@@ -1,0 +1,109 @@
+% Supplementary material -- own numbering (Figures S1-S5, Tables S1-S2). Build: latexmk -pdf supplementary.tex
+\documentclass[preprint,12pt]{elsarticle}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\graphicspath{{figures/}}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+\newcommand{\rdtversion}{v2}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thesection}{S\arabic{section}}
+\input{numbers}
+\journal{International Journal of Hydrogen Energy}
+
+\begin{document}
+\begin{frontmatter}
+\title{Supplementary material to: A physics-informed digital twin for tube-life-aware operation of industrial steam methane reformers under uncertainty}
+\author[su]{Izbassar Orynbassarov\corref{cor1}}
+\author[sua]{\todo{Second author name}}
+\cortext[cor1]{Corresponding author.}
+\address[su]{School of Information Studies, Syracuse University, Syracuse, NY, USA}
+\address[sua]{Safi Utebayev Atyrau University of Oil and Gas, Atyrau, Kazakhstan}
+\end{frontmatter}
+
+\section{Digitised verification data}
+
+The verification targets of Section 3.1 are the axial profiles of Fig.~3 of Xu and Froment (1989, Part II). The figure was
+digitised curve by curve \todo{name the tool (e.g. WebPlotDigitizer), the image resolution and the axis-calibration procedure} and
+stored as one tidy CSV per curve in \texttt{data/literature\_validation/digitized/} with the columns \texttt{z\_m}, value and a
+\texttt{source} annotation. Curves: methane conversion, CO$_2$ conversion, process-gas temperature, inner-wall temperature,
+outer-wall temperature and total pressure, over the heated length of \SI{11.12}{m}; the remaining length to \SI{12}{m} is treated as
+adiabatic. The outer-wall curve is interpolated by a shape-preserving cubic (PCHIP) and used as the boundary condition; the
+digitising uncertainty is estimated at \todo{quote the estimated reading uncertainty in K and in conversion} from repeat readings of
+the axis ticks. The feed and geometry are those of Table~2 of the source, with a bed voidage of 0.526 and an equivalent ring diameter
+of \SI{9.44}{mm} fitted to the pressure curve \todo{confirm that fitting the particle diameter to the pressure drop is acceptable}.
+
+\section{Additional figures}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.6\textwidth]{fig00_equilibrium_conversion}
+\caption{Equilibrium methane conversion at \SI{25}{bar} and steam-to-carbon 3 from Cantera (GRI-Mech 3.0), used as a sanity check of
+the thermodynamic basis. Source: \texttt{notebooks/00\_sanity\_check.ipynb}.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig01_kinetics}
+\caption{Xu--Froment kinetics as implemented: (a) rate coefficients $k_1$--$k_3$ against reciprocal temperature with the Table~4
+values of the source for $k_1$, and (b) rates $r_1$--$r_3$ at \SI{25}{bar} for a feed of CH$_4$:H$_2$O:H$_2$ = 1:3:0.1. Source:
+\texttt{data/kinetics/xu\_froment\_1989.yaml}.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig02_reactor_profiles}
+\caption{Stand-alone tube model with a linear outer-wall profile from 1000 to \SI{1150}{K} on the Xu--Froment geometry: (a)
+conversion and CO$_2$ yield, (b) wall and gas temperatures, (c) pressure.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig04_latham_baseline}
+\caption{Coupled model with the literature (uncalibrated) parameters on all four Latham plant cases, including Plant C1 which is
+excluded from calibration. Source: \texttt{latham2008\_plant\_cases.csv}, \texttt{latham\_fit.yaml} (baseline).}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.6\textwidth]{fig10_scenarios_timeseries}
+\caption{One week (days 140--147) of the renewable-following scenario S3: load, firing factor solved by the outlet-temperature
+controller, hot-spot temperature and hourly damage rate. Source: \texttt{data/scenarios/hourly\_v2\_S3\_renewable.csv.gz}.}
+\end{figure}
+
+\section{Operating space}
+
+\begin{table}[htbp]
+\centering
+\caption{Operating inputs and their ranges (v2 operating space); base = calibrated Plant A. Source:
+\texttt{data/design/parameter\_ranges\_v2.csv}.}
+\label{tab:ranges}
+\small
+\begin{tabular}{llrrrp{5.5cm}}
+\toprule
+Input & Unit & Min & Max & Base & Justification (abridged) \\
+\midrule
+steam-to-carbon & -- & 2.5 & 4.0 & 2.89 & carbon-formation limit below $\approx$2.5; 4.0 upper for hydrogen plants \\
+load (feed per tube) & -- & 0.60 & 1.10 & 1.00 & turndown 50--60\,\%; 110\,\% short-term overload \\
+specific firing factor & -- & 0.85 & 1.15 & 1.00 & burner control range \\
+inlet temperature & K & 800 & 900 & 884.6 & Plant A 611 \si{\celsius}; cracking in preheat coils above $\approx$920 K \\
+inlet pressure & bar & 25 & 33 & 30.06 & industrial 20--40 bar \\
+catalyst activity & -- & 0.10 & 0.30 & 0.20 & Latham fitted 0.20 for a mid-campaign catalyst \\
+excess air & \% & 5 & 25 & 21.6 & upper bound raised from 20 to 25\,\% so that the calibrated Plant A value lies inside the space \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Version note}
+
+All results in the main text are from pipeline version \rdtversion, which differs from the exploratory version v1 in the excess-air
+range (5--25\,\% instead of 5--20\,\%), in the use of the calibrated excess air as the base of the scenarios and the optimisation
+(instead of 20\,\%) and in the Monte Carlo sample size (\nMC{} instead of 4000). A line-by-line comparison of the two versions is
+provided in \texttt{data/design/v1\_vs\_v2\_diff.md}; the largest effect of the change is a base hot spot about 3 K cooler and hence
+a longer base life, which shifts every relative life metric by the same denominator.
+
+\end{document}

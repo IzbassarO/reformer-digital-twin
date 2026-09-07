@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Sobol first-order ($S_1$) and total-effect ($S_T$) indices with 95\,\% confidence half-widths from a Saltelli design ($N=256$, 4096 physics runs) over the v2 operating space. Source: \texttt{data/design/sobol\_v2.json} (v2).}
+\label{tab:sobol}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrr}
+\toprule
+Input & $S_1$ ($T_{wo,max}$) & $S_T$ ($T_{wo,max}$) & $S_1$ ($\log_{10}t_r$) & $S_T$ ($\log_{10}t_r$) & $S_1$ (CH$_4$ slip) & $S_T$ (CH$_4$ slip) \\
+\midrule
+steam-to-carbon & 0.29 $\pm$ 0.09 & 0.28 $\pm$ 0.05 & 0.25 $\pm$ 0.08 & 0.25 $\pm$ 0.04 & 0.04 $\pm$ 0.03 & 0.04 $\pm$ 0.01 \\
+load & 0.03 $\pm$ 0.03 & 0.03 $\pm$ 0.01 & 0.03 $\pm$ 0.03 & 0.03 $\pm$ 0.01 & 0.19 $\pm$ 0.07 & 0.19 $\pm$ 0.03 \\
+firing & 0.34 $\pm$ 0.09 & 0.35 $\pm$ 0.06 & 0.29 $\pm$ 0.09 & 0.29 $\pm$ 0.05 & 0.54 $\pm$ 0.12 & 0.54 $\pm$ 0.10 \\
+inlet $T$ & 0.06 $\pm$ 0.05 & 0.06 $\pm$ 0.01 & 0.05 $\pm$ 0.04 & 0.05 $\pm$ 0.01 & 0.08 $\pm$ 0.06 & 0.09 $\pm$ 0.02 \\
+inlet $p$ & 0.02 $\pm$ 0.02 & 0.02 $\pm$ 0.00 & 0.16 $\pm$ 0.06 & 0.16 $\pm$ 0.03 & 0.03 $\pm$ 0.03 & 0.03 $\pm$ 0.01 \\
+activity & 0.07 $\pm$ 0.04 & 0.08 $\pm$ 0.02 & 0.06 $\pm$ 0.05 & 0.06 $\pm$ 0.01 & 0.00 $\pm$ 0.01 & 0.00 $\pm$ 0.00 \\
+excess air & 0.19 $\pm$ 0.06 & 0.19 $\pm$ 0.03 & 0.16 $\pm$ 0.07 & 0.16 $\pm$ 0.03 & 0.11 $\pm$ 0.04 & 0.11 $\pm$ 0.02 \\
+\bottomrule
+\end{tabular}}
+\end{table}

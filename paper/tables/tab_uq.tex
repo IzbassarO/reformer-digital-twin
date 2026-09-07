@@ -1,0 +1,58 @@
+\begin{table}[htbp]
+\centering
+\caption{RQ4 Monte Carlo (scrambled Sobol design, $N=2048$, all uncertainty groups) through the physics model: median and 5--95\,\% interval of the hot-spot temperature, of $\log_{10}t_r$ and of the paired life consumption per kmol H$_2$ relative to the base. Source: \texttt{data/uq/uq\_summary\_v2.json}.}
+\label{tab:uq}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llll}
+\toprule
+Operating point & $T_{wo,max}$ (K) & $\log_{10}t_r$ (h) & Rel.\ life cost \\
+\midrule
+S1 base & 1145 [1127, 1169] & 7.91 [7.04, 8.73] & 1.000 [1.000, 1.000] \\
+RQ3 knee & 1132 [1107, 1165] & 8.30 [7.33, 9.20] & 0.338 [0.201, 0.643] \\
+RQ3 min-life iso-H$_2$ & 1110 [1088, 1138] & 8.90 [7.94, 9.80] & 0.100 [0.069, 0.159] \\
+S5 year 4, hold slip & 1165 [1138, 1203] & 7.35 [6.28, 8.30] & 3.478 [1.841, 8.974] \\
+S/C 2.5 & 1146 [1129, 1166] & 7.88 [7.04, 8.69] & 1.153 [0.916, 1.350] \\
+S/C 3.5 & 1144 [1127, 1172] & 7.94 [7.04, 8.83] & 0.846 [0.587, 1.119] \\
+load 0.70 & 1138 [1123, 1156] & 8.08 [7.22, 8.90] & 0.966 [0.638, 1.350] \\
+load 0.85 & 1141 [1124, 1162] & 8.00 [7.14, 8.82] & 0.951 [0.787, 1.143] \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Variance decomposition at the S1 base point: one-group-at-a-time share of the joint variance ($N=1024$ per group) and group total-effect Sobol index from a Gaussian-process surrogate of the joint sample. Source: \texttt{data/uq/uq\_summary\_v2.json}.}
+\label{tab:var}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrr}
+\toprule
+Group & share $\log_{10}t_r$ & $S_T$ $\log_{10}t_r$ & share $T_{wo,max}$ & $S_T$ $T_{wo,max}$ \\
+\midrule
+kinetics & 0.233 & 0.225 & 0.513 & 0.620 \\
+heat transfer & 0.050 & 0.114 & 0.111 & 0.302 \\
+creep & 0.622 & 0.655 & 0.211 & 0.093 \\
+measurement & 0.094 & 0.036 & 0.202 & 0.092 \\
+sum / interaction residual & 0.999 / +0.001 &  & 1.037 / -0.037 &  \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Robustness of the RQ2/RQ3 conclusions: fraction of paired Monte Carlo samples supporting each statement, with the calibrated flame length $L_q$ and with the structural variant $L_q\,\mathrm{load}^{0.5}$. Source: \texttt{data/uq/uq\_summary\_v2.json}.}
+\label{tab:robust}
+\small
+\begin{tabular}{lrr}
+\toprule
+Statement & nominal $L_q$ & $L_q \propto \mathrm{load}^{0.5}$ \\
+\midrule
+ageing year 4 costs $>2\times$ S1 life per kmol & 0.906 & 0.906 \\
+knee regime $<0.5\times$ base & 0.806 & 0.936 \\
+S/C 3.5 cheaper in life than S/C 2.5 & 0.836 & 0.836 \\
+S2 daily $\le$ S1 & 0.568 & 0.000 \\
+S3 renewable $\le$ S1 & 0.632 & 0.001 \\
+\bottomrule
+\end{tabular}
+\end{table}

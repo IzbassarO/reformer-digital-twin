@@ -1,0 +1,73 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Industrial implications}
+
+Three results have direct operational consequences. First, the drivers of tube life are the firing intensity, the steam-to-carbon
+ratio and the excess air, in that order, and they act almost independently (Section~\ref{sec:rq1}). Of these, excess air is the
+least appreciated: at fixed fuel it lowers the hot-spot temperature by shifting heat release down the tube, and the optimiser
+exploits it in both directions, choosing minimum excess air when hydrogen is the priority and maximum excess air when life is. Excess
+air is also the cheapest variable to move on an operating plant, and its effect can be verified with the existing pyrometer
+survey \todo{comment on the flue-gas oxygen and efficiency penalty of higher excess air}.
+
+Second, the trade-off between production, fuel and life has a knee that is far from the current operating point of the
+calibrated plant. The base is dominated by a substantial part of the front, and the knee regime obtains more hydrogen at less fuel
+per kmol and a fraction of the life cost, mainly by running at higher load with lower specific firing and the highest inlet
+temperature. Whether these gains are realisable depends on constraints outside the twin (preheat-coil metallurgy at \SI{900}{K}
+inlet temperature, PSA capacity at \SI{110}{\percent} load, downstream steam balance), and the steam-credit sweep shows that the
+recommended steam-to-carbon ratio moves from 4.0 to about 2.7 depending on how the plant values steam. The twin cannot decide this,
+but it makes the dependence explicit, which is the useful output: the plant's steam balance, not the reformer, determines whether
+running steam-rich is a life-saving measure or a fuel penalty.
+
+Third, the life cost of load-following is small compared with the life cost of catalyst ageing, provided the outlet temperature is
+controlled. The practical message is that a plant that must follow demand should not fear the tube-life consequences of smooth load
+changes, but should watch the end-of-campaign hot-spot temperature under a methane-slip target, where the twin predicts the fourth
+year to cost 2.3 times the first per kmol of hydrogen. Under uncertainty this ageing conclusion is the most robust of the study,
+and the conclusion on load-following the least. The difference between the two comes from the size of the nominal effect
+(a factor of 2.3 against \SI{2}{\percent}), not from a difference in modelling quality, and it is an argument for reporting
+robustness fractions alongside nominal results in any digital-twin study \todo{soften or strengthen this recommendation}.
+
+\subsection{The flame-length response to load as a measurement need}
+
+The one structural assumption that changes a conclusion is how the heat-release profile of the burners responds to the firing rate.
+The calibrated model uses a single dimensionless flame length, and the cross-validation residuals at the upper peep hole
+(Section~\ref{sec:verification}) already show that this is the model's weakest element: the partially loaded Plant C2 is predicted
+too hot at the top and the fully loaded Plant A too cold. When the flame is allowed to shorten with load, the flexible-operation
+conclusion reverses because the hot spot at reduced load moves into a hotter part of the furnace. The three published operating
+points cannot separate the two hypotheses. What would settle the question is a pyrometer survey at three or four elevations at two
+or three firing rates on one furnace, which most plants already perform in part during turnaround planning; a digital twin of the
+kind presented here turns such a survey into an estimate of the flame-length response with its uncertainty, and the robustness
+fractions would then no longer straddle 0.5. We regard this as the single most valuable measurement for tube-life-aware operation of
+top-fired reformers \todo{check against burner-manufacturer data on flame length versus firing rate for the burner type}.
+
+\subsection{Limitations}
+
+The model represents one average tube. Tube-to-tube variation in a top-fired furnace, caused by burner imbalance, row position and
+flow maldistribution, is known to be of the order of \SI{20}{K} in wall temperature \todo{cite a survey of tube-to-tube wall
+temperature spread}, which by the Larson--Miller relation corresponds to a factor of two to three in rupture time between the
+hottest and the average tube. The measurement group of the uncertainty analysis ($\pm 10$ K) partly covers this, and a per-tube
+extension would replace the single wall-temperature offset by a distribution over the tube population, but the present results are
+statements about an average tube.
+
+The life model covers creep only. Thermal fatigue during start-up and shutdown, creep--fatigue interaction, carburisation and the
+relaxation of thermal stresses across the wall are not modelled, and the hoop stress is the pressure stress alone; the thermal
+stress from the radial temperature gradient, which is of comparable magnitude in thick tubes \todo{quantify the thermal stress for
+this wall thickness and flux}, is neglected. The scenario results should therefore be read as the creep-life cost of the scenarios,
+not their total life cost, and the ranking of flexible-operation scenarios could change if the number of thermal cycles were
+counted.
+
+The rupture curve is a placeholder. The manufacturer's minimum curve for a proprietary alloy reproduced by Yeh \cite{yeh2021} was
+used because no public curve with scatter information was available in the transcribed form the module requires, and the absolute
+rupture times it yields at the low hoop stress of this tube are not credible. The uncertainty analysis compensates with a
+factor-of-two heat-to-heat scatter and a $\pm 1$ range on the Larson--Miller constant, and the creep group is the largest
+contributor to the variance of $\log_{10} t_r$; replacing the curve by a heat-normalised fit to the NIMS data sheets for the
+25Cr--35Ni--Nb alloys \cite{nims1990,nims1991} is the first step for any absolute statement. The module is built for this
+replacement and the ingestion has been tested on synthetic data.
+
+The scenarios are quasi-steady: each hour is a steady state of the twin, and the thermal inertia of the tube, the catalyst and the
+furnace refractory is neglected. For load ramps of 0.1 per hour and events of one hour or longer this is a reasonable approximation
+\todo{compare the tube and refractory thermal time constants with the ramp rates}, but it excludes the transient overshoot of the
+wall temperature during a fast firing step, which would increase the cost of the over-firing events. Finally, the calibration rests
+on three operating points of one furnace from a single published source, so the parameter intervals are conditional on that
+furnace and the transfer to another reformer requires recalibration on its own survey data; the pipeline is designed so that this
+is a matter of replacing one CSV file.

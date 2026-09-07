@@ -1,0 +1,71 @@
+\section{Introduction}
+\label{sec:intro}
+
+Steam methane reforming (SMR) still supplies most of the world's merchant and captive hydrogen, and it will remain the dominant route for at
+least a decade while electrolytic capacity is built up \todo{support with a current IEA or similar figure and reference}. The core of an
+SMR plant is a top-fired or side-fired furnace in which several hundred centrifugally cast high-alloy tubes, filled with nickel catalyst,
+carry a mixture of natural gas and steam at 25--35 bar while their outer walls are heated to 1100--1200 K. The tubes operate in the creep
+regime of the alloy by design, and their remaining life is the single most important maintenance variable of the plant: a tube
+failure forces an unplanned shutdown, and a full retube costs of the order of \todo{quote a retube cost range with a reference}. Tube
+life is in turn governed almost entirely by the outer-wall temperature at the hottest elevation, because the rupture time of the
+alloy roughly halves for every 10--15 K of additional metal temperature \todo{confirm the rule of thumb for HP-Nb alloys and cite}.
+
+Operating decisions therefore trade hydrogen production, fuel consumption and tube life against each other, but this trade-off is
+rarely quantified. Plants are usually run against a maximum tube-wall temperature limit read from pyrometer surveys, and the effect of
+a load change, a steam-to-carbon change or a burner adjustment on the tube life is left to experience. Two recent developments make a
+quantitative approach both necessary and possible. On the demand side, hydrogen plants are increasingly expected to follow variable
+downstream demand or to operate alongside intermittent renewable hydrogen, which raises the question of how much tube life
+flexible operation actually costs. On the modelling side, validated first-principles models of the reformer tube
+\cite{xu1989a,xu1989b,plehiers1989,pantoleontos2012} and of the furnace \cite{latham2011,zamaniyan2008} exist, machine-learning
+surrogates make such models fast enough for hourly simulation and optimisation \cite{lao2016,tran2017,kumar2015,kumar2017}, and creep
+data for the relevant alloys are available in public databases \cite{nims1990,nims1991}. What is missing is a coupled, calibrated and
+uncertainty-aware chain from operating inputs to tube life, built entirely on published data and open code, so that its conclusions
+can be checked and its data replaced.
+
+\subsection{Previous work}
+
+The reformer tube has been modelled at every level of complexity. Xu and Froment \cite{xu1989a} established the
+Langmuir--Hinshelwood--Hougen--Watson kinetics of methane steam reforming and water-gas shift on a Ni/MgAl$_2$O$_4$ catalyst that
+remains the standard intrinsic model, and in the companion paper \cite{xu1989b} they simulated an industrial tube with a
+one-dimensional heterogeneous model and reported axial profiles of conversion, temperature and pressure for one operating point.
+Plehiers and Froment \cite{plehiers1989} coupled the tube to a zone model of a top-fired furnace, and Pantoleontos et al.
+\cite{pantoleontos2012} revisited the heterogeneous tube model with a dynamic formulation. Latham and co-workers
+\cite{latham2008,latham2011} built a three-dimensional furnace model of a top-fired box reformer, calibrated it on plant measurements
+including infrared tube-wall temperature surveys, and made the plant operating points and tube-wall temperatures available in the
+thesis appendix \cite{latham2008}; that data set is the basis of the present calibration. Zamaniyan et al. \cite{zamaniyan2008}
+proposed a simpler furnace model for control-oriented use.
+
+On the materials side, the creep behaviour of the HP-Nb family of centrifugally cast tube alloys has been characterised in the
+long-term data sheets of the National Institute for Materials Science \cite{nims1990,nims1991} and in remaining-life studies of
+service-exposed tubes \cite{ray2003,whittaker2013,haidemenopoulos2021,guguloth2023}. Yeh \cite{yeh2021} combined a tube-wall
+temperature estimate with a manufacturer's Larson--Miller curve for a proprietary HP-Nb alloy to estimate life, and the same
+curve is used here as a placeholder until the public data sheets are transcribed. The Larson--Miller parameter \cite{larson1952}
+and the linear life-fraction rule of Robinson \cite{robinson1952} remain the basis of design codes such as API 530 \cite{api530}.
+
+Data-driven and hybrid approaches have been applied to reformers in the last decade: neural-network models of the reformer
+\cite{lao2016,tran2017}, optimisation of reformer operation and furnace balancing \cite{kumar2015,kumar2017}, and, more recently,
+physics-informed and digital-twin formulations \cite{yerimah2025,jafarizadeh2024,nabavi2025}. These studies generally address
+production and efficiency; tube life, when it appears, is a constraint on a maximum temperature rather than an objective with a
+quantified cost, and uncertainty in the kinetics, the heat transfer and the creep data is not propagated to the conclusions.
+
+\subsection{Contribution and research questions}
+
+This paper presents a physics-informed digital twin of an industrial top-fired SMR that links operating inputs to tube creep life
+through a one-dimensional tube model, a long-furnace model, a Larson--Miller life module, machine-learning surrogates with
+distribution-free prediction intervals, and Monte Carlo uncertainty propagation (Fig.~\ref{fig:schematic}). The tube model is verified
+against the industrial case of Xu and Froment \cite{xu1989b}, the coupled model is calibrated on the plant data of Latham
+\cite{latham2008} with cross-validation, and every number in the results is produced by a versioned open pipeline from the published
+data. The twin is then used to answer four research questions:
+
+\begin{enumerate}
+\item[RQ1] Which operating variables govern the hot-spot temperature and the creep-life consumption of the tube, and how do they interact?
+\item[RQ2] What is the tube-life cost, per unit of hydrogen produced, of flexible operation (load-following, renewable-following,
+  over-firing events) and of catalyst ageing, relative to steady operation?
+\item[RQ3] Which operating regimes are Pareto-optimal in hydrogen production, fuel consumption and life consumption, and how does the
+  answer depend on how steam is charged?
+\item[RQ4] How uncertain are these answers, which uncertainty sources dominate, and which conclusions survive the uncertainty?
+\end{enumerate}
+
+Section~\ref{sec:methods} describes the models, the data and the numerical methods. Section~\ref{sec:results} reports verification,
+calibration and the answers to RQ1--RQ4. Section~\ref{sec:discussion} draws the industrial implications and states the limitations,
+and Section~\ref{sec:conclusions} concludes.

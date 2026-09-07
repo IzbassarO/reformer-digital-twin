@@ -1,0 +1,18 @@
+\begin{table}[htbp]
+\centering
+\caption{Latham plant cases (thesis Appendix H, absolute temperatures) and calibration results: measured inlet and outlet conditions, model errors (predicted minus measured) of the all-cases fit with $\alpha_{top}$ fixed, and leave-one-case-out held-out errors. Plant C1 is excluded from the fit (inconsistent feed flow). Source: \texttt{latham2008\_plant\_cases.csv}, \texttt{latham\_fit.yaml} (calibration\_alpha\_top\_fixed).}
+\label{tab:latham}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrrrrrrrrr}
+\toprule
+Case & Rate (\%) & $T_{in}$ (K) & $p_{in}$ (bar) & Feed (kmol h$^{-1}$) & S/C & $T_{out}$ (K) & $T_{w,u}$ (K) & $T_{w,l}$ (K) & $\Delta T_{out}$ & $\Delta T_{w,u}$ & $\Delta T_{w,l}$ & CV $\Delta T_{w,u}$ & CV $\Delta T_{w,l}$ \\
+\midrule
+Plant A & 99 & 884.5 & 30.06 & 23.5 & 2.89 & 1105.5 & 1095.9 & 1132.0 & +3.6 & -8.4 & +0.2 & -12.8 & +0.7 \\
+Plant B & 92 & 887.0 & 29.44 & 21.1 & 2.79 & 1107.2 & 1082.3 & 1130.8 & +2.2 & -3.6 & -1.1 & -5.4 & -1.7 \\
+Plant C1 & 96 & 890.9 & 30.27 & 28.7 & 2.85 & 1122.0 & 1111.2 & 1151.5 & -- & -- & -- & -- & -- \\
+Plant C2 & 71 & 879.9 & 28.09 & 15.9 & 2.86 & 1108.9 & 1075.7 & 1126.2 & +3.9 & +12.2 & -0.5 & +18.2 & -0.1 \\
+\bottomrule
+\end{tabular}}
+\par\smallskip\footnotesize Per-tube feed; S/C on total hydrocarbon carbon; upper/lower wall temperatures at 3.66 and 8.53 m of 12.5 m; thesis uncertainties: 2~K outlet, 3~K wall, 8~K flue gas.
+\end{table}

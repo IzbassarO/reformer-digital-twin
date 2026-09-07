@@ -1,0 +1,279 @@
+\section{Results}
+\label{sec:results}
+
+\subsection{Verification and validation}
+\label{sec:verification}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig03_validation_xf1989}
+\caption{Verification against the digitised industrial case of Xu and Froment \cite{xu1989b} (symbols) with the digitised
+outer-wall temperature as boundary condition: (a) methane and CO$_2$ conversion, (b) process-gas and inner-wall temperatures,
+(c) pressure and (d) temperature residuals, for the matched film coefficient $\alpha_i = \alphaIxf{}$ W m$^{-2}$ K$^{-1}$
+(solid lines) and for the Leva--Grummer correlation with $f_{htg} = 1$ (dotted). Source: \texttt{data/literature\_validation/digitized/},
+\texttt{xf1989\_fit.yaml}, \rdtversion.}
+\label{fig:xf}
+\end{figure}
+
+\input{tables/tab_xf_verification}
+
+With the digitised outer-wall temperature prescribed, the tube model's response is controlled almost entirely by the bed-side film
+coefficient, and the first finding of the study is that the heat-transfer chain printed in Part II of Xu and Froment
+\cite{xu1989b} does not reproduce their own figure. Evaluated as printed, the De~Wasch--Froment wall coefficient with the
+Yagi--Kunii dynamic terms gives $\alpha_i \approx$ 3100--3700 W m$^{-2}$ K$^{-1}$ at the particle Reynolds number of the case, and
+the Leva--Grummer correlation gives 940--1580 W m$^{-2}$ K$^{-1}$; the value back-calculated from the digitised wall and gas
+temperatures and the wall conduction is \alphaIxf{} W m$^{-2}$ K$^{-1}$ (interquartile range 313--363). Used as printed, the
+correlations overpredict the gas temperature by 70--115 K and the conversion by 0.14--0.22 (Table~\ref{tab:xf}, first row). Both
+dynamic terms are linear in $Re\,Pr$ and were fitted at Reynolds numbers one order of magnitude lower than those of an industrial
+tube, so the extrapolation drives the effective radial conductivity to values that no measurement supports. A displaced decimal
+in the printed coefficient of the effective conductivity would resolve the discrepancy, but we treat this as a hypothesis
+\todo{check the coefficients against De Wasch and Froment (1972) and Froment and Bischoff before asserting a misprint}.
+
+The Xu--Froment case is therefore used as a \emph{verification} of the tube model with a matched film coefficient rather than as a
+validation of the heat-transfer correlation. With $\alpha_i = \alphaIxf{}$ W m$^{-2}$ K$^{-1}$ and Latham's inlet effectiveness
+profile, the model reproduces the digitised profiles with an RMSE of \xfRMSET{} K in gas temperature, 16.7 K in inner-wall
+temperature and \xfRMSEinc{} in the conversion increment along the tube (Fig.~\ref{fig:xf}, Table~\ref{tab:xf}); the residual
+offset in absolute conversion of about 0.04 originates in the first half metre, where the digitised curve and the inlet rule
+differ \todo{comment on the inlet-region offset}. This verifies kinetics, thermodynamics, the energy balance and the wall
+conduction chain. The pressure RMSE of \SI{0.25}{bar} with the matched coefficient, against \SI{0.04}{bar} with the Leva--Grummer run,
+reflects the different gas temperature and hence density along the tube rather than a change in the friction model
+\todo{confirm this explanation of the pressure residual}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig05_latham_calibrated}
+\caption{Coupled furnace--tube model after calibration ($\alpha_{top}$ fixed) on the Latham plant cases: axial profiles of
+furnace-gas, outer-wall, inner-wall and process-gas temperatures for Plants A, B and C2 with the measured wall temperatures at the
+two peep-hole elevations, the outlet temperature and the flue-gas outlet temperature (error bars $\pm 1.96\sigma$), and the parity of
+predicted against measured temperatures (dotted lines $\pm 10$ K). Source: \texttt{latham2008\_plant\_cases.csv},
+\texttt{latham\_fit.yaml}, \rdtversion.}
+\label{fig:latham}
+\end{figure}
+
+\input{tables/tab_latham_cases}
+\input{tables/tab_calibration}
+
+The bed-side coefficient is validated instead on the plant data, where the furnace model supplies the outer-wall condition and
+$f_{htg}$ is a free parameter. Fig.~\ref{fig:latham} and Tables~\ref{tab:latham}--\ref{tab:cal} summarise the calibration. The
+adopted fit ($\alpha_{top}$ fixed) gives $F_{gt} = \calFgt{}$, $L_q = \calLq{}$ and $f_{htg} = \calFhtg{}$ with tight intervals, a
+$\chi^2$ of \calChi{} on 24 degrees of freedom (reduced $\chi^2$ \calRedChi{}), and reproduces the outlet temperatures of all
+three cases within 4 K, the lower wall temperatures within 1.1 K and the upper wall temperatures within 12.2 K. The four-parameter
+fit lowers $\chi^2$ to 30.5 but is degenerate in $L_q$ and $\alpha_{top}$ (Table~\ref{tab:cal}); fixing $\alpha_{top}$ raises
+$\chi^2$ by \SI{14}{\percent}, more than the \SI{10}{\percent} we set as the threshold for preferring the simpler model, so both
+are reported and the three-parameter fit is adopted for all subsequent work because its parameters are identifiable
+\todo{confirm the choice of the alpha-top-fixed configuration for the RQ work}. The heat-transfer factor of \calFhtg{} corresponds
+to a bed-side coefficient of about \alphaIplant{} W m$^{-2}$ K$^{-1}$ at mid-height of the Plant A tube (four-parameter fit), i.e.\
+between the two literature correlations and four times the value that reproduces the Xu--Froment figure; the range 300--3000
+W m$^{-2}$ K$^{-1}$ is the epistemic span carried into the uncertainty analysis through $f_{htg}$.
+
+Leave-one-case-out cross-validation (last two columns of Table~\ref{tab:latham}) shows that the held-out upper-wall temperature is
+predicted within 5--18 K and the lower within 2 K. The upper-wall error is systematic: Plant C2, at \SI{71}{\percent} rate, is
+predicted too hot at the upper elevation, and Plant A too cold. The upper peep hole lies in the flame zone, where a single
+parabolic release profile with a load-independent flame length cannot follow the change in flame shape with firing rate. This is
+the main structural limitation of the furnace model, and it is why the automated tests for the upper-wall error are recorded as
+expected failures against the 4.5 K target derived from the stated measurement uncertainty. The consequence for the conclusions is
+examined in Section~\ref{sec:rq4}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.6\textwidth]{fig06_creep_life_profile}
+\caption{Outer-wall and mid-wall temperature profiles of the calibrated Plant A tube and the corresponding local rupture time from
+the placeholder Larson--Miller curve at the local hoop stress; the hot spot \todo{state the hot-spot elevation} governs the life. Source:
+\texttt{latham\_fit.yaml} (creep\_life\_first\_estimate), \texttt{yeh2021\_manaurite\_xm.yaml}, \rdtversion.}
+\label{fig:creepprofile}
+\end{figure}
+
+Fig.~\ref{fig:creepprofile} shows the life profile of the calibrated Plant A tube. The hot spot lies at about \todo{quote z/L of the
+hot spot from the figure or the YAML} of the heated length, where the outer wall reaches \baseTwo{} K at a hoop stress of
+\SI{12.9}{MPa}; the rupture time from the placeholder minimum curve is $10^{8}$ h at this point. This absolute value is not
+credible as a tube life and illustrates why the placeholder curve must be replaced: the manufacturer's curve carries no data below
+about 20 MPa and the low hoop stress of a thick tube at 30 bar places the operating point in the extrapolated region
+\todo{comment on the stress range of the placeholder curve and the extrapolation}. All results below are therefore expressed as
+ratios of consumption rates, which depend on the slope of the master curve at the operating point rather than on its absolute
+position.
+
+\subsection{RQ1: what governs hot-spot temperature and life}
+\label{sec:rq1}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig07_operating_maps}
+\caption{Closed-loop operating maps in load and steam-to-carbon ratio at constant outlet temperature (\SI{1105.55}{K}): (a) hot-spot
+temperature, (b) $\log_{10}$ of the life consumption relative to the base case and (c) net hydrogen per tube with contours of the
+firing factor required. The star marks the calibrated Plant A base. Source: \texttt{data/lhs\_runs/grid\_sc\_load\_v2.csv.gz}, \rdtversion.}
+\label{fig:maps}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig08_sobol}
+\caption{First-order ($S_1$) and total-effect ($S_T$) Sobol indices with \SI{95}{\percent} confidence intervals for (a) the hot-spot
+temperature and (b) $\log_{10} t_r$ at the hot spot, from \nSaltelli{} physics evaluations of a Saltelli design over the seven operating
+inputs. Source: \texttt{data/design/sobol\_v2.json}, \rdtversion.}
+\label{fig:sobol}
+\end{figure}
+
+\input{tables/tab_sobol}
+
+The closed-loop maps (Fig.~\ref{fig:maps}) show the structure of the operating space when the outlet temperature is held by the
+firing controller. At constant outlet temperature, the hot-spot temperature rises with load because the duty per tube rises while
+the furnace-gas temperature at the flame zone is fixed by the fuel-to-feed ratio, and it falls with steam-to-carbon ratio because
+the endothermic load moves towards the tube inlet \todo{check this physical reading of panel (a)}. The life map (panel b) is the
+image of the temperature map through the Larson--Miller relation and spans about two decades across the space. Hydrogen production
+(panel c) increases with both load and steam-to-carbon ratio, the latter through the shift of equilibrium, at the cost of a higher
+firing factor.
+
+The Sobol analysis over all seven inputs (Fig.~\ref{fig:sobol}, Table~\ref{tab:sobol}) ranks the drivers of the hot-spot temperature:
+the specific firing factor ($S_T = \SobolFiringTwo{}$), the steam-to-carbon ratio (\SobolSCTwo{}) and the excess air (\SobolEAtwo{})
+together explain \SI{82}{\percent} of the variance; inlet temperature, catalyst activity and load contribute below 0.1 each, and
+inlet pressure is negligible. Excess air matters because at fixed fuel it lowers the adiabatic flame temperature and raises the
+flue-gas flow, both of which move heat release down the tube. The ranking for $\log_{10} t_r$ is the same except that the inlet
+pressure enters with $S_T = \SobolPlogtr{}$ through the hoop stress, which is invisible in the temperature. First-order and
+total-effect indices agree within their confidence intervals for every input, so interactions are weak over the operating space and
+the influence of each variable can be read from one-at-a-time maps. The methane slip is governed by the firing factor
+($S_T = \SobolFiringSlip{}$) and the load, as expected for an approach-to-equilibrium quantity.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig09_surrogate_parity}
+\caption{Parity of the selected surrogates against the physics model on the independent Saltelli test set for (a) the hot-spot
+temperature, (b) dry methane slip and (c) $\log_{10} t_r$ at the hot spot, with nominal \SI{90}{\percent} CV+ conformal intervals.
+Source: \texttt{data/design/surrogate\_metrics\_v2.json}, \rdtversion.}
+\label{fig:parity}
+\end{figure}
+
+\input{tables/tab_surrogate}
+
+The surrogates that make the following campaigns possible are summarised in Table~\ref{tab:surr} and Fig.~\ref{fig:parity}. The
+Gaussian process is selected for seven of the eight targets, and the physics features improve the hot-spot temperature, outlet
+temperature and slip. Test RMSE is \surrRMSETwo{} K for the hot-spot temperature and \surrRMSElogtr{} decades for $\log_{10} t_r$,
+two orders of magnitude below the calibration residuals, at a speed-up of \speedup{} relative to the physics model. The CV+
+intervals over-cover: at a nominal level of 0.90 the empirical coverage is 0.94--0.97 for all targets (\PICPtwo{} for the hot-spot
+temperature). Over-coverage is expected for CV+, whose guarantee is one-sided, and is conservative; the interval widths are
+nevertheless small enough (\SI{0.25}{K} for the hot-spot temperature) that surrogate error is immaterial to the conclusions.
+
+\subsection{RQ2: life cost of flexible operation and ageing}
+\label{sec:rq2}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig11_scenarios_summary}
+\caption{Annual life consumption per kmol of hydrogen relative to the steady base S1 for the RQ2 scenarios, from hourly accumulation
+(bars) and from a single evaluation at the annual-mean inputs (diamonds). Source: \texttt{data/scenarios/summary\_v2.csv}, \rdtversion.}
+\label{fig:scenarios}
+\end{figure}
+
+\input{tables/tab_scenarios}
+
+Table~\ref{tab:scen} and Fig.~\ref{fig:scenarios} answer RQ2 for one year of operation at the calibrated base. Under the
+outlet-temperature controller, load-following costs almost nothing in tube life per unit of hydrogen: the daily profile (S2) and the
+renewable-following profile (S3) consume \SxDaily{} and \SxRenew{} of the S1 life per kmol H$_2$, i.e.\ slightly \emph{less}, because
+the hot-spot temperature at constant outlet temperature falls with load (Fig.~\ref{fig:maps}a) and the hours at reduced load more
+than compensate the hours at overload. Hydrogen output falls by \SI{10}{\percent} and \SI{15}{\percent} respectively, so the
+absolute annual damage falls in proportion. A steady-state assessment at the annual-mean inputs reproduces the hourly accumulation
+to within \SI{2}{\percent} for every scenario without discrete events (ratio \SxAvgErr{} for S3), which means that the non-linearity
+of the Larson--Miller relation is not strong enough over the load range of this controller to make time-resolved simulation
+necessary for smooth load variations \todo{discuss whether this conclusion holds for a plant without outlet-temperature control}.
+
+Discrete over-firing events are different in kind. During a mild event (\SI{+10}{\percent} firing) the damage rate is \evMild{} times
+the base rate, during a severe event (\SI{+25}{\percent}) it is \evSevere{} times, and a \SI{40}{K} hot band raises it by a factor of
+\evHot{}; but because the events are short, their share of the annual damage is 0.4--2.7\,\% (\evHotShare{}\,\% for the hot band)
+and the annual life cost per kmol rises by at most \SI{3}{\percent}. The annual-mean evaluation underestimates the event scenarios
+(diamonds below bars in Fig.~\ref{fig:scenarios}), as it must for a convex damage law, but the error is small at these event
+frequencies. Steam-to-carbon ratio has a larger steady effect: operating at 2.5 costs \SxSClow{} and at 3.5 costs \SxSChigh{} of the
+S1 life per kmol H$_2$, because the higher ratio both cools the hot spot and raises the hydrogen yield.
+
+Catalyst ageing dominates every operational effect. With the activity falling from 0.30 to 0.10 over four years and the controller
+holding the methane slip, the life cost per kmol H$_2$ rises from \SxAgeSlipYone{} in the first year (fresh catalyst) to \SxAgeSlip{}
+in the fourth as the hot spot climbs from \TwoAgeStart{} to \TwoAgeEnd{} K; holding the outlet temperature instead gives
+\SxAgeTout{} in the fourth year because the slip is allowed to rise. Over the campaign the life consumed in year 4 is three times
+that in year 1, and the question of when to change the catalyst is therefore also a tube-life question
+\todo{comment on whether the activity range 0.30--0.10 is representative of a campaign}.
+
+\subsection{RQ3: Pareto-optimal regimes and the steam credit}
+\label{sec:rq3}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig12_pareto}
+\caption{Physics-verified NSGA-II Pareto set in (a) firebox fuel per kmol H$_2$ against life consumption per kmol H$_2$, (b) net
+hydrogen per tube against life consumption and (c) hydrogen against fuel; open circles are members infeasible under the physics
+model, and the marked regimes are listed in Table~\ref{tab:regimes}. Source: \texttt{data/optimization/pareto\_v2.csv},
+\texttt{regimes\_v2.csv}, \rdtversion.}
+\label{fig:pareto}
+\end{figure}
+
+\input{tables/tab_regimes}
+
+The Pareto set (Fig.~\ref{fig:pareto}, Table~\ref{tab:regimes}) contains \nPareto{} members, of which \nFeasible{} remain feasible
+under the physics model; the maximum discrepancy between surrogate and physics on the set is 0.03 in relative life and below
+\SI{0.1}{MJ\,kmol^{-1}} in fuel. The calibrated base is dominated by \nDominating{} members. The knee of the front raises hydrogen
+by \kneeHtwo{}\,\% while cutting fuel per kmol by \kneeFuel{}\,\% and life consumption per kmol to \kneeLife{} of the base; it does so
+by running at \SI{110}{\percent} load with the minimum excess air, the maximum inlet temperature and a lower firing factor. At
+constant production (iso-H$_2$ regime), the life cost can be reduced to \isoLife{} of the base with \isoFuel{}\,\% fuel by reducing
+the firing and letting the hot spot fall from \baseTwo{} to \isoTwo{} K. The maximum-hydrogen corner (\maxHtwoGain{}\,\%) costs
+\maxHtwoLife{} times the base life per kmol and runs close to the wall-temperature limit.
+
+Every member of the front sits at the upper bound of the steam-to-carbon ratio (3.96--4.00). This is an artefact of the objective:
+with firebox fuel alone, additional steam is free, and the equilibrium shift and the cooling of the hot spot both favour maximum
+steam. The steam-credit sweep (Fig.~\ref{fig:steam}, Table~\ref{tab:steam}) shows how the answer changes when steam raising and feed
+preheat are charged. With steam fully charged ($\alpha = 0$) the minimum-fuel regime moves to a steam-to-carbon ratio of
+\steamMinFuelZeroSC{} and the knee to 3.3, while the minimum-life regime stays at 4.0 but now costs \steamMinLifeZeroFuel{}\,\% more
+total fuel than the base for a life cost of \steamMinLifeZero{}. For $\alpha \ge 0.5$, i.e.\ when at least half of the steam duty is
+recovered from the flue gas or credited as export steam, the ratio of 4.0 is optimal for all three regimes. The plant's own steam
+balance therefore decides whether tube life and fuel economy pull in the same direction or against each other
+\todo{relate the steam-credit range to a typical SMR steam balance with waste-heat boiler and export steam}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig13_steam_credit}
+\caption{Iso-production front as a function of the steam credit $\alpha$: (a) optimal steam-to-carbon ratio and (b) life
+consumption per kmol H$_2$ relative to the base for the minimum-life, knee and minimum-fuel regimes. Source:
+\texttt{data/optimization/steam\_credit\_v2.json}, \rdtversion.}
+\label{fig:steam}
+\end{figure}
+
+\input{tables/tab_steam_credit}
+
+\subsection{RQ4: uncertainty and robustness}
+\label{sec:rq4}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig14_uq_distributions}
+\caption{Monte Carlo distributions (\nMC{} samples of all uncertainty groups through the physics model) of (a) the hot-spot
+temperature, with the \SI{1193}{K} limit, and (b) $\log_{10} t_r$ at the hot spot, at the S1 base, the RQ3 knee, the iso-H$_2$
+minimum-life regime and the end of the fourth ageing year. Source: \texttt{data/uq/mc\_v2\_*.csv.gz}, \rdtversion.}
+\label{fig:uq}
+\end{figure}
+
+\input{tables/tab_uq}
+
+Table~\ref{tab:uq} and Fig.~\ref{fig:uq} give the propagated uncertainty. At the base point the \SI{90}{\percent} interval of the
+hot-spot temperature is \uqTwoWidth{} K wide and that of $\log_{10} t_r$ spans \uqLogtrLo{}--\uqLogtrHi{}, i.e.\ a factor of 50 in
+absolute rupture time. The paired ratios are much tighter: the knee regime costs 0.20--0.64 of the base life per kmol and the
+fourth ageing year 1.8--9.0 times, so the ranking of regimes survives an uncertainty that makes the absolute life meaningless. The
+nominal result lies inside the \SI{90}{\percent} interval at every point. The variance decomposition (Table~\ref{tab:var},
+Fig.~\ref{fig:variance}) attributes \shareCreep{}\,\% of the variance of $\log_{10} t_r$ to the creep group, dominated by the
+heat-to-heat scatter and the Larson--Miller constant, 23\,\% to the kinetics, 9\,\% to the wall-temperature measurement and only
+\shareHT{}\,\% to the calibrated heat-transfer parameters; for the hot-spot temperature the kinetics group dominates
+(\shareKinTwo{}\,\%), followed by the measurement offset and the wall thickness. The one-at-a-time shares sum to within 0.04 of one,
+and the Sobol total effects on the surrogate confirm the ranking, so the groups act almost additively.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.55\textwidth]{fig15_variance_shares}
+\caption{One-group-at-a-time shares of the variance of $\log_{10} t_r$ and of the hot-spot temperature at the S1 base point.
+Source: \texttt{data/uq/uq\_summary\_v2.json}, \rdtversion.}
+\label{fig:variance}
+\end{figure}
+
+The robustness fractions (Table~\ref{tab:robust}) state which conclusions hold across the joint uncertainty. That the fourth ageing
+year costs more than twice the S1 life per kmol holds in \robAge{} of the samples, that the knee regime halves the life cost in
+\robKnee{}, and that steam-to-carbon 3.5 is cheaper in life than 2.5 in \robSC{}; these three conclusions are robust and, for the knee,
+become more so under the flame-length variant. The conclusion that flexible operation costs no life per kmol is not robust: it holds
+in \robFlexNom{} of the samples with the calibrated flame length, close to a coin toss because the nominal effect is within
+\SI{2}{\percent} of unity, and it is reversed in all samples when the flame shortens with load, under which the hot spot at
+\SI{70}{\percent} load moves up the tube into the flame zone and the life cost per kmol rises to \lqvarLoadLow{} times the base. The
+sign of the flexible-operation effect is therefore determined by a structural feature of the furnace, the response of the flame
+length to load, that the three plant cases cannot identify.

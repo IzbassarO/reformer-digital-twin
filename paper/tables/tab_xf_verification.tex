@@ -1,0 +1,18 @@
+\begin{table}[htbp]
+\centering
+\caption{Verification of the tube model against the digitised Fig.~3 of Xu and Froment \cite{xu1989b}: RMSE of methane conversion $x_{\mathrm{CH_4}}$, of the conversion increment $x(z)-x(0.5\,\mathrm{m})$, of the process-gas and inner-wall temperatures ($z\ge0.3$~m) and of pressure. Source: \texttt{data/literature\_validation/xf1989\_fit.yaml} (verification\_matched\_alpha).}
+\label{tab:xf}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+Configuration & RMSE $x_{\mathrm{CH_4}}$ & RMSE $\Delta x$ & RMSE $T_g$ (K) & RMSE $T_{wi}$ (K) & RMSE $p$ (bar) \\
+\midrule
+Leva--Grummer, $f_{htg}=1$, $\eta=0.1$ & 0.160 & nan & 75.4 & 37.5 & 0.04 \\
+matched $\alpha_i$ = 348 W m$^{-2}$ K$^{-1}$, $\eta=0.1$ & 0.037 & 0.020 & 13.7 & 16.7 & 0.25 \\
+matched $\alpha_i$, $\eta$ = 0.05 / 0.1 (adopted) & 0.039 & 0.015 & 14.0 & 16.7 & 0.25 \\
+matched $\alpha_i(z)$ profile, $\eta$ = 0.05 / 0.1 & 0.046 & 0.017 & 17.6 & 16.9 & 0.26 \\
+\bottomrule
+\end{tabular}}
+\par\smallskip\footnotesize Back-calculated $\alpha_i$: median 348, interquartile range 313--363 W m$^{-2}$ K$^{-1}$ over 0.5--11 m.
+\end{table}

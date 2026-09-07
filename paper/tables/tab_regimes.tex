@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{RQ3 representative regimes (physics-verified) from the NSGA-II Pareto set (200 $\times$ 300 generations; 199 of 200 members feasible under the physics model). Fuel = firebox fuel per kmol H$_2$; life = consumption rate per kmol H$_2$ relative to the base (Yeh placeholder curve). Source: \texttt{data/optimization/regimes\_v2.csv}.}
+\label{tab:regimes}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+Regime & Load & S/C & $T_{in}$ (K) & Excess air (\%) & Firing & H$_2$ (kmol h$^{-1}$) & Fuel (MJ kmol$^{-1}$) & Rel.\ life cost & $T_{wo,max}$ (K) & CH$_4$ slip (\%) \\
+\midrule
+base & 1.00 & 2.89 & 885 & 21.6 & 1.000 & 14.82 & 158.4 & 1.000 & 1147 & 7.81 \\
+min life iso H2 & 0.96 & 4.00 & 895 & 17.5 & 0.873 & 14.72 & 133.7 & 0.083 & 1109 & 7.77 \\
+knee & 1.10 & 4.00 & 900 & 5.0 & 0.871 & 17.22 & 130.5 & 0.280 & 1130 & 7.15 \\
+max H2 & 1.10 & 4.00 & 900 & 5.0 & 1.150 & 19.26 & 154.1 & 4.329 & 1177 & 3.89 \\
+min fuel overall & 0.60 & 4.00 & 900 & 5.0 & 0.850 & 9.87 & 121.3 & 0.472 & 1128 & 5.72 \\
+min life overall & 0.60 & 4.00 & 858 & 24.9 & 0.850 & 9.18 & 130.4 & 0.046 & 1091 & 7.81 \\
+\bottomrule
+\end{tabular}}
+\end{table}
