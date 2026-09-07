@@ -200,3 +200,51 @@ The Overleaf `main.tex` carries **both** spellings: `\author[su]{Izbassar Orynba
 frontmatter but `\textbf{Izbassar Orynbassarov:}` in the CRediT statement. Step 3 resolves this to
 `Orynbassar` throughout. The second author's name is left exactly as the Overleaf has it,
 **Madina Sissenbay**, and is not normalised against the e-mail address.
+
+---
+
+## 8. Word counts (`texcount -inc`)
+
+Captions and tables are separated by extracting the `figure` and `table` environments into standalone
+files and counting them apart; texcount lumps both into "words outside text".
+
+### Current manuscript, `paper/main.tex`
+
+| Category | Words |
+|---|---|
+| Body text | **8469** |
+| Section headers | **128** |
+| Figure captions (12 environments) | **530** |
+| Tables (8 environments, captions + cells) | **317** |
+| *outside-text total, as texcount reports it* | *847* |
+
+Also 226 inline maths, 5 displayed, 37 headers, 20 floats. Compiled length 22 pages.
+
+### Current supplement, `paper/supplementary.tex`
+
+| Category | Words |
+|---|---|
+| Body text | 715 |
+| Section headers | 35 |
+| Figure captions (5 environments) | 225 |
+| Tables (4 environments) | 143 |
+
+Compiled length 6 pages.
+
+### Archived draft, `paper/archive/draft_step21/main.tex`
+
+| Category | Words |
+|---|---|
+| Body text | 7495 |
+| Section headers | 128 |
+| Figure captions | 589 |
+| Tables (9 files, 11 environments) | 432 |
+
+Compiled length 37 pages.
+
+The consolidated manuscript has **more** body text than the draft (8469 against 7495) while being 15
+pages shorter. The page count fell because of the layout — `final,3p,times` in place of
+`preprint,12pt` with line numbers — not because prose was cut. What was removed was TODO-bearing and
+hedging material (Section 5 above); what was added was the extra methodological detail also listed
+there. Caption and table words fell (530 against 589, 317 against 432) mainly because three tables
+moved to the supplement.
