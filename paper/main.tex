@@ -18,6 +18,8 @@
 \usepackage{booktabs}
 \usepackage{xcolor}
 \usepackage[hidelinks]{hyperref}
+\hypersetup{pdfauthor={Izbassar Orynbassar and Madina Sissenbay},
+            pdftitle={A physics-informed digital twin for tube-life-aware operation of industrial steam methane reformers under uncertainty}}
 % \usepackage{lineno}   % uncomment this pair to number lines for review
 % \linenumbers
 
@@ -35,8 +37,9 @@
 
 \author[su]{Izbassar Orynbassar\corref{cor1}}
 \ead{iorynbas@syr.edu}
+\ead[url]{https://orcid.org/0009-0002-4224-3249}
 \author[au]{Madina Sissenbay}
-\ead{\todo{university e-mail of the second author}}
+\ead{m.sisenbay@aogu.edu.kz}
 \ead[url]{https://orcid.org/0009-0009-8160-7472}
 \cortext[cor1]{Corresponding author.}
 \affiliation[su]{organization={School of Information Studies, Syracuse University},
@@ -516,16 +519,19 @@ The next steps are the ingestion of alloy-specific rupture data with scatter for
 The model code (\texttt{rdt} package), the pipeline entry point (\texttt{python -m rdt.pipeline --stage all --version v2}), the transcribed literature data with their provenance annotations, the digitised verification curves, all v2 result files and the scripts that generate every figure, table and number in this manuscript are available at \url{https://github.com/IzbassarO/reformer-digital-twin} and archived at \todo{Zenodo DOI}. The literature PDFs are not redistributed. Transcribed data are released under CC~BY~4.0 and code under the MIT licence.
 
 \section*{CRediT authorship contribution statement}
-\textbf{Izbassar Orynbassarov:} Conceptualisation, Methodology, Software, Validation, Formal analysis, Data curation, Visualisation, Writing -- original draft, Writing -- review \& editing. \textbf{Madina Sissenbay:} Conceptualisation (process and materials scope), Validation (chemical-engineering content), Investigation (creep-data transcription), Writing -- review \& editing.
+\textbf{Izbassar Orynbassar:} Conceptualisation, Methodology, Software, Validation, Formal analysis, Data curation, Visualisation, Writing -- original draft, Writing -- review \& editing. \textbf{Madina Sissenbay:} Conceptualisation (process and materials scope), Validation (chemical-engineering content), Investigation (creep-data transcription), Writing -- review \& editing.
 
 \section*{Declaration of generative AI and AI-assisted technologies in the writing process}
 During the preparation of this work the authors used Claude (Anthropic) in order to assist with code development, data transcription checks, figure and table generation and drafting of the text. After using this tool, the authors reviewed and edited the content as needed and take full responsibility for the content of the published article.
 
 \section*{Declaration of competing interest}
-The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.
+The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper. M.S. is employed in the industrial gas sector; the work uses exclusively published data and no proprietary information from any employer.
+
+\section*{Funding}
+This research did not receive any specific grant from funding agencies in the public, commercial, or not-for-profit sectors.
 
 \section*{Acknowledgements}
-\todo{Add funding and acknowledgements, if any.}
+I.O. acknowledges the support of the Bolashak International Scholarship of the Republic of Kazakhstan during the preparation of this work. The authors thank D.~A. Latham for the publicly archived thesis appendix that made the plant-scale calibration possible.
 
 % =====================================================================
 \begin{thebibliography}{99}
