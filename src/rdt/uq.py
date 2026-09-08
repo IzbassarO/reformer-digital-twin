@@ -149,9 +149,25 @@ def kinetic_params_from(theta: Dict[str, float]) -> kin.XuFromentParams:
                    K_ref={j: 10 ** float(theta[f"logK_{j}"]) for j in ("CO", "H2", "CH4", "H2O")})
 
 
+def lq_exponent(lq_variant) -> float:
+    """Exponent ``p`` in ``L_q_eff = L_q * load**p``.
+
+    ``False`` (the calibrated, load-independent flame length) is p = 0 and ``True`` the bounding
+    structural variant p = 0.5, which are the two columns of the published robustness table. A float is
+    taken as p itself, so the binary can be swept without changing either published result. Identity
+    comparisons are deliberate: ``0.0 == False`` and ``1.0 == True`` in Python, and p = 1.0 must not be
+    read as the variant flag.
+    """
+    if lq_variant is True:
+        return 0.5
+    if lq_variant is False or lq_variant is None:
+        return 0.0
+    return float(lq_variant)
+
+
 def params_from(theta: Dict[str, float], base_params: lc.LathamParams, load: float, lq_variant: bool = False) -> lc.LathamParams:
     m = 10 ** float(theta["log_eta_mult"])
-    L_q = float(theta["L_q"]) * (load ** 0.5 if lq_variant else 1.0)
+    L_q = float(theta["L_q"]) * (load ** lq_exponent(lq_variant))
     return replace(base_params, F_gt=float(theta["F_gt"]), L_q=L_q, f_htg=float(theta["f_htg"]), eta=base_params.eta * m, eta_top=base_params.eta_top * m,
                    wall_thickness_m=float(theta["wall_thickness_m"]), lambda_tube=29.6 * float(theta["lambda_tube_factor"]), kinetic_params=kinetic_params_from(theta))
 

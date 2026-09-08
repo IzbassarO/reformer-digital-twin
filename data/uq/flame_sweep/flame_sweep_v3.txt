@@ -1,0 +1,92 @@
+Flame-length structural variant resolved into a threshold
+==============================================================================================================
+The robustness table reports each conclusion at the calibrated flame length and at a bounding
+variant L_q_eff = L_q * load^0.5. Here the exponent p is swept instead, and the paired Monte
+Carlo robustness fraction of each statement is recomputed at every p on the base alloy curve.
+
+  p = 0    is the calibrated, load-independent flame length  (nominal column of the table)
+  p = 0.5  is the published bounding variant                 (variant column of the table)
+  p is a structural assumption about the furnace, not a fitted quantity. The sweep says which
+  value of it would change a conclusion; it does not claim a value.
+
+WHAT WAS RE-RUN
+--------------------------------------------------------------------------------------------------------------
+  load^p = 1 for any p when the load is 1, so a full-load point cannot move with the exponent.
+  re-run at every p : RQ3_knee, load_0.70, load_0.85  (loads 1.100, 0.700, 0.850)
+  read from the stored campaign unchanged, all at load 1.000 : S1_base, S5_y4_holdslip_end,
+  S6_SC2.5, S6_SC3.5, load_1.00
+  Two of the five fractions therefore cannot move with p, and are shown flat as a check rather
+  than as a result.
+
+ENDPOINT VERIFICATION
+--------------------------------------------------------------------------------------------------------------
+  Per-sample agreement with the stored campaign (fresh runs, not the stored files re-read).
+  The coupled solve is an adaptive LSODA integration at rtol = 1e-6, so run-to-run agreement is
+  bounded by the integrator's own tolerance rather than by machine epsilon:
+                               n      median         p99         max
+    p=0 RQ3_knee            2048    4.94e-12    9.62e-08    3.30e-06
+    p=0 load_0.70           2048    2.32e-11    9.14e-07    7.04e-06
+    p=0 load_0.85           2048    9.99e-12    3.40e-07    6.64e-06
+    p=0.5 RQ3_knee          2048    4.79e-12    7.86e-08    2.00e-06
+    p=0.5 load_0.70         2048    2.59e-11    9.55e-07    6.97e-06
+    p=0.5 load_0.85         2048    1.47e-11    5.19e-07    7.12e-06
+    the solver rtol is 1e-06. It bounds the local error per step, not the
+    accumulated error, so a maximum a few times above it (7.1e-06) is
+    expected; the median sits four to five orders below it.
+
+  The decisive check is not the size of that difference but whether it changes any decision.
+  For each statement, the number of samples whose truth differs between the fresh run and the
+  stored campaign:
+    p=0      S5y4: 0  knee: 0  SC3.5: 0  S2: 0  S3: 0
+    p=0.5    S5y4: 0  knee: 0  SC3.5: 0  S2: 0  S3: 0
+    total decision flips across both endpoints: 0
+  p=0 against the published nominal column:
+      S5y4_life_gt_2x_S1                     0.8188476562  vs  0.8188476562   EXACT
+      knee_life_lt_0.5_base                  0.8847656250  vs  0.8847656250   EXACT
+      SC3.5_less_life_per_kmol_than_SC2.5    0.8564453125  vs  0.8564453125   EXACT
+      S2_life_per_kmol_le_S1                 0.4252929688  vs  0.4252929688   EXACT
+      S3_life_per_kmol_le_S1                 0.4838867188  vs  0.4838867188   EXACT
+  p=0.5 against the published variant column:
+      S5y4_life_gt_2x_S1                     0.8188476562  vs  0.8188476562   EXACT
+      knee_life_lt_0.5_base                  0.9741210938  vs  0.9741210938   EXACT
+      SC3.5_less_life_per_kmol_than_SC2.5    0.8564453125  vs  0.8564453125   EXACT
+      S2_life_per_kmol_le_S1                 0.0000000000  vs  0.0000000000   EXACT
+      S3_life_per_kmol_le_S1                 0.0000000000  vs  0.0000000000   EXACT
+  99th percentile of every re-run within the solver rtol : YES
+  samples whose decision changed, over all five statements and both endpoints : 0
+  every endpoint fraction exact     : YES
+
+ROBUSTNESS FRACTION AS A FUNCTION OF p
+--------------------------------------------------------------------------------------------------------------
+  statement                                          0     0.1    0.15     0.2    0.25     0.5    0.75       1
+  p =                                                                                                         
+  aging year 4 costs > 2x S1 life per kmol       0.819   0.819   0.819   0.819   0.819   0.819   0.819   0.819
+  knee regime < 0.5x base                        0.885   0.911   0.919   0.928   0.936   0.974   0.992   0.997
+  S/C 3.5 cheaper in life than S/C 2.5           0.856   0.856   0.856   0.856   0.856   0.856   0.856   0.856
+  S2 daily <= S1                                 0.425   0.265   0.190   0.116   0.067   0.000   0.000   0.000
+  S3 renewable <= S1                             0.484   0.320   0.245   0.168   0.105   0.000   0.000   0.000
+
+  minimum convergence over the re-run points     1.000   1.000   1.000   1.000   1.000   1.000   1.000   1.000
+
+CROSSINGS OF 0.5
+--------------------------------------------------------------------------------------------------------------
+  Flexibility statements (the ones the flame-length assumption is known to decide):
+    S2 daily <= S1                           does NOT cross 0.5 in the swept range: it is already
+                                             below 0.5 at p = 0 (0.425) and falls to 0.000 at p = 1
+                                             falls below 0.25 at p = 0.1099
+                                             falls below 0.10 at p = 0.2166
+                                             falls below 0.05 at p = 0.3145
+                                             falls below 0.01 at p = 0.4629
+    S3 renewable <= S1                       does NOT cross 0.5 in the swept range: it is already
+                                             below 0.5 at p = 0 (0.484) and falls to 0.000 at p = 1
+                                             falls below 0.25 at p = 0.1464
+                                             falls below 0.10 at p = 0.2619
+                                             falls below 0.05 at p = 0.3809
+                                             falls below 0.01 at p = 0.4762
+
+  Material conclusions:
+    aging year 4 costs > 2x S1 life per kmol no crossing in the swept range; constant (load-1 points only, cannot move with p)
+    knee regime < 0.5x base                  no crossing in the swept range; rises 0.885 -> 0.997
+    S/C 3.5 cheaper in life than S/C 2.5     no crossing in the swept range; constant (load-1 points only, cannot move with p)
+
+  None of the three material conclusions comes within reach of 0.5 anywhere in 0 <= p <= 1.
