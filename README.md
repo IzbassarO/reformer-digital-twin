@@ -1,5 +1,7 @@
 # Reformer Digital Twin
 
+[![DOI](https://zenodo.org/badge/1357536128.svg)](https://doi.org/10.5281/zenodo.22666191)
+
 A physics-informed digital twin of an industrial steam methane reformer.
 It couples a 1D process model of the catalyst-filled reformer tubes with an
 ML surrogate providing uncertainty quantification and a tube creep-life
