@@ -360,6 +360,85 @@ The one-group-at-a-time shares sum to unity within 0.04, so the four groups act 
 \label{fig:timeseries}
 \end{figure}
 
+% =====================================================================
+\section{Extension to the tube population}
+\label{sec:population}
+
+The life results of the main text are statements about one average tube. The reference
+furnace has 7 rows of 48 tubes, and the standard deviation of the wall temperature across
+that population at a given elevation is 15--22~K~\cite{latham2011}. Because the damage
+rate is convex in wall temperature, the mean damage rate of the population is larger than
+the damage rate evaluated at the mean temperature, and the tube that decides when the
+furnace is retubed is not the average tube but the hottest one.
+
+The extension assigns each of the $N_t = 336$ tubes a wall-temperature offset
+$\Delta T_i \sim \mathcal{N}(0, \sigma^2)$, held fixed over the year rather than resampled
+hourly, and evaluates the rupture time at $T_{\mathrm{wo,max}} + \Delta T_i$ on the same
+master curve and at the same hoop stress. Firing, feed and pressure are common to the
+bundle, so the hoop stress is common as well and the process model is not re-entered per
+tube. Table~\ref{tab:population} reports the result at the calibrated base as ratios to
+the average tube; absolute lives are not quoted, for the reasons given in Section~4.3 of
+the main text.
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Damage-rate multipliers relative to the average tube for a population of 336
+tubes at the calibrated base (S1, firing solved to hold the measured outlet temperature),
+as a function of the population standard deviation $\sigma$.
+The analytic column is the closed-form lognormal result
+$\exp\!\big[(a\ln 10\,\sigma)^2/2\big]$ with $a = 0.0225$ decades per kelvin, the local
+slope of $\log_{10} t_r$ against wall temperature at this point. The hottest-tube column
+is the maximum of one bundle; the last two columns give its mean, standard deviation and
+5--95\,\% range over 200 independent bundles, since a single furnace is one draw.}
+\label{tab:population}
+\begin{tabular}{lccccccc}
+\toprule
+$\sigma$ (K) & population mean & analytic & hottest decile & p95 tube & hottest tube & over 200 bundles & 5--95\,\% \\
+\midrule
+15.0 & 1.29 & 1.35 & 3.86 & 3.32 & 9.9  & $9.0 \pm 2.6$  & 5.6--14.1 \\
+18.5 & 1.49 & 1.58 & 5.34 & 4.37 & 16.5 & $14.8 \pm 5.2$ & 8.3--25.3 \\
+22.0 & 1.75 & 1.92 & 7.43 & 5.73 & 27.2 & $24.2 \pm 10.2$ & 12.2--44.7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The sampled population mean sits within one Monte Carlo standard error of the closed-form
+result at every $\sigma$. Repeating the sampling with $4 \times 10^5$ tubes isolates the
+residual bias of the closed form at 1.5--4.5\,\%, systematically negative because the
+slope $a$ falls as $1/T^2$, so the hot tail gains slightly less life consumption than a
+constant-slope lognormal assumes. The closed form is therefore a usable approximation for
+the population mean, and the reported values are the sampled ones.
+
+Two qualifications bound the hottest-tube figures. The scatter is assumed normal, and the
+hottest tube is the extreme of that assumed tail, so its multiplier inherits whatever the
+tail shape is; the hottest decile is the more robust statistic and is quoted in the main
+text alongside it. And the maximum of a bundle is itself a random variable, which is why
+the spread over 200 bundles is given: two nominally identical furnaces differ by a factor
+of three in the life of their worst tube at $\sigma = 18.5$~K.
+
+The population correction is close to common across operating regimes: over the Pareto
+regimes of Table~3 of the main text it ranges from 1.42 for the hottest regime
+(maximum hydrogen) to 1.61 for the coolest (minimum life overall), so it compresses the
+spread between regimes slightly without reordering them. Under the population mean the
+ranking of the RQ3 regimes by life consumption per kmol~H$_2$ is identical to the ranking
+of the average tube, and it remains identical under the hottest decile. Among the twenty
+RQ2 scenario rows, two change rank under the population mean and three under the hottest
+decile; all of them lie between ranks 13 and 15 and the pairs that exchange places are
+S3 against S4c and S2 against S4c, separated by 0.47\,\% and 0.78\,\% on the average tube.
+Every conclusion drawn in the main text --- the ageing ratio, the steam-to-carbon
+comparison and the knee against the base --- keeps both its order and its margin.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{fig16_population_damage}
+\caption{Distribution of the per-tube damage rate over the population of 336 tubes at
+$\sigma = 18.5$~K, normalized to the average tube of the base case, for (a) the calibrated
+base and (b) the knee regime, with the average tube, the population mean and the hottest
+decile marked. The whole distribution of the knee regime lies about half a decade to the
+left of the base.}
+\label{fig:population}
+\end{figure}
+
 \begin{thebibliography}{99}
 \bibitem{xu1989a} J. Xu, G.~F. Froment, Methane steam reforming, methanation and water-gas shift: I. Intrinsic kinetics, AIChE J. 35 (1989) 88--96.
 \bibitem{xu1989b} J. Xu, G.~F. Froment, Methane steam reforming: II. Diffusional limitations and reactor simulation, AIChE J. 35 (1989) 97--103.

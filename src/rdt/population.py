@@ -403,6 +403,9 @@ def figure_damage_distributions(cfg: C.RunConfig, states: Mapping[str, TubeState
                                 stem: Optional[Path] = None) -> List[Path]:
     """Per-tube damage-rate distribution at the base point and at the knee regime, on a common axis.
 
+    ``states`` must supply the keys ``"base"`` and ``"knee"``. The base panel uses the S1_steady anchor,
+    the same operating point the reported table is built on, so that the two agree cell for cell.
+
     Both panels are normalised by the *base* average-tube rate, so the horizontal shift between them is
     the life cost of the regime and the width of each is the population scatter.
     """
@@ -410,7 +413,7 @@ def figure_damage_distributions(cfg: C.RunConfig, states: Mapping[str, TubeState
 
     stem = Path(stem or (cfg.figures_dir / "fig16_population_damage"))
     ref = float(1.0 / np.asarray(curve.time_to_rupture(states["base"].T_wo_max_K, states["base"].sigma_hot_MPa)))
-    panels = [("base", "a", "Base case"), ("knee", "b", "Knee regime")]
+    panels = [("base", "a", "Calibrated base (S1)"), ("knee", "b", "Knee regime")]
     data = {k: damage_rates(curve, states[k].T_wo_max_K, states[k].sigma_hot_MPa, dT) / ref for k, _, _ in panels}
     allv = np.concatenate(list(data.values()))
     bins = np.logspace(np.log10(allv.min()) - 0.05, np.log10(allv.max()) + 0.05, 34)
@@ -680,7 +683,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     print(f"         {a.out_dir / f'population_{cfg.tag}.json'}")
 
     if not a.no_figure:
-        paths = figure_damage_distributions(cfg, res["regime_states"], res["dT"], res["curve"], base_sigma)
+        # the base panel uses the S1_steady anchor, so that the figure and the reported table
+        # describe the same operating point
+        panel_states = {"base": res["anchors"]["S1_steady"], "knee": res["regime_states"]["knee"]}
+        paths = figure_damage_distributions(cfg, panel_states, res["dT"], res["curve"], base_sigma)
         for q in paths:
             print(f"         {q}")
     return 0
