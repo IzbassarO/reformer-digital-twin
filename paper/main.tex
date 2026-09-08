@@ -4,12 +4,13 @@
 % named "figures/". Compiler: pdfLaTeX. The bibliography is embedded, no .bib needed.
 %
 % LAYOUT OPTIONS (choose one; "3p" is the compact single-column journal layout)
-%   final,3p,times            -> compact, single column, no line numbers   <-- active
+%   final,3p,times            -> compact, single column, no line numbers
 %   final,5p,times,twocolumn  -> two-column journal look (wide tables need table*)
-%   preprint,review,12pt      -> double spaced with line numbers, for referees
-% To add line numbers for review, uncomment the two lineno lines below.
+%   preprint,review,12pt      -> double spaced with line numbers, for referees   <-- active
+% To return to the compact layout, restore final,3p,times and comment out the two lineno
+% lines below again.
 % =====================================================================
-\documentclass[final,3p,times]{elsarticle}
+\documentclass[preprint,review,12pt]{elsarticle}
 
 \biboptions{numbers,sort&compress}
 
@@ -20,8 +21,8 @@
 \usepackage[hidelinks]{hyperref}
 \hypersetup{pdfauthor={Madina Sissenbay and Izbassar Orynbassar},
             pdftitle={A physics-informed digital twin for tube-life-aware operation of industrial steam methane reformers under uncertainty}}
-% \usepackage{lineno}   % uncomment this pair to number lines for review
-% \linenumbers
+\usepackage{lineno}     % comment this pair out to remove line numbers
+\linenumbers
 
 \graphicspath{{figures/}}
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
