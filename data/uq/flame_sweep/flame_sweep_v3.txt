@@ -58,15 +58,15 @@ ENDPOINT VERIFICATION
 
 ROBUSTNESS FRACTION AS A FUNCTION OF p
 --------------------------------------------------------------------------------------------------------------
-  statement                                          0     0.1    0.15     0.2    0.25     0.5    0.75       1
-  p =                                                                                                         
-  aging year 4 costs > 2x S1 life per kmol       0.819   0.819   0.819   0.819   0.819   0.819   0.819   0.819
-  knee regime < 0.5x base                        0.885   0.911   0.919   0.928   0.936   0.974   0.992   0.997
-  S/C 3.5 cheaper in life than S/C 2.5           0.856   0.856   0.856   0.856   0.856   0.856   0.856   0.856
-  S2 daily <= S1                                 0.425   0.265   0.190   0.116   0.067   0.000   0.000   0.000
-  S3 renewable <= S1                             0.484   0.320   0.245   0.168   0.105   0.000   0.000   0.000
+  statement                                          0     0.1    0.15     0.2    0.25     0.3    0.35     0.4     0.5    0.75       1
+  p =                                                                                                                                 
+  aging year 4 costs > 2x S1 life per kmol       0.819   0.819   0.819   0.819   0.819   0.819   0.819   0.819   0.819   0.819   0.819
+  knee regime < 0.5x base                        0.885   0.911   0.919   0.928   0.936   0.948   0.955   0.963   0.974   0.992   0.997
+  S/C 3.5 cheaper in life than S/C 2.5           0.856   0.856   0.856   0.856   0.856   0.856   0.856   0.856   0.856   0.856   0.856
+  S2 daily <= S1                                 0.425   0.265   0.190   0.116   0.067   0.028   0.008   0.001   0.000   0.000   0.000
+  S3 renewable <= S1                             0.484   0.320   0.245   0.168   0.105   0.059   0.020   0.006   0.000   0.000   0.000
 
-  minimum convergence over the re-run points     1.000   1.000   1.000   1.000   1.000   1.000   1.000   1.000
+  minimum convergence over the re-run points     1.000   1.000   1.000   1.000   1.000   1.000   1.000   1.000   1.000   1.000   1.000
 
 CROSSINGS OF 0.5
 --------------------------------------------------------------------------------------------------------------
@@ -75,14 +75,14 @@ CROSSINGS OF 0.5
                                              below 0.5 at p = 0 (0.425) and falls to 0.000 at p = 1
                                              falls below 0.25 at p = 0.1099
                                              falls below 0.10 at p = 0.2166
-                                             falls below 0.05 at p = 0.3145
-                                             falls below 0.01 at p = 0.4629
+                                             falls below 0.05 at p = 0.2722
+                                             falls below 0.01 at p = 0.3447
     S3 renewable <= S1                       does NOT cross 0.5 in the swept range: it is already
                                              below 0.5 at p = 0 (0.484) and falls to 0.000 at p = 1
                                              falls below 0.25 at p = 0.1464
-                                             falls below 0.10 at p = 0.2619
-                                             falls below 0.05 at p = 0.3809
-                                             falls below 0.01 at p = 0.4762
+                                             falls below 0.10 at p = 0.2554
+                                             falls below 0.05 at p = 0.3110
+                                             falls below 0.01 at p = 0.3861
 
   Material conclusions:
     aging year 4 costs > 2x S1 life per kmol no crossing in the swept range; constant (load-1 points only, cannot move with p)
