@@ -4,13 +4,14 @@
 % named "figures/". Compiler: pdfLaTeX. The bibliography is embedded, no .bib needed.
 %
 % LAYOUT OPTIONS (choose one; "3p" is the compact single-column journal layout)
-%   final,3p,times            -> compact, single column, no line numbers
+%   final,3p,times            -> compact, single column   <-- active
 %   final,5p,times,twocolumn  -> two-column journal look (wide tables need table*)
-%   preprint,review,12pt      -> double spaced with line numbers, for referees   <-- active
-% To return to the compact layout, restore final,3p,times and comment out the two lineno
-% lines below again.
+%   preprint,review,12pt      -> double spaced, for referees
+% Line numbering is independent of the layout: the lineno pair below is active, so the
+% compact layout is currently numbered for review. Comment that pair out for the final
+% camera-ready version.
 % =====================================================================
-\documentclass[preprint,review,12pt]{elsarticle}
+\documentclass[final,3p,times]{elsarticle}
 
 \biboptions{numbers,sort&compress}
 
