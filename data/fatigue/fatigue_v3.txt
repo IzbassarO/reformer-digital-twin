@@ -81,10 +81,10 @@ START-UP / SHUTDOWN REFERENCE CYCLE
   range. A start-up interrupted by holds or a trip would add sub-cycles, which are not modelled.
   at the assumed 2-6 cool-downs per year that is 2-6 such cycles annually
 
-  NOTE: Section S1 of the supplementary material quotes a 20-30 K wall drop and about 45 MPa.
-  The twin gives 56.9 K and 110 MPa at the hot spot of the
-  calibrated base. The relation and the constants used here are the ones printed there; only the
-  wall drop is taken from the model. The discrepancy is reported, not resolved.
+  Section S1 of the supplementary material previously carried an estimated 20-30 K wall drop and
+  about 45 MPa. It now states the computed values: 57 K / 110 MPa at the hot spot, 63 K / 122 MPa at the steepest
+  gradient, and 32 K / 63 MPa averaged over the heated length. The relation and the constants
+  used here are the ones printed there; only the wall drop comes from the model.
 
 SCENARIO STRESS HISTORIES AND RAINFLOW COUNTS
 ------------------------------------------------------------------------------------------------------------

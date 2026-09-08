@@ -453,10 +453,12 @@ def report(res: Dict[str, object]) -> str:
     P(f"  at the assumed {STARTUPS_PER_YEAR[0]:g}-{STARTUPS_PER_YEAR[1]:g} cool-downs per year that is "
       f"{STARTUPS_PER_YEAR[0]:g}-{STARTUPS_PER_YEAR[1]:g} such cycles annually")
     P("")
-    P("  NOTE: Section S1 of the supplementary material quotes a 20-30 K wall drop and about 45 MPa.")
-    P(f"  The twin gives {su['dT_wall_hot_K']:.1f} K and {su['hot_MPa']:.0f} MPa at the hot spot of the")
-    P("  calibrated base. The relation and the constants used here are the ones printed there; only the")
-    P("  wall drop is taken from the model. The discrepancy is reported, not resolved.")
+    P("  Section S1 of the supplementary material previously carried an estimated 20-30 K wall drop and")
+    P(f"  about 45 MPa. It now states the computed values: {su['dT_wall_hot_K']:.0f} K / "
+      f"{su['hot_MPa']:.0f} MPa at the hot spot, {su['dT_wall_max_K']:.0f} K / "
+      f"{su['hot_thmax_MPa']:.0f} MPa at the steepest")
+    P("  gradient, and 32 K / 63 MPa averaged over the heated length. The relation and the constants")
+    P("  used here are the ones printed there; only the wall drop comes from the model.")
     P("")
 
     P("SCENARIO STRESS HISTORIES AND RAINFLOW COUNTS")
