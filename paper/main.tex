@@ -7,9 +7,8 @@
 %   final,3p,times            -> compact, single column   <-- active
 %   final,5p,times,twocolumn  -> two-column journal look (wide tables need table*)
 %   preprint,review,12pt      -> double spaced, for referees
-% Line numbering is independent of the layout: the lineno pair below is active, so the
-% compact layout is currently numbered for review. Comment that pair out for the final
-% camera-ready version.
+% Line numbering is independent of the layout: the lineno pair below is commented out, so
+% the compiled PDF carries no line numbers. Uncomment that pair to number lines for review.
 % =====================================================================
 \documentclass[final,3p,times]{elsarticle}
 
@@ -22,8 +21,8 @@
 \usepackage[hidelinks]{hyperref}
 \hypersetup{pdfauthor={Madina Sissenbay and Izbassar Orynbassar},
             pdftitle={A physics-informed digital twin for tube-life-aware operation of industrial steam methane reformers under uncertainty}}
-\usepackage{lineno}     % comment this pair out to remove line numbers
-\linenumbers
+% \usepackage{lineno}   % uncomment this pair to number lines for review
+% \linenumbers
 
 \graphicspath{{figures/}}
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
