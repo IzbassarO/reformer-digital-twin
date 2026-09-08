@@ -439,6 +439,92 @@ left of the base.}
 \label{fig:population}
 \end{figure}
 
+% =====================================================================
+\section{Thermal-fatigue screening of the scenarios}
+\label{sec:fatigue}
+
+The life model of the main text covers creep only. Because the elastic thermal stress from
+the radial wall gradient is an order of magnitude above the hoop stress
+(Section~\ref{sec:modeldetail}), the question of whether cyclic operation adds a fatigue
+cost to the creep cost cannot be left open. This section screens the exposure. It is not a
+creep--fatigue model: no fatigue curve exists in the open literature for the alloy used
+here, and none is assumed. What is computed is the cyclic content of each scenario,
+compared with the cyclic exposure the plant already accepts from start-up and shutdown.
+
+The hourly wall gradient is evaluated with the coupled physics model at every distinct
+operating point of each scenario history --- 78\,600 coupled solves in total --- rather
+than through a surrogate. A Gaussian-process surrogate was trained for this quantity in a
+preliminary trial and discarded, and the two figures that follow come from that trial
+rather than from the reported pipeline: its error over the sampled operating box was
+3.8~K RMSE, of the same order as the stress ranges being counted, and its noise generated
+547 spurious cycles per year in a scenario that holds a single operating point all year.
+The thermal stress follows the relation and constants of Section~\ref{sec:modeldetail},
+and the cyclic content of each annual history is extracted by rainflow counting following
+ASTM~E1049.
+
+Two elevations must be distinguished. The maximum of the outer-wall temperature and the
+maximum of the wall gradient are not at the same place, and they part company under
+over-firing: at a firing factor of 1.22 the outer-wall maximum migrates from
+$z/L = 0.43$ to the tube outlet, where the process gas has caught up with the wall and the
+local flux is small, so the gradient at the hot spot collapses from 57 to 15~K while the
+wall there is 36~K hotter. The maximum gradient anywhere on the tube instead rises
+monotonically with firing (63, 66, 70~K). The maximum-gradient definition is therefore the
+one that bounds the thermal stress and is used below; the hot-spot values, which are the
+ones relevant to the creep calculation, are given alongside.
+
+One full start-up and shutdown --- cold tube with no firing and no flux, hence no gradient,
+to the calibrated base state and back --- is one cycle of the end-to-end range,
+122~MPa on the maximum-gradient definition and 110~MPa at the hot spot. Reformer plants
+undergo of the order of 2--6 full cool-downs a year; that rate is plant practice, assumed
+here, not a result of the model.
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Thermal-fatigue screening of the annual scenarios: largest stress range and cycle
+count from rainflow counting of the hourly history, and the annual cyclic content
+expressed as a multiple of one start-up cycle under a Basquin-type exponent $m$. Ranges
+below 1~MPa are excluded from the counts; they are numerical texture of the firing
+bisection and are worth less than $10^{-6}$ of a start-up each. Values are on the
+maximum-gradient definition. No fatigue curve for the alloy is used: $m$ is swept, not
+assumed.}
+\label{tab:fatigue}
+\begin{tabular}{lccccc}
+\toprule
+Scenario & largest range (MPa) & cycles per year & $m = 3$ & $m = 5$ & $m = 8$ \\
+\midrule
+S1 steady, S6 (both), S5 constant-activity & 0 & 0 & $\leq 10^{-6}$ & $\leq 10^{-9}$ & $\leq 10^{-15}$ \\
+S2 daily load-following & 29 & 365 & 4.98 & 0.28 & 0.0039 \\
+S3 renewable-following & 49 & 1828 & 3.86 & 0.40 & 0.020 \\
+S4a mild over-firing & 6 & 24 & 0.0022 & $4.6\times10^{-6}$ & $4.3\times10^{-10}$ \\
+S4b severe over-firing & 13 & 6 & 0.007 & $10^{-4}$ & $10^{-7}$ \\
+S5 ageing (all years) & $\leq 2$ & $\leq 0.5$ & $\leq 10^{-6}$ & $\leq 10^{-9}$ & $\leq 10^{-15}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The exponent decides the answer, so it is swept rather than assumed. One year of daily
+load-following equals the exposure of a single start-up at $m = 4.15$ on the
+maximum-gradient definition and $m = 4.60$ at the hot spot; it equals the assumed
+2--6 start-ups per year at $m$ between 2.9 and 3.7. Above $m \approx 4$ a year of daily
+cycling is worth a fraction of one start-up, and at $m = 8$ it is 0.39\,\% of one.
+One year of daily load-following equals the exposure of a single start-up at
+$m = 4.15$, and equals the assumed annual start-up exposure of 2--6 cool-downs at $m$
+between 2.9 and 3.7. No fatigue curve for this alloy is available in the open
+literature, so the screening is reported as a condition rather than a verdict: the
+cyclic exposure added by smooth load variation stays below the exposure the plant
+already accepts provided the fatigue exponent exceeds about 3.7, and does not below it.
+Establishing that exponent for centrifugally cast reformer alloys is, after the
+flame-length response, the second measurement this study identifies as decisive.
+
+Three limitations are stated rather than absorbed. The elastic range is an upper bound,
+because in steady operation the thermal stress relaxes by creep and is conventionally
+excluded from the design stress. The elastic constants are single representative values,
+not temperature-dependent properties. And scenario S4c is invisible to this calculation by
+construction: its flame-impingement proxy adds 40~K directly to the metal temperature
+rather than changing an operating input, and a 40~K rise from additional local flux and one
+from redistributed radiation imply different gradients, which the scenario does not
+specify. Its row is a lower bound, and no flux was invented to fill it.
+
 \begin{thebibliography}{99}
 \bibitem{xu1989a} J. Xu, G.~F. Froment, Methane steam reforming, methanation and water-gas shift: I. Intrinsic kinetics, AIChE J. 35 (1989) 88--96.
 \bibitem{xu1989b} J. Xu, G.~F. Froment, Methane steam reforming: II. Diffusional limitations and reactor simulation, AIChE J. 35 (1989) 97--103.
