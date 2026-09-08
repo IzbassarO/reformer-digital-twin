@@ -1,0 +1,131 @@
+Per-tube population extension of the life model  (v3 results, alloy centralloy_g_4852)
+========================================================================================================
+Bundle: 7 rows x 48 tubes = 336 tubes; dT ~ Normal(0, sigma), one static
+draw per tube, seed 0. Master curve 'Centralloy G 4852' (C = 18.6, lower scatter band).
+The offset moves the metal temperature only: firing, feed and pressure are common to the bundle,
+so the hoop stress is common to it. t_r,i = t_r(T_wo,max + dT_i, sigma_hoop).
+
+ANCHOR STATES AND THE CODE PATH THAT PRODUCED THEM
+--------------------------------------------------------------------------------------------------------
+  rule: inside the sampled operating box -> GP surrogates; outside it -> physics model.
+  'S1_steady' is the RQ2 base year, firing solved to hold the measured outlet temperature.
+  'RQ3 base'  is the calibrated base case at firing factor 1.0 -- the 1147 K hot spot the paper quotes.
+
+anchor        T_wo,max [K]  sigma [MPa]  H2 [kmol/h]   code path
+S1_steady         1143.432      12.8742      14.6716   stored hourly (8760 surrogate / 0 physics)
+                  1143.420      12.8792      14.6720   physics, cross-check (+0.012 K, -0.0050 MPa)
+RQ3 base          1146.718      12.8692      14.8147   surrogate
+                  1146.713      12.8753      14.8151   physics, cross-check (+0.006 K, -0.0061 MPa)
+
+1. THE BASE POINT OVER THE POPULATION
+--------------------------------------------------------------------------------------------------------
+Multipliers are damage rate over the average tube; lives are 1/rate in years. Percentiles are
+percentiles of the per-tube damage rate, so p95 is a hot tube and p1 a cold one; 'hottest decile'
+is the mean damage rate of the hottest 10 % of the bundle.
+
+  S1_steady  (T_wo,max = 1143.43 K, sigma_hoop = 12.874 MPa, a = 0.02251 decades/K)   [stored hourly (8760 surrogate / 0 physics)]
+              --- damage-rate multiplier over the average tube ---                     --- life [years] ---                 
+  sigma [K]  pop mean  analytic   hottest   hot dec      p95       p5       p1 |   avg tube   hottest   hot dec       p95        p5        p1
+       15.0     1.292     1.353     9.894     3.862    3.324    0.310    0.147 |       1587     160.4       411     477.5      5119 1.078e+04
+       18.5     1.485     1.584    16.469     5.345    4.369    0.234    0.092 |       1587     96.37       297     363.3      6773 1.716e+04
+       22.0     1.755     1.916    27.166     7.426    5.727    0.177    0.058 |       1587     58.43     213.7     277.1      8984 2.752e+04
+
+  RQ3 base  (T_wo,max = 1146.72 K, sigma_hoop = 12.869 MPa, a = 0.02239 decades/K)   [surrogate]
+              --- damage-rate multiplier over the average tube ---                     --- life [years] ---                 
+  sigma [K]  pop mean  analytic   hottest   hot dec      p95       p5       p1 |   avg tube   hottest   hot dec       p95        p5        p1
+       15.0     1.288     1.348     9.769     3.831    3.302    0.312    0.149 |       1342     137.4     350.3     406.5      4299      9015
+       18.5     1.478     1.576    16.215     5.292    4.333    0.236    0.094 |       1342     82.76     253.6     309.7      5679 1.431e+04
+       22.0     1.743     1.902    26.675     7.337    5.672    0.178    0.059 |       1342     50.31     182.9     236.6      7520 2.288e+04
+
+  hottest decile = mean over the hottest 34 of 336 tubes
+  realised draw at sigma = 18.5 K: mean dT -0.77 K, sd 18.64 K, max +56.72 K
+
+  RATIO OF HOTTEST-TUBE TO AVERAGE-TUBE RUPTURE TIME
+  The manuscript (Section 5, limitations) claims 'a factor of two to four'. The hottest tube of a
+  bundle is the maximum of N draws and is itself random, so the spread over bundles is given too.
+    S1_steady:
+      sigma = 15.0 K : t_r(avg)/t_r(hottest) =   9.89 (seed 0)     8.98 +-  2.58 over 200 bundles, 5-95 % 5.62-14.09
+      sigma = 18.5 K : t_r(avg)/t_r(hottest) =  16.47 (seed 0)    14.78 +-  5.25 over 200 bundles, 5-95 % 8.29-25.26
+      sigma = 22.0 K : t_r(avg)/t_r(hottest) =  27.17 (seed 0)    24.21 +- 10.24 over 200 bundles, 5-95 % 12.16-44.75
+    RQ3 base:
+      sigma = 15.0 K : t_r(avg)/t_r(hottest) =   9.77 (seed 0)     8.87 +-  2.53 over 200 bundles, 5-95 % 5.57-13.89
+      sigma = 18.5 K : t_r(avg)/t_r(hottest) =  16.21 (seed 0)    14.56 +-  5.14 over 200 bundles, 5-95 % 8.19-24.81
+      sigma = 22.0 K : t_r(avg)/t_r(hottest) =  26.67 (seed 0)    23.78 +- 10.00 over 200 bundles, 5-95 % 11.99-43.82
+    a tube ONE sigma above the mean, which is the number 'two to four' actually corresponds to: 15.0 K -> 2.18, 18.5 K -> 2.61, 22.0 K -> 3.13
+
+2. VALIDATION OF THE CODE PATH: sampled population mean against the analytic lognormal result
+--------------------------------------------------------------------------------------------------------
+   E[rate]/rate(T_bar) = exp((a ln10 sigma)^2 / 2) holds exactly only if a were constant in T;
+   a = LMP/(scale T^2) falls slowly with T, so a residual is expected on top of the MC error.
+
+   S1_steady
+   sigma [K]   analytic  sampled N=336   err [%]  MC s.e. [%]  sampled N=4e5   err [%]
+        15.0     1.3530         1.2921     -4.50         4.97         1.3326     -1.51
+        18.5     1.5839         1.4851     -6.23         6.70         1.5409     -2.72
+        22.0     1.9162         1.7546     -8.43         8.92         1.8298     -4.51
+
+   RQ3 base
+   sigma [K]   analytic  sampled N=336   err [%]  MC s.e. [%]  sampled N=4e5   err [%]
+        15.0     1.3484         1.2881     -4.47         4.93         1.3283     -1.49
+        18.5     1.5756         1.4782     -6.18         6.64         1.5334     -2.68
+        22.0     1.9021         1.7432     -8.36         8.83         1.8175     -4.45
+
+   The N=336 deviations sit inside one Monte Carlo standard error of the analytic value; the
+   large-sample column isolates the curvature term, which is the honest size of the lognormal
+   approximation error.
+
+3. RQ2 SCENARIOS OVER THE POPULATION (sigma = 18.5 K, 336 tubes, seed 0)
+----------------------------------------------------------------------------------------------------
+   Life cost per kmol H2, relative to the S1 average tube. Years are years to D = 1.
+
+scenario                            avg  pop mean  hot dec  pop/avg |    y avg    y pop y 1st fail |   rank a/p/d | code path
+S1_steady                         1.000     1.485    5.345    1.485 | 1.59e+03 1.07e+03       96.4 |   6/  6/  6   | stored hourly (8760 surrogate / 0 physics)
+S2_daily                          1.010     1.504    5.427    1.489 | 1.75e+03 1.17e+03        105 |  13/ 13/ 14 * | stored hourly (8760 surrogate / 0 physics)
+S3_renewable                      1.013     1.511    5.462    1.491 | 1.84e+03 1.23e+03        110 |  14/ 15/ 15 * | stored hourly (8760 surrogate / 0 physics)
+S4a_mild_overfire                 1.006     1.493    5.372    1.485 | 1.58e+03 1.06e+03       95.9 |  12/ 12/ 12   | stored hourly (8760 surrogate / 0 physics)
+S4b_severe_overfire               1.003     1.489    5.357    1.485 | 1.58e+03 1.07e+03       96.2 |  11/ 11/ 11   | stored hourly (8754 surrogate / 6 physics)
+S4c_hot_band                      1.018     1.510    5.427    1.484 | 1.56e+03 1.05e+03         95 |  15/ 14/ 13 * | stored hourly (8760 surrogate / 0 physics)
+S6_SC2.5                          1.147     1.701    6.112    1.483 | 1.48e+03    1e+03       90.5 |  17/ 17/ 17   | stored hourly (8760 surrogate / 0 physics)
+S6_SC3.5                          0.847     1.261    4.548    1.488 | 1.72e+03 1.16e+03        104 |   3/  3/  3   | stored hourly (8760 surrogate / 0 physics)
+S5_hold_CH4_slip_ageing_y1        0.756     1.132    4.110    1.497 |  2.1e+03  1.4e+03        124 |   1/  1/  1   | stored hourly (8760 surrogate / 0 physics)
+S5_hold_CH4_slip_ageing_y2        0.896     1.335    4.820    1.490 | 1.77e+03 1.19e+03        106 |   4/  4/  4   | stored hourly (8760 surrogate / 0 physics)
+S5_hold_CH4_slip_ageing_y3        1.179     1.743    6.241    1.478 | 1.35e+03      911         83 |  18/ 18/ 18   | stored hourly (8760 surrogate / 0 physics)
+S5_hold_CH4_slip_ageing_y4        1.959     2.856   10.056    1.457 |      810      556       52.4 |  20/ 20/ 20   | stored hourly (8760 surrogate / 0 physics)
+S5_hold_T_out_ageing_y1           0.803     1.200    4.348    1.494 | 1.97e+03 1.32e+03        117 |   2/  2/  2   | stored hourly (8760 surrogate / 0 physics)
+S5_hold_T_out_ageing_y2           0.916     1.364    4.923    1.489 | 1.73e+03 1.16e+03        104 |   5/  5/  5   | stored hourly (8760 surrogate / 0 physics)
+S5_hold_T_out_ageing_y3           1.139     1.685    6.039    1.480 |  1.4e+03      944       85.8 |  16/ 16/ 16   | stored hourly (8760 surrogate / 0 physics)
+S5_hold_T_out_ageing_y4           1.686     2.469    8.740    1.464 |      950      649       60.5 |  19/ 19/ 19   | stored hourly (8760 surrogate / 0 physics)
+S5_hold_T_out_const_y1            1.000     1.485    5.345    1.485 | 1.59e+03 1.07e+03       96.4 |   6/  6/  6   | stored hourly (8760 surrogate / 0 physics)
+S5_hold_T_out_const_y2            1.000     1.485    5.345    1.485 | 1.59e+03 1.07e+03       96.4 |   6/  6/  6   | stored hourly (8760 surrogate / 0 physics)
+S5_hold_T_out_const_y3            1.000     1.485    5.345    1.485 | 1.59e+03 1.07e+03       96.4 |   6/  6/  6   | stored hourly (8760 surrogate / 0 physics)
+S5_hold_T_out_const_y4            1.000     1.485    5.345    1.485 | 1.59e+03 1.07e+03       96.4 |   6/  6/  6   | stored hourly (8760 surrogate / 0 physics)
+
+   ranking by life cost per kmol H2 identical for the population mean : NO (2 of 20 rows move)
+   ranking identical for the hottest decile                          : NO (3 of 20 rows move)
+     S2_daily                       avg 13 -> pop mean 13 -> hottest decile 14
+     S3_renewable                   avg 14 -> pop mean 15 -> hottest decile 15
+     S4c_hot_band                   avg 15 -> pop mean 14 -> hottest decile 13
+     pairs that reverse order under the population mean (gap under each definition):
+       S3_renewable                   vs S4c_hot_band                     0.47 % apart on the average tube,   0.05 % apart on the population mean
+       largest gap involved in any reversal: 0.47 %
+     pairs that reverse order under the hottest decile (gap under each definition):
+       S2_daily                       vs S4c_hot_band                     0.78 % apart on the average tube,   0.01 % apart on the hottest decile
+       S3_renewable                   vs S4c_hot_band                     0.47 % apart on the average tube,   0.65 % apart on the hottest decile
+       largest gap involved in any reversal: 0.78 %
+
+4. RQ3 REGIMES OVER THE POPULATION (sigma = 18.5 K)
+----------------------------------------------------------------------------------------------------
+   The RQ3 representative-regime table of the manuscript is Table 3 in the compiled PDF (label
+   tab:regimes); there is no Table 6. Costs are relative to the base average tube.
+
+regime                T_wo [K]      avg  pop mean  hot dec  pop/avg |     y avg  y 1st fail |   rank a/p/d | code path
+base                   1146.72    1.000     1.478    5.292    1.478 |  1.34e+03        82.8 |   6/  6/  6   | surrogate
+min_life_iso_H2        1108.32    0.123     0.193    0.736    1.570 |  1.09e+04         554 |   2/  2/  2   | surrogate
+min_fuel_iso_H2        1126.25    0.335     0.510    1.890    1.525 |  4.04e+03         225 |   4/  4/  4   | surrogate
+min_life_overall       1092.00    0.084     0.135    0.530    1.613 |  2.48e+04    1.16e+03 |   1/  1/  1   | surrogate
+min_fuel_overall       1127.42    0.571     0.869    3.207    1.520 |  3.53e+03         198 |   5/  5/  5   | surrogate
+knee                   1126.86    0.282     0.430    1.593    1.524 |  4.13e+03         230 |   3/  3/  3   | surrogate
+max_H2                 1177.05    3.220     4.577   15.635    1.421 |       321        22.6 |   7/  7/  7   | surrogate
+
+   ranking by life cost per kmol H2 identical for the population mean : YES
+   ranking identical for the hottest decile                          : YES
