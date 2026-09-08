@@ -44,3 +44,7 @@ paper/*.toc
 # curve digitisation only; the PDFs are copyright S+C and are NOT redistributed here.
 data/creep_derived/datasheets/
 data/creep_derived/datasheets/*.pdf
+
+# working notes handed over for a task, not part of the archived repository
+09_v3_rewrite.md
+10_population_text.md
