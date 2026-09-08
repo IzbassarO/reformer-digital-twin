@@ -50,3 +50,7 @@ data/creep_derived/datasheets/*.pdf
 10_population_text.md
 11_fatigue_text.md
 12_flame_sweep_text.md
+
+# Overleaf export: derived from paper/, regenerated on demand
+paper/overleaf_export/
+paper/overleaf_export.zip
