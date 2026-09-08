@@ -18,7 +18,7 @@
 \usepackage{booktabs}
 \usepackage{xcolor}
 \usepackage[hidelinks]{hyperref}
-\hypersetup{pdfauthor={Izbassar Orynbassar and Madina Sissenbay},
+\hypersetup{pdfauthor={Madina Sissenbay and Izbassar Orynbassar},
             pdftitle={A physics-informed digital twin for tube-life-aware operation of industrial steam methane reformers under uncertainty}}
 % \usepackage{lineno}   % uncomment this pair to number lines for review
 % \linenumbers
@@ -35,18 +35,18 @@
 
 \title{A physics-informed digital twin for tube-life-aware operation of industrial steam methane reformers under uncertainty}
 
-\author[su]{Izbassar Orynbassar\corref{cor1}}
-\ead{iorynbas@syr.edu}
-\ead[url]{https://orcid.org/0009-0002-4224-3249}
 \author[au]{Madina Sissenbay}
 \ead{m.sisenbay@aogu.edu.kz}
 \ead[url]{https://orcid.org/0009-0009-8160-7472}
+\author[su]{Izbassar Orynbassar\corref{cor1}}
+\ead{iorynbas@syr.edu}
+\ead[url]{https://orcid.org/0009-0002-4224-3249}
 \cortext[cor1]{Corresponding author.}
-\affiliation[su]{organization={School of Information Studies, Syracuse University},
-  addressline={343 Hinds Hall}, city={Syracuse}, postcode={13244}, state={NY}, country={USA}}
 \affiliation[au]{organization={Institute of Petrochemical Engineering and Ecology named after N.K. Nadirov,
   Safi Utebayev Atyrau University of Oil and Gas},
   city={Atyrau}, country={Kazakhstan}}
+\affiliation[su]{organization={School of Information Studies, Syracuse University},
+  addressline={343 Hinds Hall}, city={Syracuse}, postcode={13244}, state={NY}, country={USA}}
 
 \begin{abstract}
 Catalyst tubes are the life-limiting component of a steam methane reformer, yet operating decisions are rarely taken with a quantified tube-life cost. A digital twin is assembled from published data and open code, coupling a one-dimensional Xu--Froment tube model, a long-furnace model of a top-fired box furnace, a Larson--Miller creep-life module built on manufacturer rupture curves with their printed scatter band, and Gaussian-process surrogates with conformal prediction intervals. The tube model is verified against an industrial simulation, and the coupled model is calibrated on three published plant operating points with leave-one-case-out cross-validation, reproducing outlet temperatures within 4~K and tube-wall temperatures within 12~K. Firing intensity, steam-to-carbon ratio and excess air explain 82\,\% of the hot-spot temperature variance with negligible interactions. Under outlet-temperature control, load-following changes the tube-life cost per kmol of hydrogen by less than 2\,\% in either direction, whereas catalyst aging under a constant methane-slip target doubles it within four years. A Pareto knee delivers 15\,\% more hydrogen at 17\,\% less fuel per kmol for 0.28 of the base life cost, and creep-curve scatter dominates the life-prediction variance at 86\,\%. Regime rankings hold on four rupture curves; absolute lives do not.
@@ -444,7 +444,8 @@ The next steps are rupture data resolved by heat for the HP-Nb and HK40 families
 The model code (\texttt{rdt} package), the pipeline entry point (\texttt{python -m rdt.pipeline --stage all --version v3}), the transcribed literature data with their provenance annotations, the digitized verification curves, all v3 result files and the scripts that generate every figure, table and number in this manuscript are available at \url{https://github.com/IzbassarO/reformer-digital-twin} and archived at \todo{Zenodo DOI}. The literature PDFs are not redistributed. Transcribed data are released under CC~BY~4.0 and code under the MIT license.
 
 \section*{CRediT authorship contribution statement}
-\textbf{Izbassar Orynbassar:} Conceptualization, Methodology, Software, Validation, Formal analysis, Data curation, Visualization, Writing -- original draft, Writing -- review \& editing. \textbf{Madina Sissenbay:} Conceptualization (process and materials scope), Validation (chemical-engineering content), Investigation (creep-data transcription), Writing -- review \& editing.
+\textbf{Madina Sissenbay:} Conceptualization, Methodology, Validation, Investigation, Resources, Supervision, Project administration, Writing -- review \& editing.
+\textbf{Izbassar Orynbassar:} Conceptualization, Methodology, Software, Formal analysis, Data curation, Visualization, Writing -- original draft, Writing -- review \& editing.
 
 \section*{Declaration of generative AI and AI-assisted technologies in the writing process}
 During the preparation of this work the authors used Claude (Anthropic) in order to assist with code development, data transcription checks, figure and table generation and drafting of the text. After using this tool, the authors reviewed and edited the content as needed and take full responsibility for the content of the published article.
