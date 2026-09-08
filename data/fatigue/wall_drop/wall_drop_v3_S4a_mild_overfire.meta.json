@@ -1,0 +1,6 @@
+{
+  "scenario": "S4a_mild_overfire",
+  "n_hours": 8760,
+  "n_distinct": 2,
+  "n_failed": 0
+}

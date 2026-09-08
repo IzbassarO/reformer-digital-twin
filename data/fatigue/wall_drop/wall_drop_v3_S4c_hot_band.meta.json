@@ -1,0 +1,6 @@
+{
+  "scenario": "S4c_hot_band",
+  "n_hours": 8760,
+  "n_distinct": 1,
+  "n_failed": 0
+}

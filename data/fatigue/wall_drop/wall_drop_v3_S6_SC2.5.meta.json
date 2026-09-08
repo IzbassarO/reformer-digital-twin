@@ -1,0 +1,6 @@
+{
+  "scenario": "S6_SC2.5",
+  "n_hours": 8760,
+  "n_distinct": 1,
+  "n_failed": 0
+}

@@ -1,0 +1,203 @@
+Thermal-fatigue screening of the RQ2 scenarios  (v3 results)
+============================================================================================================
+SCREENING ONLY. No life, no cycles to failure and no creep-fatigue damage sum is computed or
+implied below. The question is one of magnitude: how does the cyclic thermal-stress exposure of
+smooth load variation compare with the exposure the plant already accepts at every cold start?
+
+WHAT IS COMPUTED FROM THE TWIN, AND WHAT IS ASSUMED
+------------------------------------------------------------------------------------------------------------
+  computed by the twin :
+    - the hot-spot wall drop dT_wall = q_o d_o/(2 lambda) ln(d_o/d_i) at every scenario hour,
+      from the same coupled solve the scenario stage used;
+    - the wall drop at each stage of the staged warm-up;
+    - the rainflow cycle counts, which follow from those histories alone.
+  assumed :
+    - E = 150 GPa, alpha = 18e-6 /K, nu = 0.3: the single
+      representative values of Section S1, not temperature-dependent properties;
+    - 2 to 6 full cool-downs per year -- PLANT PRACTICE, not a computed result;
+    - the Basquin exponents m = 3, 5, 8 are a sweep, not a fitted material property;
+    - the elastic stress range is an upper bound: in service the thermal stress relaxes by creep.
+
+CODE PATH FOR THE WALL DROP
+------------------------------------------------------------------------------------------------------------
+  dT_wall is not stored in the hourly histories, so it is recomputed here. A surrogate was tried
+  and REJECTED: a GP fitted to the wall drop over the whole sampled operating box reaches only
+  3.7 K RMSE (38 K worst case), the same order as the ranges being counted, and its noise would
+  invent reversals in smooth histories. Every hour below is therefore the PHYSICS model, solved
+  once per distinct operating point and broadcast over the hours that repeat it.
+
+  scenario                       distinct solves   hours   max |T_wo(physics) - T_wo(stored)|
+  S1_steady                                    1    8760     0.0124 K
+  S2_daily                                     4    8760     0.0140 K
+  S3_renewable                              8522    8760     0.0306 K
+  S4a_mild_overfire                            2    8760     0.0615 K
+  S4b_severe_overfire                          2    8760     0.0124 K
+  S4c_hot_band                                 1    8760    40.0124 K
+  S6_SC2.5                                     1    8760     0.0092 K
+  S6_SC3.5                                     1    8760     0.0298 K
+  S5_hold_CH4_slip_ageing_y1                8760    8760     0.0771 K
+  S5_hold_CH4_slip_ageing_y2                8760    8760     0.0418 K
+  S5_hold_CH4_slip_ageing_y3                8760    8760     0.0124 K
+  S5_hold_CH4_slip_ageing_y4                8760    8760     0.0910 K
+  S5_hold_T_out_ageing_y1                   8760    8760     0.1113 K
+  S5_hold_T_out_ageing_y2                   8760    8760     0.0574 K
+  S5_hold_T_out_ageing_y3                   8760    8760     0.0124 K
+  S5_hold_T_out_ageing_y4                   8760    8760     0.1055 K
+  S5_hold_T_out_const_y1                       1    8760     0.0124 K
+  S5_hold_T_out_const_y2                       1    8760     0.0124 K
+  S5_hold_T_out_const_y3                       1    8760     0.0124 K
+  S5_hold_T_out_const_y4                       1    8760     0.0124 K
+  the stored column came from the scenario stage's own surrogate; the agreement above is the
+  consistency check between the two.
+
+  LIMITATION -- scenarios the wall-drop calculation cannot represent:
+    S4c_hot_band                   stored T_wo exceeds the physics solve by up to 40.0 K
+    In these the scenario stage adds a metal-temperature offset directly to T_wo rather than
+    changing an operating input, so re-solving the inputs returns the base state. The twin
+    defines no wall gradient for an imposed offset -- an offset produced by extra local flux
+    and one produced by a redistribution of radiation imply different gradients, and the
+    scenario does not say which it is. The excursion is therefore ABSENT from the cycle counts
+    for those rows, which are consequently a lower bound. No flux is invented to fill the gap.
+
+START-UP / SHUTDOWN REFERENCE CYCLE
+------------------------------------------------------------------------------------------------------------
+  Cold end is exact (a tube at ambient with no firing carries no flux, so the gradient is zero).
+  The intermediate stages are physics-model end states, not a transient.
+
+  stage                       firing   T_wo,max    z/L |     at the hot spot      |  max anywhere on the tube 
+                                            [K]        |     dT [K]  sigma [MPa] |      dT [K]   sigma [MPa]
+  cold (ambient, no firing)     0.00        --      -- |       0.00         0.00 |        0.00          0.00
+  firing 0.65                   0.65    1082.94  0.410 |      44.98        86.75 |       50.73         97.84
+  firing 0.75                   0.75    1104.04  0.415 |      49.10        94.69 |       54.87        105.81
+  firing 0.85                   0.85    1122.60  0.420 |      52.71       101.65 |       58.57        112.95
+  firing 0.95                   0.95    1139.12  0.425 |      55.87       107.75 |       61.90        119.38
+  firing 1.00                   1.00    1146.71  0.430 |      56.93       109.79 |       63.45        122.37
+
+  stress range of ONE full start-up/shutdown cycle : 109.79 MPa at the hot spot (wall drop 56.93 K),
+                                                    122.37 MPa on the maximum gradient (63.45 K)
+  The intermediate stages do not enter that number. Cold -> hot -> cold is monotone in each
+  direction, so it rainflow-counts as one full cycle of the end-to-end range whatever path the
+  warm-up takes; the stages are shown to make the gradient's growth visible, not to set the
+  range. A start-up interrupted by holds or a trip would add sub-cycles, which are not modelled.
+  at the assumed 2-6 cool-downs per year that is 2-6 such cycles annually
+
+  NOTE: Section S1 of the supplementary material quotes a 20-30 K wall drop and about 45 MPa.
+  The twin gives 56.9 K and 110 MPa at the hot spot of the
+  calibrated base. The relation and the constants used here are the ones printed there; only the
+  wall drop is taken from the model. The discrepancy is reported, not resolved.
+
+SCENARIO STRESS HISTORIES AND RAINFLOW COUNTS
+------------------------------------------------------------------------------------------------------------
+  scenario                        sig min  sig max  largest    cycles   >=1MPa |     ratio to one start-up      | code path
+                                    [MPa]    [MPa]    range  per year per year |       m=3       m=5       m=8 | 
+  S1_steady                        109.73   109.73     0.00       0.0      0.0 |         0         0         0 | physics, 1 distinct points
+  S2_daily                          79.29   109.73    30.43     365.0    365.0 |      7.77     0.597    0.0127 | physics, 4 distinct points
+  S3_renewable                      68.84   118.74    49.90    2238.0   1817.0 |       5.7     0.766    0.0551 | physics, 8522 distinct points
+  S4a_mild_overfire                109.73   114.78     5.05      24.0     24.0 |   0.00234  4.96e-06  4.84e-10 | physics, 2 distinct points
+  S4b_severe_overfire               28.64   109.73    81.09       6.0      6.0 |      2.42      1.32     0.531 | physics, 2 distinct points
+  S4c_hot_band                     109.73   109.73     0.00       0.0      0.0 |         0         0         0 | physics, 1 distinct points
+  S6_SC2.5                         103.18   103.18     0.00       0.0      0.0 |         0         0         0 | physics, 1 distinct points
+  S6_SC3.5                         116.81   116.81     0.00       0.0      0.0 |         0         0         0 | physics, 1 distinct points
+  S5_hold_CH4_slip_ageing_y1       108.09   108.17     0.08     350.5      0.0 |  2.02e-10   1.1e-16  4.43e-26 | physics, 8760 distinct points
+  S5_hold_CH4_slip_ageing_y2       108.17   109.73     1.56    1047.5      0.5 |  1.43e-06  2.87e-10   8.2e-16 | physics, 8760 distinct points
+  S5_hold_CH4_slip_ageing_y3       109.73   109.86     0.13     272.0      0.0 |   8.1e-10  1.12e-15  1.81e-24 | physics, 8760 distinct points
+  S5_hold_CH4_slip_ageing_y4       109.86   110.04     0.18     865.5      0.0 |  2.26e-09  6.17e-15  2.79e-23 | physics, 8760 distinct points
+  S5_hold_T_out_ageing_y1          108.58   108.77     0.19      81.5      0.0 |  2.55e-09  7.55e-15  3.85e-23 | physics, 8760 distinct points
+  S5_hold_T_out_ageing_y2          108.31   109.76     1.45       9.5      0.5 |  1.17e-06  2.03e-10  4.69e-16 | physics, 8760 distinct points
+  S5_hold_T_out_ageing_y3          109.16   109.73     0.57       0.5      0.0 |  6.94e-08  1.86e-12  2.58e-19 | physics, 8760 distinct points
+  S5_hold_T_out_ageing_y4          108.53   109.88     1.35       1.5      0.5 |  1.13e-06  1.48e-10  2.67e-16 | physics, 8760 distinct points
+  S5_hold_T_out_const_y1           109.73   109.73     0.00       0.0      0.0 |         0         0         0 | physics, 1 distinct points
+  S5_hold_T_out_const_y2           109.73   109.73     0.00       0.0      0.0 |         0         0         0 | physics, 1 distinct points
+  S5_hold_T_out_const_y3           109.73   109.73     0.00       0.0      0.0 |         0         0         0 | physics, 1 distinct points
+  S5_hold_T_out_const_y4           109.73   109.73     0.00       0.0      0.0 |         0         0         0 | physics, 1 distinct points
+
+  A flat history has no reversals and therefore no cycles: the steady scenarios count zero, as
+  they should. The ratio is sum_i n_i dsigma_i^m over one year divided by dsigma_startup^m.
+  The two cycle columns differ where the hourly control solve leaves numerical texture below
+  1 MPa. Those sub-1 MPa counts are an artefact of the firing-bisection tolerance, not physical
+  cycles, and they contribute nothing to the measure at any exponent used here: one such cycle
+  is (1/110)^3 = 8e-7 of a start-up. The '>= 1 MPa' column is the count worth reading.
+
+SAME HISTORIES ON THE MAXIMUM GRADIENT ANYWHERE ON THE TUBE
+------------------------------------------------------------------------------------------------------------
+  The table above follows the task definition: the wall drop AT THE HOT SPOT, the point of
+  maximum outer-wall temperature. That point is not always the point of maximum wall gradient.
+  Where the two disagree the hot-spot number can move the wrong way, so the same histories are
+  counted again below on max_z dT_wall(z), which bounds the thermal stress anywhere on the tube.
+
+  scenario                        sig min  sig max  largest   >=1MPa |     ratio to one start-up      |   hot spot z/L
+                                    [MPa]    [MPa]    range per year |       m=3       m=5       m=8 |      min - max
+  S1_steady                        121.07   121.07     0.00      0.0 |         0         0         0 |  0.425-0.425
+  S2_daily                          91.83   121.07    29.24    365.0 |      4.98     0.284   0.00387 |  0.415-0.425
+  S3_renewable                      81.30   130.20    48.90   1828.0 |      3.86     0.402    0.0197 |  0.410-0.430
+  S4a_mild_overfire                121.07   126.62     5.56     24.0 |   0.00225  4.64e-06  4.34e-10 |  0.425-0.430
+  S4b_severe_overfire              121.07   134.10    13.04      6.0 |   0.00725  8.23e-05  9.95e-08 |  0.425-1.000
+  S4c_hot_band                     121.07   121.07     0.00      0.0 |         0         0         0 |  0.425-0.425
+  S6_SC2.5                         115.28   115.28     0.00      0.0 |         0         0         0 |  0.425-0.425
+  S6_SC3.5                         128.62   128.62     0.00      0.0 |         0         0         0 |  0.430-0.430
+  S5_hold_CH4_slip_ageing_y1       121.10   121.11     0.02      0.0 |  9.51e-13  1.46e-20  2.78e-32 |  0.430-0.430
+  S5_hold_CH4_slip_ageing_y2       121.07   121.10     0.03      0.0 |  8.36e-12  5.46e-19  9.13e-30 |  0.425-0.430
+  S5_hold_CH4_slip_ageing_y3       121.01   121.07     0.05      0.0 |  3.82e-11  6.89e-18  5.26e-28 |  0.425-0.425
+  S5_hold_CH4_slip_ageing_y4       120.94   121.01     0.07      0.0 |  1.07e-10  3.82e-17  8.15e-27 |  0.425-0.425
+  S5_hold_T_out_ageing_y1          121.44   121.69     0.24      0.0 |  4.01e-09  1.61e-14  1.29e-22 |  0.430-0.430
+  S5_hold_T_out_ageing_y2          121.07   121.44     0.38      0.0 |  1.48e-08  1.41e-13  4.16e-21 |  0.425-0.430
+  S5_hold_T_out_ageing_y3          120.42   121.07     0.65      0.0 |   7.5e-08  2.12e-12  3.18e-19 |  0.425-0.425
+  S5_hold_T_out_ageing_y4          119.11   120.42     1.31      0.5 |  6.09e-07  6.95e-11  8.46e-17 |  0.420-0.425
+  S5_hold_T_out_const_y1           121.07   121.07     0.00      0.0 |         0         0         0 |  0.425-0.425
+  S5_hold_T_out_const_y2           121.07   121.07     0.00      0.0 |         0         0         0 |  0.425-0.425
+  S5_hold_T_out_const_y3           121.07   121.07     0.00      0.0 |         0         0         0 |  0.425-0.425
+  S5_hold_T_out_const_y4           121.07   121.07     0.00      0.0 |         0         0         0 |  0.425-0.425
+
+  scenarios in which the hot spot MIGRATES along the tube: S4b_severe_overfire.
+  In those the two definitions must be read together. The clearest case is the severe
+  over-firing event: at firing 1.22 the outer-wall maximum jumps to the tube outlet (z/L = 1.0),
+  where the process gas has caught up with the wall and the flux is small, so the gradient AT
+  the hot spot falls from 56.9 to 14.8 K even as the wall gets 36 K hotter. Read on the hot-spot
+  definition alone that event looks like a large stress excursion; on the maximum gradient it is
+  a small one, because max_z dT_wall rises monotonically with firing (62.8 -> 65.7 -> 69.5 K).
+  The second table is the physically meaningful one for thermal stress; the first is the one the
+  task asked for. Neither is a life.
+
+CYCLE COUNT BY STRESS-RANGE BIN (cycles per year)
+------------------------------------------------------------------------------------------------------------
+  scenario                             0-1       1-2       2-5      5-10     10-20     20-50    50-100      >100
+  S1_steady                            0.0       0.0       0.0       0.0       0.0       0.0       0.0       0.0
+  S2_daily                             0.0       0.0       0.0       0.0       0.0     365.0       0.0       0.0
+  S3_renewable                       421.0     354.0     678.0     410.0     234.5     140.5       0.0       0.0
+  S4a_mild_overfire                    0.0       0.0       0.0      24.0       0.0       0.0       0.0       0.0
+  S4b_severe_overfire                  0.0       0.0       0.0       0.0       0.0       0.0       6.0       0.0
+  S4c_hot_band                         0.0       0.0       0.0       0.0       0.0       0.0       0.0       0.0
+  S6_SC2.5                             0.0       0.0       0.0       0.0       0.0       0.0       0.0       0.0
+  S6_SC3.5                             0.0       0.0       0.0       0.0       0.0       0.0       0.0       0.0
+  S5_hold_CH4_slip_ageing_y1         350.5       0.0       0.0       0.0       0.0       0.0       0.0       0.0
+  S5_hold_CH4_slip_ageing_y2        1047.0       0.5       0.0       0.0       0.0       0.0       0.0       0.0
+  S5_hold_CH4_slip_ageing_y3         272.0       0.0       0.0       0.0       0.0       0.0       0.0       0.0
+  S5_hold_CH4_slip_ageing_y4         865.5       0.0       0.0       0.0       0.0       0.0       0.0       0.0
+  S5_hold_T_out_ageing_y1             81.5       0.0       0.0       0.0       0.0       0.0       0.0       0.0
+  S5_hold_T_out_ageing_y2              9.0       0.5       0.0       0.0       0.0       0.0       0.0       0.0
+  S5_hold_T_out_ageing_y3              0.5       0.0       0.0       0.0       0.0       0.0       0.0       0.0
+  S5_hold_T_out_ageing_y4              1.0       0.5       0.0       0.0       0.0       0.0       0.0       0.0
+  S5_hold_T_out_const_y1               0.0       0.0       0.0       0.0       0.0       0.0       0.0       0.0
+  S5_hold_T_out_const_y2               0.0       0.0       0.0       0.0       0.0       0.0       0.0       0.0
+  S5_hold_T_out_const_y3               0.0       0.0       0.0       0.0       0.0       0.0       0.0       0.0
+  S5_hold_T_out_const_y4               0.0       0.0       0.0       0.0       0.0       0.0       0.0       0.0
+
+WHERE THE DAILY CYCLE BECOMES COMPARABLE TO A START-UP
+------------------------------------------------------------------------------------------------------------
+    m = 3: one year of S2_daily = 7.77 start-up cycles  -- above the whole assumed annual start-up exposure
+    m = 5: one year of S2_daily = 0.597 start-up cycles  -- below one start-up
+    m = 8: one year of S2_daily = 0.0127 start-up cycles  -- below one start-up
+
+  Every scenario against the assumed annual start-up exposure (2-6 cool-downs per year):
+    m = 3: above the band S2_daily   |   inside the band S3_renewable, S4b_severe_overfire
+    m = 5: above the band none   |   inside the band none
+    m = 8: above the band none   |   inside the band none
+
+    crossing points for S2_daily (exponent above which a year is worth less than the target):
+                                               hot spot   max gradient
+      equal to ONE start-up                        4.60           4.15
+      equal to 2 start-ups per year (low)          4.10           3.65
+      equal to 6 start-ups per year (high)         3.25           2.90
+
+    The answer therefore depends on the exponent, which is why it is swept rather than assumed.
+    No fatigue curve for this alloy is used anywhere above, and none of these numbers is a life.

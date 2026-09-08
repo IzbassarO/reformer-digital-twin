@@ -1,0 +1,6 @@
+{
+  "scenario": "S5_hold_T_out_const_y3",
+  "n_hours": 8760,
+  "n_distinct": 1,
+  "n_failed": 0
+}

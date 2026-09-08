@@ -1,0 +1,6 @@
+{
+  "scenario": "S2_daily",
+  "n_hours": 8760,
+  "n_distinct": 4,
+  "n_failed": 0
+}

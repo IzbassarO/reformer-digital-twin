@@ -1,0 +1,6 @@
+{
+  "scenario": "S3_renewable",
+  "n_hours": 8760,
+  "n_distinct": 8522,
+  "n_failed": 0
+}

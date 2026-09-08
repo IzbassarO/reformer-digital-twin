@@ -1,0 +1,6 @@
+{
+  "scenario": "S1_steady",
+  "n_hours": 8760,
+  "n_distinct": 1,
+  "n_failed": 0
+}

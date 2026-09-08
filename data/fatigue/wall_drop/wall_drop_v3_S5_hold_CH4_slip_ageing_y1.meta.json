@@ -1,0 +1,6 @@
+{
+  "scenario": "S5_hold_CH4_slip_ageing_y1",
+  "n_hours": 8760,
+  "n_distinct": 8760,
+  "n_failed": 0
+}
