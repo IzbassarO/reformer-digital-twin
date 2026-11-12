@@ -1,0 +1,131 @@
+{
+  "n_members": 198,
+  "base_reference": {
+    "T_wo_max_K": 1146.712500081438,
+    "sigma_hot_MPa": 12.8752870037193,
+    "H2": 14.81510339468536,
+    "firing": 1.0
+  },
+  "base_curve_reproduction_max_rel_err": 2.4424906541753444e-14,
+  "curves": {
+    "centralloy_g_4852": {
+      "label": "G 4852 (HP-Nb)",
+      "C": 18.6,
+      "spearman_vs_base": 1.0,
+      "n_nondominated": 198,
+      "lost_nondominance": 0,
+      "gained_nondominance": 0
+    },
+    "centralloy_g_4852_micro": {
+      "label": "G 4852 Micro",
+      "C": 22.9,
+      "spearman_vs_base": 0.9996351546998181,
+      "n_nondominated": 198,
+      "lost_nondominance": 0,
+      "gained_nondominance": 0
+    },
+    "centralloy_et_45_micro": {
+      "label": "ET 45 Micro",
+      "C": 19.3,
+      "spearman_vs_base": 0.999986086408044,
+      "n_nondominated": 198,
+      "lost_nondominance": 0,
+      "gained_nondominance": 0
+    },
+    "legacy_yeh_manaurite_xm": {
+      "label": "Yeh placeholder (legacy)",
+      "C": 22.96,
+      "spearman_vs_base": 0.9995470352840963,
+      "n_nondominated": 198,
+      "lost_nondominance": 0,
+      "gained_nondominance": 0
+    }
+  },
+  "regimes": [
+    {
+      "regime": "min_life_iso_H2",
+      "pareto_row": 15,
+      "published_rel_life": 0.1225636718816406,
+      "fixed_centralloy_g_4852": 0.12256367188164068,
+      "reselected_centralloy_g_4852": 0.12256367188164068,
+      "reselected_row_centralloy_g_4852": 15,
+      "fixed_centralloy_g_4852_micro": 0.0810408916662752,
+      "reselected_centralloy_g_4852_micro": 0.0810408916662752,
+      "reselected_row_centralloy_g_4852_micro": 15,
+      "fixed_centralloy_et_45_micro": 0.11391360807211989,
+      "reselected_centralloy_et_45_micro": 0.11391360807211989,
+      "reselected_row_centralloy_et_45_micro": 15,
+      "fixed_legacy_yeh_manaurite_xm": 0.08054346673202202,
+      "reselected_legacy_yeh_manaurite_xm": 0.08054346673202202,
+      "reselected_row_legacy_yeh_manaurite_xm": 15
+    },
+    {
+      "regime": "knee",
+      "pareto_row": 52,
+      "published_rel_life": 0.2809535261370888,
+      "fixed_centralloy_g_4852": 0.2809535261370888,
+      "reselected_centralloy_g_4852": 0.2809535261370888,
+      "reselected_row_centralloy_g_4852": 52,
+      "fixed_centralloy_g_4852_micro": 0.22443951038286034,
+      "reselected_centralloy_g_4852_micro": 0.22443951038286034,
+      "reselected_row_centralloy_g_4852_micro": 52,
+      "fixed_centralloy_et_45_micro": 0.26703280907723803,
+      "reselected_centralloy_et_45_micro": 0.26703280907723803,
+      "reselected_row_centralloy_et_45_micro": 52,
+      "fixed_legacy_yeh_manaurite_xm": 0.22510754498811103,
+      "reselected_legacy_yeh_manaurite_xm": 0.22510754498811103,
+      "reselected_row_legacy_yeh_manaurite_xm": 52
+    },
+    {
+      "regime": "max_H2",
+      "pareto_row": 5,
+      "published_rel_life": 3.2197730447740094,
+      "fixed_centralloy_g_4852": 3.2197730447740622,
+      "reselected_centralloy_g_4852": 3.2197730447740622,
+      "reselected_row_centralloy_g_4852": 5,
+      "fixed_centralloy_g_4852_micro": 4.255741003458743,
+      "reselected_centralloy_g_4852_micro": 4.255741003458743,
+      "reselected_row_centralloy_g_4852_micro": 5,
+      "fixed_centralloy_et_45_micro": 3.3075343384011915,
+      "reselected_centralloy_et_45_micro": 3.3075343384011915,
+      "reselected_row_centralloy_et_45_micro": 5,
+      "fixed_legacy_yeh_manaurite_xm": 4.328707605949845,
+      "reselected_legacy_yeh_manaurite_xm": 4.328707605949845,
+      "reselected_row_legacy_yeh_manaurite_xm": 5
+    },
+    {
+      "regime": "min_fuel_overall",
+      "pareto_row": 3,
+      "published_rel_life": 0.5749861342877227,
+      "fixed_centralloy_g_4852": 0.5749861342877227,
+      "reselected_centralloy_g_4852": 0.5749861342877227,
+      "reselected_row_centralloy_g_4852": 3,
+      "fixed_centralloy_g_4852_micro": 0.4765113205263777,
+      "reselected_centralloy_g_4852_micro": 0.4765113205263777,
+      "reselected_row_centralloy_g_4852_micro": 3,
+      "fixed_centralloy_et_45_micro": 0.5626766768962564,
+      "reselected_centralloy_et_45_micro": 0.5626766768962564,
+      "reselected_row_centralloy_et_45_micro": 3,
+      "fixed_legacy_yeh_manaurite_xm": 0.47198222860391015,
+      "reselected_legacy_yeh_manaurite_xm": 0.47198222860391015,
+      "reselected_row_legacy_yeh_manaurite_xm": 3
+    },
+    {
+      "regime": "min_life_overall",
+      "pareto_row": 4,
+      "published_rel_life": 0.083835813566722,
+      "fixed_centralloy_g_4852": 0.08383581356672203,
+      "reselected_centralloy_g_4852": 0.08383581356672203,
+      "reselected_row_centralloy_g_4852": 4,
+      "fixed_centralloy_g_4852_micro": 0.04726938122086169,
+      "reselected_centralloy_g_4852_micro": 0.04726938122086169,
+      "reselected_row_centralloy_g_4852_micro": 4,
+      "fixed_centralloy_et_45_micro": 0.07722512264592007,
+      "reselected_centralloy_et_45_micro": 0.07722512264592007,
+      "reselected_row_centralloy_et_45_micro": 4,
+      "fixed_legacy_yeh_manaurite_xm": 0.04634824506862293,
+      "reselected_legacy_yeh_manaurite_xm": 0.04634824506862293,
+      "reselected_row_legacy_yeh_manaurite_xm": 4
+    }
+  ]
+}

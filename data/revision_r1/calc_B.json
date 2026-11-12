@@ -1,0 +1,163 @@
+{
+  "rows": [
+    {
+      "statement": "S2 daily vs S1",
+      "p": 0.0,
+      "nominal": 1.0118826385963577,
+      "median": 1.0088420567125678,
+      "p05": 0.9304178889836244,
+      "p95": 1.0995028537629246,
+      "n_ok": 2048,
+      "fraction_le_1": 0.42529296875,
+      "fraction_le_1_flame_sweep_v3": 0.42529296875,
+      "abs_change_pct_median": 0.884205671256777
+    },
+    {
+      "statement": "S3 renewable vs S1",
+      "p": 0.0,
+      "nominal": 1.0076696470435007,
+      "median": 1.0026323368000036,
+      "p05": 0.8653842386652337,
+      "p95": 1.1639607665300544,
+      "n_ok": 2048,
+      "fraction_le_1": 0.48388671875,
+      "fraction_le_1_flame_sweep_v3": 0.48388671875,
+      "abs_change_pct_median": 0.2632336800003632
+    },
+    {
+      "statement": "S2 daily vs S1",
+      "p": 0.1,
+      "nominal": 1.0368337258735438,
+      "median": 1.033955525507437,
+      "p05": 0.9524088551258916,
+      "p95": 1.125635239812578,
+      "n_ok": 2048,
+      "fraction_le_1": 0.2646484375,
+      "fraction_le_1_flame_sweep_v3": 0.2646484375,
+      "abs_change_pct_median": 3.395552550743708
+    },
+    {
+      "statement": "S3 renewable vs S1",
+      "p": 0.1,
+      "nominal": 1.0461475476217181,
+      "median": 1.0399489608875874,
+      "p05": 0.903819148355186,
+      "p95": 1.1998476349452063,
+      "n_ok": 2048,
+      "fraction_le_1": 0.31982421875,
+      "fraction_le_1_flame_sweep_v3": 0.31982421875,
+      "abs_change_pct_median": 3.994896088758737
+    },
+    {
+      "statement": "S2 daily vs S1",
+      "p": 0.2,
+      "nominal": 1.065303549922911,
+      "median": 1.0618062897102396,
+      "p05": 0.9784955050215275,
+      "p95": 1.1573653185318251,
+      "n_ok": 2048,
+      "fraction_le_1": 0.1162109375,
+      "fraction_le_1_flame_sweep_v3": 0.1162109375,
+      "abs_change_pct_median": 6.18062897102396
+    },
+    {
+      "statement": "S3 renewable vs S1",
+      "p": 0.2,
+      "nominal": 1.0877757822910352,
+      "median": 1.080759880085841,
+      "p05": 0.9467967007186807,
+      "p95": 1.2434425401761338,
+      "n_ok": 2048,
+      "fraction_le_1": 0.16796875,
+      "fraction_le_1_flame_sweep_v3": 0.16796875,
+      "abs_change_pct_median": 8.07598800858409
+    },
+    {
+      "statement": "S2 daily vs S1",
+      "p": 0.25,
+      "nominal": 1.0807328774759175,
+      "median": 1.0772442464052698,
+      "p05": 0.9933732982819236,
+      "p95": 1.1732419771421394,
+      "n_ok": 2048,
+      "fraction_le_1": 0.0673828125,
+      "fraction_le_1_flame_sweep_v3": 0.0673828125,
+      "abs_change_pct_median": 7.724424640526983
+    },
+    {
+      "statement": "S3 renewable vs S1",
+      "p": 0.25,
+      "nominal": 1.1108855317726485,
+      "median": 1.1033097602794346,
+      "p05": 0.9698505099705766,
+      "p95": 1.2647031510810975,
+      "n_ok": 2048,
+      "fraction_le_1": 0.10498046875,
+      "fraction_le_1_flame_sweep_v3": 0.10498046875,
+      "abs_change_pct_median": 10.33097602794346
+    },
+    {
+      "statement": "S2 daily vs S1",
+      "p": 0.5,
+      "nominal": 1.177397283643755,
+      "median": 1.1729186736387374,
+      "p05": 1.084300208504162,
+      "p95": 1.2759791794728335,
+      "n_ok": 2048,
+      "fraction_le_1": 0.0,
+      "fraction_le_1_flame_sweep_v3": 0.0,
+      "abs_change_pct_median": 17.291867363873735
+    },
+    {
+      "statement": "S3 renewable vs S1",
+      "p": 0.5,
+      "nominal": 1.243287678052475,
+      "median": 1.236685607775764,
+      "p05": 1.1045279123625933,
+      "p95": 1.3927844275017673,
+      "n_ok": 2048,
+      "fraction_le_1": 0.0,
+      "fraction_le_1_flame_sweep_v3": 0.0,
+      "abs_change_pct_median": 23.668560777576396
+    },
+    {
+      "statement": "S2 daily vs S1",
+      "p": 1.0,
+      "nominal": 1.5037677113846006,
+      "median": 1.498743718158249,
+      "p05": 1.3851863509895626,
+      "p95": 1.6388835056676838,
+      "n_ok": 2048,
+      "fraction_le_1": 0.0,
+      "fraction_le_1_flame_sweep_v3": 0.0,
+      "abs_change_pct_median": 49.8743718158249
+    },
+    {
+      "statement": "S3 renewable vs S1",
+      "p": 1.0,
+      "nominal": 1.639589070087233,
+      "median": 1.6326778106530604,
+      "p05": 1.4900908736797747,
+      "p95": 1.8202795963689324,
+      "n_ok": 2048,
+      "fraction_le_1": 0.0,
+      "fraction_le_1_flame_sweep_v3": 0.0,
+      "abs_change_pct_median": 63.26778106530604
+    }
+  ],
+  "N": 2048,
+  "loads": {
+    "load_0.70": 0.7,
+    "load_0.85": 0.85,
+    "S1_base": 1.0
+  },
+  "firings": {
+    "load_0.70": 0.8774519844521363,
+    "load_0.85": 0.9236741052939124,
+    "S1_base": 0.9780424587994436
+  },
+  "table2_hourly": {
+    "S2": 1.01,
+    "S3": 1.013
+  }
+}
