@@ -1,0 +1,103 @@
+{
+  "e_u_line": {
+    "points": [
+      [
+        0.99,
+        -12.8
+      ],
+      [
+        0.71,
+        18.2
+      ]
+    ],
+    "slope_K_per_load": -110.71428571428571,
+    "e_u_at_load": {
+      "0.60": 30.378571428571423,
+      "0.70": 19.30714285714286,
+      "0.85": 2.700000000000001,
+      "0.97": -10.585714285714285,
+      "1.00": -13.907142857142858,
+      "1.10": -24.97857142857144
+    }
+  },
+  "w": 0.647814910025707,
+  "nondominance_and_knee": {
+    "none (v3)": {
+      "n_nondominated": 198,
+      "lost": 0,
+      "gained": 0,
+      "knee_row": 52,
+      "knee_same_as_v3": true,
+      "knee": {
+        "feed_per_tube_fraction": 1.099985516239765,
+        "steam_to_carbon": 4.0,
+        "inlet_T": 892.699079068949,
+        "excess_air": 5.424300915576476,
+        "specific_firing_factor": 0.8657920615819497
+      },
+      "knee_H2": 17.06360737949159,
+      "knee_fuel": 130.957689747702,
+      "knee_rel_life": 0.2809535261370888,
+      "v3_knee_rel_life_this_variant": 0.2809535261370888,
+      "knee_decision_distance_norm": 0.0
+    },
+    "b: w*e_u(load), sign as is": {
+      "n_nondominated": 161,
+      "lost": 37,
+      "gained": 0,
+      "knee_row": 52,
+      "knee_same_as_v3": true,
+      "knee": {
+        "feed_per_tube_fraction": 1.099985516239765,
+        "steam_to_carbon": 4.0,
+        "inlet_T": 892.699079068949,
+        "excess_air": 5.424300915576476,
+        "specific_firing_factor": 0.8657920615819497
+      },
+      "knee_H2": 17.06360737949159,
+      "knee_fuel": 130.957689747702,
+      "knee_rel_life": 0.18656889975518678,
+      "v3_knee_rel_life_this_variant": 0.18656889975518678,
+      "knee_decision_distance_norm": 0.0
+    },
+    "b: -w*e_u(load), reversed": {
+      "n_nondominated": 198,
+      "lost": 0,
+      "gained": 0,
+      "knee_row": 52,
+      "knee_same_as_v3": true,
+      "knee": {
+        "feed_per_tube_fraction": 1.099985516239765,
+        "steam_to_carbon": 4.0,
+        "inlet_T": 892.699079068949,
+        "excess_air": 5.424300915576476,
+        "specific_firing_factor": 0.8657920615819497
+      },
+      "knee_H2": 17.06360737949159,
+      "knee_fuel": 130.957689747702,
+      "knee_rel_life": 0.4157297388706515,
+      "v3_knee_rel_life_this_variant": 0.4157297388706515,
+      "knee_decision_distance_norm": 0.0
+    },
+    "b: 1*e_u(load), w = 1": {
+      "n_nondominated": 153,
+      "lost": 45,
+      "gained": 0,
+      "knee_row": 52,
+      "knee_same_as_v3": true,
+      "knee": {
+        "feed_per_tube_fraction": 1.099985516239765,
+        "steam_to_carbon": 4.0,
+        "inlet_T": 892.699079068949,
+        "excess_air": 5.424300915576476,
+        "specific_firing_factor": 0.8657920615819497
+      },
+      "knee_H2": 17.06360737949159,
+      "knee_fuel": 130.957689747702,
+      "knee_rel_life": 0.14819780129604762,
+      "v3_knee_rel_life_this_variant": 0.14819780129604762,
+      "knee_decision_distance_norm": 0.0
+    }
+  },
+  "v3_knee_row": 52
+}

@@ -39,3 +39,16 @@ def test_c1_restored_feed_closes_balances():
     assert abs(b["feed_from_C_balance_kmol_h"] - 7190) < 10
     b2 = r1.atom_balance(c.loc["Plant_C1"], b["feed_from_C_balance_kmol_h"])
     assert abs(b2["C_closure_out_over_in"] - 1) < 1e-12 and abs(b2["H_closure_out_over_in"] - 1) < 1e-3
+
+
+def test_e_upper_line_and_weight():
+    assert np.isclose(r1.e_upper(0.99), -12.8) and np.isclose(r1.e_upper(0.71), 18.2)
+    assert np.isclose(r1.W_HOT, (0.682 - 0.43) / (0.682 - 0.293))
+
+
+def test_student_t_scatter_matches_lower_band():
+    from scipy import stats
+    s = 0.181
+    x = np.array([stats.norm.ppf(0.05, 0, s)])
+    assert np.isclose(r1._scatter(x, s, "t")[0], -1.645 * s, rtol=1e-3)
+    assert np.allclose(r1._scatter(x, s, "normal"), x)

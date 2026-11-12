@@ -894,6 +894,572 @@ def calc_H(log=print) -> pd.DataFrame:
     return df
 
 
+# ===========================================================================
+# Package 3
+# ===========================================================================
+TABLE2_LABELS = {"S1_steady": "S1 steady", "S2_daily": "S2 daily", "S3_renewable": "S3 renewable", "S4a_mild_overfire": "S4a mild",
+                 "S4b_severe_overfire": "S4b severe", "S4c_hot_band": "S4c hot band", "S6_SC2.5": "S6 S/C 2.5", "S6_SC3.5": "S6 S/C 3.5",
+                 "S5_hold_CH4_slip_ageing_y1": "S5 slip y1", "S5_hold_CH4_slip_ageing_y4": "S5 slip y4",
+                 "S5_hold_T_out_ageing_y1": "S5 T_out y1", "S5_hold_T_out_ageing_y4": "S5 T_out y4"}
+
+
+# ---------------------------------------------------------------------------
+# I. Wall-temperature error propagated to the ratios (re-scoring only)
+# ---------------------------------------------------------------------------
+LOCO_U = ((0.99, -12.8), (0.71, +18.2))          # (plant rate, LOCO upper-wall error, K): Plant A, Plant C2
+W_HOT = (0.682 - 0.43) / (0.682 - 0.293)
+
+
+def e_upper(load) -> np.ndarray:
+    (x1, y1), (x2, y2) = LOCO_U
+    return y1 + (y2 - y1) * (np.asarray(load, float) - x1) / (x2 - x1)
+
+
+def calc_I(log=print) -> pd.DataFrame:
+    from rdt import creep
+    from rdt import operate as op
+    from rdt import optimize as opt
+    cur = creep.load_alloy(CFG.creep_alloy).minimum
+    meta = json.loads(Path(CFG.pareto_meta).read_text()); bref = meta["base_reference"]
+    rb = op.run_case(bref["inputs"], op.base_case())
+    par = pd.read_csv(CFG.pareto_csv); feas = par[par.feasible_phys == True].copy()  # noqa: E712
+    reg = pd.read_csv(CFG.regimes_csv, index_col=0); ins = list(op.INPUT_NAMES)
+    reg_row = {}
+    for name in TABLE3_REGIMES:
+        m = np.all(np.isclose(feas[ins].to_numpy(float), reg.loc[name, ins].to_numpy(float), rtol=0, atol=1e-12), axis=1)
+        reg_row[name] = feas.index[m][0]
+    knee0 = reg_row["knee"]
+    hours = {s: pd.read_csv(CFG.scenario_hourly(s), usecols=["feed_per_tube_fraction", "T_wo_max_K", "sigma_hot_MPa", "H2_net_kmol_h"]) for s in TABLE2}
+    summ = pd.read_csv(CFG.scenarios_summary).set_index("scenario")
+    variants = {"a: dT = -18 K": ("uniform", -18.0), "a: dT = -12 K": ("uniform", -12.0), "a: dT = +12 K": ("uniform", 12.0), "a: dT = +18 K": ("uniform", 18.0),
+                "b: w*e_u(load), sign as is": ("load", W_HOT), "b: -w*e_u(load), reversed": ("load", -W_HOT), "b: 1*e_u(load), w = 1": ("load", 1.0)}
+    def dT(kind, par_, load):
+        return np.full(np.shape(load), par_, float) if kind == "uniform" else par_ * e_upper(load)
+    rate = lambda T, s, H: 1.0 / np.asarray(cur.time_to_rupture(T, s), float) / H  # noqa: E731
+    rows, nd_info = [], {}
+    F0 = np.column_stack([-feas.H2_net_kmol_h_phys, feas.fuel_MJ_per_kmol_H2_phys, feas.life_rate_per_kmol_H2_rel_base_phys])
+    nd0 = nondominated(F0)
+    for vname, (kind, pv) in [("none (v3)", ("uniform", 0.0))] + list(variants.items()):
+        # Table 2: hourly histories, each hour shifted by its own load
+        D = {}
+        for s, h in hours.items():
+            T = h.T_wo_max_K.to_numpy() + dT(kind, pv, h.feed_per_tube_fraction.to_numpy())
+            D[s] = np.sum(rate(T, h.sigma_hot_MPa.to_numpy(), 1.0)) / h.H2_net_kmol_h.sum()
+        for s in TABLE2:
+            v = D[s] / D["S1_steady"]
+            if vname == "none (v3)":
+                assert abs(v / summ.loc[s, "life_consumption_per_kmol_H2_rel_S1"] - 1) < 1e-9
+            rows.append({"variant": vname, "table": "Table 2", "item": TABLE2_LABELS[s], "rel_life_cost": float(v),
+                         "dT_item_K": float(np.mean(dT(kind, pv, hours[s].feed_per_tube_fraction.to_numpy()))),
+                         "dT_ref_K": float(dT(kind, pv, np.array([1.0]))[0])})
+        # Table 3 regimes and the 198 members, base_reference at load 1.0
+        dT_b = float(dT(kind, pv, np.array([float(bref["inputs"]["feed_per_tube_fraction"])]))[0])
+        rb_rate = float(rate(rb["T_wo_max_K"] + dT_b, rb["sigma_hot_MPa"], rb["H2_net_kmol_h"]))
+        ld = feas.feed_per_tube_fraction.to_numpy()
+        life = rate(feas.T_wo_max_K_phys.to_numpy() + dT(kind, pv, ld), feas.sigma_hot_MPa_phys.to_numpy(), feas.H2_net_kmol_h_phys.to_numpy()) / rb_rate
+        lf = pd.Series(life, index=feas.index)
+        for name in TABLE3_REGIMES:
+            i = reg_row[name]
+            if vname == "none (v3)":
+                assert abs(lf[i] / feas.loc[i, "life_rate_per_kmol_H2_rel_base_phys"] - 1) < 1e-9
+            rows.append({"variant": vname, "table": "Table 3", "item": name, "rel_life_cost": float(lf[i]),
+                         "dT_item_K": float(dT(kind, pv, np.array([feas.loc[i, "feed_per_tube_fraction"]]))[0]), "dT_ref_K": dT_b})
+        if kind == "load" or vname == "none (v3)":
+            F = np.column_stack([-feas.H2_net_kmol_h_phys, feas.fuel_MJ_per_kmol_H2_phys, life])
+            nd = nondominated(F)
+            tmp = feas.assign(_life=life)
+            knee = opt.knee_point(tmp, cols=("H2_net_kmol_h_phys", "fuel_MJ_per_kmol_H2_phys", "_life"))
+            nd_info[vname] = {"n_nondominated": int(nd.sum()), "lost": int(np.sum(nd0 & ~nd)), "gained": int(np.sum(~nd0 & nd)),
+                              "knee_row": int(knee), "knee_same_as_v3": bool(knee == knee0),
+                              "knee": {k: float(feas.loc[knee, k]) for k in list(opt.DECISION)},
+                              "knee_H2": float(feas.loc[knee, "H2_net_kmol_h_phys"]), "knee_fuel": float(feas.loc[knee, "fuel_MJ_per_kmol_H2_phys"]),
+                              "knee_rel_life": float(lf[knee]), "v3_knee_rel_life_this_variant": float(lf[knee0]),
+                              "knee_decision_distance_norm": float(np.linalg.norm((feas.loc[knee, list(opt.DECISION)].to_numpy(float) - feas.loc[knee0, list(opt.DECISION)].to_numpy(float)) / (opt.XU - opt.XL)))}
+        log(f"I {vname:28s} " + "  ".join(f"{r['item']} {r['rel_life_cost']:.3f}" for r in rows[-17:] if r["item"] in ("S2 daily", "S5 slip y4", "knee", "min_life_iso_H2"))
+            + (f"  nd {nd_info[vname]['n_nondominated']} lost {nd_info[vname]['lost']} knee row {nd_info[vname]['knee_row']}" if vname in nd_info else ""))
+    df = pd.DataFrame(rows)
+    df.to_csv(OUT / "walltemp_error_propagation.csv", index=False)
+    _dump("calc_I.json", {"e_u_line": {"points": LOCO_U, "slope_K_per_load": (LOCO_U[1][1] - LOCO_U[0][1]) / (LOCO_U[1][0] - LOCO_U[0][0]),
+                                       "e_u_at_load": {f"{x:.2f}": float(e_upper(x)) for x in (0.6, 0.7, 0.85, 0.97, 1.0, 1.1)}},
+                          "w": W_HOT, "nondominance_and_knee": nd_info, "v3_knee_row": int(knee0)})
+    return df
+
+
+# ---------------------------------------------------------------------------
+# J/K. Flame length and bed-side coefficient: refit, then physics ratios
+# ---------------------------------------------------------------------------
+_BASE_CACHE: Dict[str, object] = {}
+
+
+def _run_P(x: Dict[str, float], P) -> Dict[str, float]:
+    from dataclasses import replace
+    from rdt import creep
+    from rdt import operate as op
+    if "base" not in _BASE_CACHE:
+        _BASE_CACHE["base"] = op.base_case()
+    return op.run_case(x, replace(_BASE_CACHE["base"], params=P), creep.curve_for(CFG.creep_alloy))
+
+
+def _solve_P(x: Dict[str, float], P, key: str, target: float, lo: float = 0.75, hi: float = 1.25) -> Dict[str, float]:
+    from scipy.optimize import brentq
+    c: Dict[float, Dict[str, float]] = {}
+    def run(f):
+        if f not in c:
+            c[f] = _run_P({**x, "specific_firing_factor": float(f)}, P)
+        return c[f]
+    g = lambda f: run(f)[key] - target  # noqa: E731
+    a, b = g(lo), g(hi)
+    if a * b > 0:
+        f = lo if abs(a) < abs(b) else hi; sat = True
+    else:
+        f = brentq(g, lo, hi, xtol=1e-6); sat = False
+    r = dict(run(f)); r["firing"] = float(f); r["firing_saturated"] = sat
+    return r
+
+
+def _sweep_task(fixed: str, value: float, free: Tuple[str, ...], log_prefix: str = "") -> Dict[str, object]:
+    """Refit `free` on A, B, C2 with `fixed` = value (alpha_top = 0.182), then the physics ratios."""
+    from dataclasses import replace
+    from rdt import latham_calibration as cal
+    from rdt import latham_cases as lc
+    from rdt import operate as op
+    from rdt import scenarios as sc
+    setup()
+    P0, _ = _adopted()
+    base_cal = replace(cal.BASE, alpha_top=0.182, **{fixed: value})
+    rows3 = cal.case_rows(("Plant_A", "Plant_B", "Plant_C2"))
+    starts = [[getattr(P0, k) for k in free], [{"F_gt": 0.35, "L_q": 0.48, "f_htg": 1.68}[k] for k in free]]
+    fits = [cal.fit(rows3, s, base_cal, free) for s in starts]; f = min(fits, key=lambda q: q["chi2"])
+    cov = cal.covariance(f)
+    err3 = cal.errors_table(f["x"], rows3, base_cal, free)
+    P = replace(P0, **{fixed: value}, **dict(zip(free, map(float, f["x"]))))
+    cases = lc.load_cases().set_index("case", drop=False)
+    c1 = cases.loc["Plant_C1"].copy(); n1 = atom_balance(c1)["feed_from_C_balance_kmol_h"]
+    c1["feed_total_kmol_h"] = n1; c1["feed_per_tube_kmol_h"] = n1 / float(c1.n_tubes)
+    cc1 = lc.compare(c1, lc.run_case(c1, P))
+    out = {"fixed": fixed, "value": value, "free": list(free), "params": dict(zip(free, map(float, f["x"]))), "chi2": f["chi2"], "dof": cov["dof"],
+           "reduced_chi2": cov["reduced_chi2"], "ci95": cov["ci95"], "at_bound": f["at_bound"],
+           "err_wall": {c: {"TWT_upper_K": e["TWT_upper_K"], "TWT_lower_K": e["TWT_lower_K"], "out_T_K": e["out_T_K"]} for c, e in err3.items()},
+           "C1_restored": {q: cc1[q]["difference"] for q in ("out_T_K", "TWT_upper_K", "TWT_lower_K", "flue_out_T_K")}}
+    # Plant A base point (firing 1.0, base_reference inputs)
+    meta = json.loads(Path(CFG.pareto_meta).read_text()); bx = meta["base_reference"]["inputs"]
+    rb = _run_P(bx, P)
+    out["base"] = {"T_wo_max_K": rb["T_wo_max_K"], "z_frac_T_wo_max": rb["z_frac_T_wo_max"], "T_out_K": rb["T_out_K"], "converged": rb["converged"]}
+    rate_b = rb["life_consumption_rate_per_h"] / rb["H2_net_kmol_h"]
+    reg = pd.read_csv(CFG.regimes_csv, index_col=0)
+    out["regimes"] = {}
+    for name in TABLE3_REGIMES:
+        r = _run_P({k: float(reg.loc[name, k]) for k in op.INPUT_NAMES}, P)
+        out["regimes"][name] = (r["life_consumption_rate_per_h"] / r["H2_net_kmol_h"]) / rate_b if r["converged"] else float("nan")
+    # S1 (hold T_out, physics) and its slip; S5 hold slip year 4 in 6 bins; S6 at hold T_out
+    b = sc.base_inputs(1)
+    x0 = {"steam_to_carbon": float(b["steam_to_carbon"][0]), "feed_per_tube_fraction": 1.0, "inlet_T": float(b["inlet_T"][0]),
+          "inlet_P": float(b["inlet_P"][0]), "catalyst_activity": A_CAL, "excess_air": float(b["excess_air"][0])}
+    s1 = _solve_P(x0, P, "T_out_K", sc.T_OUT_TARGET)
+    r1_ = s1["life_consumption_rate_per_h"] / s1["H2_net_kmol_h"]
+    act = activity_profile("E0")[3 * HOURS:4 * HOURS]; edges = np.linspace(0, HOURS, 7).astype(int)
+    D = H = 0.0; sat = 0
+    for j in range(6):
+        a = float(act[edges[j]:edges[j + 1]].mean()); n = edges[j + 1] - edges[j]
+        r = _solve_P({**x0, "catalyst_activity": a}, P, "CH4_slip_dry_pct", s1["CH4_slip_dry_pct"])
+        D += n * r["life_consumption_rate_per_h"]; H += n * r["H2_net_kmol_h"]; sat += int(r["firing_saturated"])
+    out["S5_slip_y4"] = (D / H) / r1_
+    for scv in (2.5, 3.5):
+        r = _solve_P({**x0, "steam_to_carbon": scv}, P, "T_out_K", sc.T_OUT_TARGET)
+        out[f"S6_SC{scv}"] = (r["life_consumption_rate_per_h"] / r["H2_net_kmol_h"]) / r1_; sat += int(r["firing_saturated"])
+    out["S1"] = {"firing": s1["firing"], "T_wo_max_K": s1["T_wo_max_K"], "slip": s1["CH4_slip_dry_pct"]}
+    out["n_firing_saturated"] = sat + int(s1["firing_saturated"])
+    return out
+
+
+def _sweep_table(res: List[Dict[str, object]]) -> pd.DataFrame:
+    rows = []
+    for o in res:
+        r = {"fixed": o["fixed"], "value": o["value"], **{f"fit_{k}": v for k, v in o["params"].items()},
+             **{f"ci95_{k}": f"{v[0]:.4f}-{v[1]:.4f}" for k, v in o["ci95"].items()},
+             "chi2": o["chi2"], "dof": o["dof"], "reduced_chi2": o["reduced_chi2"], "any_at_bound": any(o["at_bound"].values())}
+        for c, e in o["err_wall"].items():
+            r[f"{c}_dTw_u"] = e["TWT_upper_K"]; r[f"{c}_dTw_l"] = e["TWT_lower_K"]; r[f"{c}_dT_out"] = e["out_T_K"]
+        for q, v in o["C1_restored"].items():
+            r[f"C1_{q}_err"] = v
+        r.update({"base_T_wo_max_K": o["base"]["T_wo_max_K"], "base_z_frac_T_wo_max": o["base"]["z_frac_T_wo_max"], "base_T_out_K": o["base"]["T_out_K"]})
+        r.update({f"rel_{k}": v for k, v in o["regimes"].items()})
+        r.update({"rel_S5_slip_y4": o["S5_slip_y4"], "rel_S6_SC2.5": o["S6_SC2.5"], "rel_S6_SC3.5": o["S6_SC3.5"],
+                  "S1_firing_phys": o["S1"]["firing"], "n_firing_saturated": o["n_firing_saturated"]})
+        rows.append(r)
+    return pd.DataFrame(rows)
+
+
+L_Q_GRID = (0.35, 0.40, 0.456, 0.50, 0.55, 0.60)
+F_HTG_GRID = (0.5, 1.0, 1.83, 3.0)
+
+
+def calc_J(log=print) -> pd.DataFrame:
+    from joblib import Parallel, delayed
+    t0 = time.perf_counter()
+    res = Parallel(n_jobs=len(L_Q_GRID))(delayed(_sweep_task)("L_q", v, ("F_gt", "f_htg")) for v in L_Q_GRID)
+    df = _sweep_table(res)
+    df.to_csv(OUT / "flame_length_sweep.csv", index=False)
+    _dump("calc_J.json", {"runs": res})
+    for o in res:
+        log(f"J L_q {o['value']:.3f}: {o['params']} chi2/dof {o['reduced_chi2']:.3f}  T_wo {o['base']['T_wo_max_K']:.1f} z/L {o['base']['z_frac_T_wo_max']:.3f}  "
+            f"knee {o['regimes']['knee']:.3f} S5y4 {o['S5_slip_y4']:.3f}  C1 dTw,u {o['C1_restored']['TWT_upper_K']:+.1f}")
+    log(f"J done in {time.perf_counter() - t0:.0f}s")
+    fig_J(df)
+    return df
+
+
+def fig_J(df: pd.DataFrame) -> None:
+    from rdt import plotting as P
+    x = df.value.to_numpy()
+    with P.style():
+        fig, ax = P.figure(P.DOUBLE, 5.5 * P.CM, 1, 3)
+        ax[0].plot(x, df.reduced_chi2, "o-", color=P.PALETTE[0], ms=3); ax[0].axvline(0.456, color="grey", lw=0.5, ls="--")
+        P.tidy(ax[0], "$L_q$ (–)", "$\\chi^2$/dof (A, B, C2)")
+        ax[1].plot(x, df.base_T_wo_max_K, "o-", color=P.PALETTE[1], ms=3, label="$T_{wo,max}$"); ax[1].axvline(0.456, color="grey", lw=0.5, ls="--")
+        P.tidy(ax[1], "$L_q$ (–)", "$T_{wo,max}$ at Plant A base (K)")
+        a2 = ax[1].twinx(); a2.plot(x, df.base_z_frac_T_wo_max, "s--", color=P.PALETTE[2], ms=3, label="$z/L$"); a2.set_ylabel("$z/L$ of $T_{wo,max}$ (–)")
+        h1, l1 = ax[1].get_legend_handles_labels(); h2, l2 = a2.get_legend_handles_labels(); ax[1].legend(h1 + h2, l1 + l2, loc="upper center")
+        series = (("rel_knee", "knee / base", 3), ("rel_min_life_iso_H2", "min life iso-H$_2$ / base", 2), ("rel_max_H2", "max H$_2$ / base", 4),
+                  ("rel_S5_slip_y4", "S5 slip y4 / S1", 1), ("rel_S6_SC2.5", "S/C 2.5 / S1", 5), ("rel_S6_SC3.5", "S/C 3.5 / S1", 0))
+        for c, lab, k in series:
+            ax[2].plot(x, df[c], "o-", ms=3, color=P.PALETTE[k], label=lab)
+        ax[2].axvline(0.456, color="grey", lw=0.5, ls="--"); ax[2].axhline(1.0, color="grey", lw=0.5); ax[2].set_yscale("log"); ax[2].set_ylim(3e-3, 8)
+        P.tidy(ax[2], "$L_q$ (–)", "Life consumption per kmol H$_2$ (rel.)", True, fontsize=5, ncol=2, loc="lower center")
+        for a, l in zip(ax, "abc"):
+            P.panel_label(a, l)
+        fig.tight_layout(); P.save(fig, OUT / "flame_length_sweep")
+
+
+def htc_chain_terms() -> pd.DataFrame:
+    """Term-by-term bed-side heat-transfer chain at mid-tube, Xu-Froment 1989 case and Plant A."""
+    import inspect
+    from rdt import reactor1d as r1
+    from rdt import latham_cases as lc
+    from rdt import validate_xf1989 as xf
+    src = Path(r1.__file__); lines = src.read_text().splitlines()
+    def ln(pat, f=lines, path="src/rdt/reactor1d.py", start=0):
+        i = next(k for k, s in enumerate(f) if k >= start and pat in s); return f"{path}:{i + 1}"
+    xl = Path(xf.__file__).read_text().splitlines(); ll = Path(lc.__file__).read_text().splitlines()
+    # --- states -------------------------------------------------------------------------------
+    tidy = xf.load_tidy(); cv = xf.curves(tidy); wall = xf.wall_from_digitised(tidy)
+    prof = xf.alpha_i_profile_from_digitised(cv)
+    res_xf = xf.run_matched(prof["profile"], wall)
+    tube_xf = r1.tube_from_xu_froment()
+    bed_xf = r1.CatalystBed(rho_bed=1.0, voidage=xf.STAGE_A_BED["voidage"], d_p=xf.STAGE_A_BED["d_p_m"], eta=(0.1,) * 3, activity=1.0)
+    P_ad, _ = _adopted()
+    rowA = lc.load_cases().set_index("case").loc["Plant_A"]
+    resA = lc.run_case(rowA, P_ad)
+    tube_A, bed_A, *_ = lc.build_case(rowA, P_ad)
+    def state(res, tube, z_mid):
+        tr = res.tube if hasattr(res, "tube") else res
+        k = int(np.argmin(np.abs(tr.z - z_mid)))
+        F = np.array([tr.F[s][k] for s in r1.SPECIES]); X = {s: F[i] / F.sum() for i, s in enumerate(r1.SPECIES)}
+        props = r1._gas_props(tr.T[k], tr.P[k], X); _, _, mw = r1._gas()
+        m_dot = sum(F[i] * mw[s] for i, s in enumerate(r1.SPECIES)) / 3600.0
+        return tr, k, props, m_dot / tube.A_cs
+    out = []
+    ring = r1.ring_equivalent_diameter(0.0173, 0.0084, 0.010)
+    for label, res, tube, bed, z_mid, f_cal in (("Xu-Froment 1989", res_xf, tube_xf, bed_xf, 11.12 / 2, None),
+                                               ("Plant A", resA, tube_A, bed_A, P_ad.heated_length_m / 2, P_ad.f_htg)):
+        tr, k, pr, G = state(res, tube, z_mid)
+        lam, mu, cp = pr["lam"], pr["mu"], pr["cp_mass"]
+        lam0 = r1.kunii_smith_lambda_er0(lam, bed.lambda_s, bed.voidage, float(tr.T[k]), bed.emissivity, bed.d_p)
+        ch = r1.xu_froment_alpha_i(lam, mu, cp, G, bed.d_p, tube.d_i, lam0)
+        lg1 = r1.leva_grummer_alpha(lam, mu, G, bed.d_p, tube.d_i, 1.0)
+        Re, Pr = ch["Re"], ch["Pr"]
+        if label == "Plant A":
+            backcalc = (float("nan"), "not applicable (no inner-wall measurement); the calibrated value is the next row", "")
+            calv = (float(tr.alpha_i[k]), f"alpha_i of the calibrated run = f_htg * LG = {f_cal:.4f} * {lg1:.1f}; check {f_cal * lg1:.1f}", ln("alpha_i = leva_grummer_alpha("))
+            dp_def = f"thesis pellet equivalent diameter 5.40 mm (LathamParams.d_p_m)"; dp_ref = f"src/rdt/latham_cases.py:{next(i for i, s in enumerate(ll) if 'd_p_m: float' in s) + 1}"
+        else:
+            j = int(np.argmin(np.abs(prof["z"] - z_mid)))
+            backcalc = (float(prof["alpha_i"][j]), f"q_i/(T_wi - T_gas) from digitised Fig. 3, lambda_tube 29.6; at z = {prof['z'][j]:.2f} m (median over 0.5-11 m: {prof['median']:.0f})",
+                        f"src/rdt/validate_xf1989.py:{next(i for i, s in enumerate(xl) if 'def alpha_i_profile_from_digitised' in s) + 1}")
+            calv = (float("nan"), "not applicable (Xu-Froment case is not calibrated with f_htg)", "")
+            dp_def = (f"9.44 mm from the stage-A pressure-drop fit (STAGE_A_BED, used in the runs); the 6V/S ring definition "
+                      f"(ring_equivalent_diameter, 17.3/8.4/10 mm) gives {1e3 * ring:.2f} mm")
+            dp_ref = f"src/rdt/validate_xf1989.py:{next(i for i, s in enumerate(xl) if 'STAGE_A_BED =' in s) + 1}; " + ln("def ring_equivalent_diameter")
+        R = [("z (mid heated length)", float(tr.z[k]), "m", "node nearest L_heated/2", ""),
+             ("T_gas", float(tr.T[k]), "K", "1-D model state", ""), ("P", float(tr.P[k]), "bar", "1-D model state", ""),
+             ("d_t inner", tube.d_i, "m", "tube internal diameter", ln("def A_cs")),
+             ("d_p equivalent", bed.d_p, "m", dp_def, dp_ref),
+             ("voidage", bed.voidage, "-", "bed voidage", ""),
+             ("G (superficial mass velocity)", G, "kg m-2 s-1", "G = m_dot / (pi d_t^2 / 4)", ln("G_s = m_dot / tube.A_cs")),
+             ("mu_g", mu, "Pa s", "Cantera gri30 mixture-averaged viscosity", ln('"mu": gas.viscosity')),
+             ("lambda_g", lam, "W m-1 K-1", "Cantera gri30 mixture-averaged conductivity", ln('"lam": gas.thermal_conductivity')),
+             ("cp_g", cp, "J kg-1 K-1", "Cantera cp_mass", ln('"cp_mass": gas.cp_mass')),
+             ("Re_p", Re, "-", "Re_p = d_p G / mu", ln("Re = d_p * G_s / mu", start=next(k for k, q in enumerate(lines) if "def xu_froment_alpha_i" in q))),
+             ("Pr", Pr, "-", "Pr = cp mu / lambda_g", ln("Pr = cp_mass * mu / lam_g")),
+             ("lambda_er0 (static, Kunii-Smith)", lam0, "W m-1 K-1",
+              f"Kunii-Smith 1960 with lambda_s = {bed.lambda_s}, emissivity {bed.emissivity}, beta 1, gamma 2/3; radiation h_rv, h_rs ~ 4 sigma T^3", ln("def kunii_smith_lambda_er0")),
+             ("lambda_er dynamic part", 0.14 * lam * Re * Pr, "W m-1 K-1", "0.14 lambda_g Re_p Pr (Yagi-Kunii form)", ln("lam_er = lam_er0 + 0.14 * lam_g")),
+             ("lambda_er total", ch["lam_er"], "W m-1 K-1", "lambda_er0 + 0.14 lambda_g Re_p Pr", ln("lam_er = lam_er0 + 0.14 * lam_g")),
+             ("alpha_w0 (static, De Wasch-Froment)", ch["alpha_w0"], "W m-2 K-1", "8.694 lambda_er0 / d_t^(4/3)", ln("alpha_w0 = 8.694 * lam_er0")),
+             ("alpha_w dynamic part", 0.444 * Re * Pr * lam / bed.d_p, "W m-2 K-1", "0.444 Re_p Pr lambda_g / d_p", ln("alpha_w = alpha_w0 + 0.444 * Re")),
+             ("alpha_w total", ch["alpha_w"], "W m-2 K-1", "alpha_w0 + 0.444 Re_p Pr lambda_g / d_p", ln("alpha_w = alpha_w0 + 0.444 * Re")),
+             ("alpha_i, Xu-Froment chain", ch["alpha_i"], "W m-2 K-1", "1/alpha_i = 1/alpha_w + d_t/(8 lambda_er)", ln("alpha_i = 8.0 * lam_er * alpha_w")),
+             ("alpha_i, Leva-Grummer (f_htg = 1)", lg1, "W m-2 K-1", "0.813 (lambda_g/d_t) exp(-6 d_p/d_t) Re_p^0.9", ln("return f_htg * 0.813")),
+             ("alpha_i, back-calculated", backcalc[0], "W m-2 K-1", backcalc[1], backcalc[2]),
+             ("alpha_i, calibrated", calv[0], "W m-2 K-1", calv[1], calv[2]),
+             ("ratio chain / Leva-Grummer", ch["alpha_i"] / lg1, "-", "", "")]
+        out += [{"case": label, "term": a, "value": v, "unit": u, "formula_or_definition": fo, "code_ref": rf} for a, v, u, fo, rf in R]
+    return pd.DataFrame(out)
+
+
+def calc_K(log=print) -> pd.DataFrame:
+    import yaml
+    from joblib import Parallel, delayed
+    from rdt import latham_cases as lc
+    t0 = time.perf_counter()
+    res = Parallel(n_jobs=len(F_HTG_GRID))(delayed(_sweep_task)("f_htg", v, ("F_gt", "L_q")) for v in F_HTG_GRID)
+    df = _sweep_table(res)
+    df.to_csv(OUT / "htc_sweep.csv", index=False)
+    for o in res:
+        log(f"K f_htg {o['value']:.2f}: {o['params']} chi2/dof {o['reduced_chi2']:.3f} at_bound {o['at_bound']}  T_wo {o['base']['T_wo_max_K']:.1f} z/L {o['base']['z_frac_T_wo_max']:.3f}  "
+            f"knee {o['regimes']['knee']:.3f} S5y4 {o['S5_slip_y4']:.3f}")
+    doc = yaml.safe_load(lc.FIT_YAML.read_text())["calibration_alpha_top_fixed"]["best_fit"]["covariance"]
+    corr = {"f_htg~F_gt": doc["corr_table"]["f_htg"]["F_gt"], "f_htg~L_q": doc["corr_table"]["f_htg"]["L_q"], "F_gt~L_q": doc["corr_table"]["F_gt"]["L_q"]}
+    chain = htc_chain_terms(); chain.to_csv(OUT / "htc_chain_terms.csv", index=False)
+    _dump("calc_K.json", {"runs": res, "correlations_adopted_fit": corr, "high_correlation_pairs": doc.get("high_correlation_pairs")})
+    log(f"K correlations {corr}  ({time.perf_counter() - t0:.0f}s)")
+    return df
+
+
+# ---------------------------------------------------------------------------
+# L. Load-following magnitude with T_out held by physics at every p
+# ---------------------------------------------------------------------------
+def _flex_point_task(point, p):
+    from scipy.optimize import brentq
+    from rdt import uq
+    _ensure_setup()
+    g = lambda f: uq.evaluate_one({**point, "specific_firing_factor": float(f)}, _NOM, float(p))["T_out_K"] - 1105.55  # noqa: E731
+    f = brentq(g, 0.75, 1.25, xtol=1e-7)
+    r = uq.evaluate_one({**point, "specific_firing_factor": f}, _NOM, float(p))
+    return {"firing": float(f), "T_wo_max_K": r["T_wo_max_K"], "T_out_K": r["T_out_K"], "nominal": r}
+
+
+def _flex_mc_worker(point, theta, p):
+    from rdt import uq
+    _ensure_setup()
+    r = uq.evaluate_one(point, theta, float(p))
+    return {k: r.get(k, np.nan) for k in ("converged", "life_rate_per_h", "H2_net_kmol_h", "life_rate_per_kmol_H2", "T_wo_max_K", "T_out_K")}
+
+
+def calc_L(n: int = 512, n_jobs: int = -1, log=print) -> pd.DataFrame:
+    from joblib import Parallel, delayed
+    from rdt import uq
+    _ensure_setup()
+    pts = json.loads((Path(uq.OUT_DIR) / f"{uq.MC_TAG}_points.json").read_text())
+    X = mc_design(n); th = X.to_dict(orient="records")
+    b = pd.read_csv(Path(uq.OUT_DIR) / f"{uq.MC_TAG}_S1_base.csv.gz").iloc[:n].reset_index(drop=True)
+    nb = uq.evaluate_one(pts["S1_base"], _NOM)
+    sol = Parallel(n_jobs=n_jobs)(delayed(_flex_point_task)({k: v for k, v in pts[nm].items()}, p) for p in P_B for nm in ("load_0.70", "load_0.85"))
+    solved = {(p, nm): s for (p, nm), s in zip([(p, nm) for p in P_B for nm in ("load_0.70", "load_0.85")], sol)}
+    d = OUT / "flex_holdTout_mc"; d.mkdir(exist_ok=True)
+    jobs = [(p, nm) for p in P_B for nm in ("load_0.70", "load_0.85") if not (d / f"{nm}_{_tag_p(p)}.csv.gz").exists()]
+    if jobs:
+        t0 = time.perf_counter()
+        res = Parallel(n_jobs=n_jobs, batch_size=8)(delayed(_flex_mc_worker)({**pts[nm], "specific_firing_factor": solved[(p, nm)]["firing"]}, th[i], p)
+                                                    for p, nm in jobs for i in range(n))
+        for j, (p, nm) in enumerate(jobs):
+            pd.DataFrame(res[j * n:(j + 1) * n]).to_csv(d / f"{nm}_{_tag_p(p)}.csv.gz", index=False, compression="gzip")
+        log(f"L MC {len(jobs)} x {n} in {time.perf_counter() - t0:.0f}s")
+    rows = []
+    one = lambda dct: pd.DataFrame([dct])  # noqa: E731
+    for p in P_B:
+        l07 = pd.read_csv(d / f"load_0.70_{_tag_p(p)}.csv.gz"); l085 = pd.read_csv(d / f"load_0.85_{_tag_p(p)}.csv.gz")
+        s2, s3, ok = flex_ratios(b, l07, l085)
+        ns2, ns3, _ = flex_ratios(one(nb), one(solved[(p, "load_0.70")]["nominal"]), one(solved[(p, "load_0.85")]["nominal"]))
+        for lab, v, nv in (("S2 daily vs S1", s2, ns2[0]), ("S3 renewable vs S1", s3, ns3[0])):
+            rows.append({"statement": lab, "p": p, "firing_0.70": solved[(p, "load_0.70")]["firing"], "firing_0.85": solved[(p, "load_0.85")]["firing"],
+                         "T_wo_max_0.70_K": solved[(p, "load_0.70")]["T_wo_max_K"], "T_wo_max_0.85_K": solved[(p, "load_0.85")]["T_wo_max_K"],
+                         "T_out_check_0.70": solved[(p, "load_0.70")]["T_out_K"], "nominal": float(nv), **_q(v), "fraction_le_1": float(np.mean(v <= 1.0)), "n_ok": int(ok.sum())})
+        log(f"L p={p:<5g} f07 {rows[-1]['firing_0.70']:.4f} f085 {rows[-1]['firing_0.85']:.4f}  S2 nom {ns2[0]:.4f} med {np.median(s2):.4f} frac {np.mean(s2 <= 1):.3f}  "
+            f"S3 nom {ns3[0]:.4f} med {np.median(s3):.4f} frac {np.mean(s3 <= 1):.3f}")
+    df = pd.DataFrame(rows)
+    df.to_csv(OUT / "flex_magnitude_vs_p_holdTout.csv", index=False)
+    _dump("calc_L.json", {"N": n, "rows": rows, "S1_base_firing": pts["S1_base"]["specific_firing_factor"],
+                          "published_firing_p0": {"load_0.70": pts["load_0.70"]["specific_firing_factor"], "load_0.85": pts["load_0.85"]["specific_firing_factor"]}})
+    return df
+
+
+def _tag_p(p: float) -> str:
+    return f"p{p:g}".replace(".", "_")
+
+
+# ---------------------------------------------------------------------------
+# M. Alternative creep-uncertainty models (re-scoring the stored v3 Monte Carlo)
+# ---------------------------------------------------------------------------
+M_POINTS = ("RQ3_knee", "RQ3_min_life_iso_H2", "S5_y4_holdslip_end", "S6_SC2.5", "S6_SC3.5", "load_0.70", "load_0.85")
+T_REF_SHEET_K = 1373.15      # 1100 degC: steam-reforming max operating temperature printed on the sheet (see report)
+T_REF_NEAR_K = 1147.0
+T_DF = 4
+
+
+class _CurveFamily:
+    """t_r(T, sigma; C) for one creep parametrisation, cached by rounded C."""
+
+    def __init__(self, kind: str, T_ref: Optional[float] = None):
+        from rdt import creep
+        self.kind, self.T_ref = kind, T_ref
+        self.c0 = creep.load_alloy(CFG.creep_alloy).minimum
+        self.C0 = self.c0.C
+        pts = pd.read_csv(C.ROOT / "data" / "creep_derived" / "centralloy_g_4852_rupture_curve.csv")
+        g = pts[pts.curve == "minimum"].sort_values("lmp")
+        self.lmp_pts, self.ls_pts = g.lmp.to_numpy(float), np.log10(g.stress_mpa.to_numpy(float))
+        self.cache: Dict[float, object] = {}
+        self.max_shift_dev = 0.0
+
+    def curve(self, C_: float):
+        from rdt import creep
+        key = round(float(C_), 3)
+        if key not in self.cache:
+            if self.kind == "v3":
+                c = creep.LarsonMillerCurve(C=key, scale=self.c0.scale, degree=self.c0.degree, points=[], alloy=self.c0.alloy, source=self.c0.source, curve_kind="minimum")
+                c.coeffs = self.c0.coeffs.copy(); c.lmp_range = self.c0.lmp_range
+            else:   # consistent: digitised (LMP, sigma) -> (sigma, t_r) at T_ref with C0 -> LMP with C -> refit P3
+                s = self.c0.scale
+                log_tr = self.lmp_pts / (s * self.T_ref) - self.C0
+                lmp_new = s * self.T_ref * (key + log_tr)
+                c = creep.LarsonMillerCurve(C=key, scale=s, degree=self.c0.degree, points=[], alloy=self.c0.alloy, source=self.c0.source, curve_kind="minimum")
+                c.coeffs = np.polyfit(lmp_new, self.ls_pts, self.c0.degree); c.lmp_range = (float(lmp_new.min()), float(lmp_new.max()))
+                # the refit must equal the base polynomial shifted by s T_ref (C - C0)
+                d = s * self.T_ref * (key - self.C0)
+                xx = np.linspace(*self.c0.lmp_range, 50)
+                self.max_shift_dev = max(self.max_shift_dev, float(np.max(np.abs(np.polyval(c.coeffs, xx + d) - np.polyval(np.polyfit(self.lmp_pts, self.ls_pts, self.c0.degree), xx)))))
+            self.cache[key] = c
+        return self.cache[key]
+
+    def log10_tr(self, T: np.ndarray, sig: np.ndarray, Cs: np.ndarray) -> np.ndarray:
+        out = np.full(len(T), np.nan)
+        for i, (t, s_, c_) in enumerate(zip(T, sig, Cs)):
+            if np.isfinite(t) and np.isfinite(s_):
+                out[i] = np.log10(float(self.curve(c_).time_to_rupture(t, s_)))
+        return out
+
+
+def _scatter(x_norm: np.ndarray, sigma_n: float, kind: str) -> np.ndarray:
+    from scipy import stats
+    if kind == "normal":
+        return x_norm
+    U = stats.norm.cdf(x_norm / sigma_n)
+    s_t = (1.645 * sigma_n) / stats.t.ppf(0.95, T_DF)             # 5 % quantile = lower band (-1.645 sigma_n)
+    return stats.t.ppf(U, T_DF) * s_t
+
+
+def calc_M(log=print) -> pd.DataFrame:
+    from rdt import uq
+    d = Path(uq.OUT_DIR)
+    mc = {n: pd.read_csv(d / f"{uq.MC_TAG}_{n}.csv.gz") for n in uq.POINT_NAMES}
+    grp = {g: pd.read_csv(d / f"{uq.MC_TAG}_S1_base_group_{g}.csv.gz") for g in uq.GROUPS}
+    spec = uq.build_spec(save=False); sig_n = float(spec["groups"]["creep"]["log10_tr_scatter"]["sigma"])
+    summ = json.loads(Path(uq.SUMMARY_JSON).read_text())
+    variants = {"M0 (v3)": ("v3", None, "normal"), f"M1 consistent C, T_ref {T_REF_SHEET_K:.0f} K": ("consistent", T_REF_SHEET_K, "normal"),
+                f"M1 consistent C, T_ref {T_REF_NEAR_K:.0f} K": ("consistent", T_REF_NEAR_K, "normal"), "M2 Student-t (4 dof) scatter": ("v3", None, "t")}
+    rows, info = [], {}
+    for vname, (kind, Tref, sk) in variants.items():
+        fam = _CurveFamily(kind, Tref)
+        def rescore(df):
+            df = df.copy()
+            lt = fam.log10_tr(df.T_wo_max_K.to_numpy(float), df.sigma_hot_MPa.to_numpy(float), df.C_LM.to_numpy(float)) + _scatter(df.log10_tr_scatter.to_numpy(float), sig_n, sk)
+            df["log10_t_r"] = lt; df["life_rate_per_h"] = 10.0 ** -lt; df["life_rate_per_kmol_H2"] = df.life_rate_per_h / df.H2_net_kmol_h
+            return df
+        M = {n: rescore(v) for n, v in mc.items()}; M["load_1.00"] = M["S1_base"]
+        G = {g: rescore(v) for g, v in grp.items()}
+        if vname == "M0 (v3)":
+            ok = _ok(mc["S1_base"])
+            dev = float(np.nanmax(np.abs(M["S1_base"].log10_t_r.to_numpy()[ok] - mc["S1_base"].log10_t_r.to_numpy()[ok])))
+            info["M0_reproduction_max_abs_dev_log10tr"] = dev
+        vs = uq.variance_shares(M["S1_base"], G, cols=("log10_t_r",))["log10_t_r"]
+        iv = uq.intervals(M["S1_base"], M["S1_base"])
+        rf = uq.robustness_fractions(M, M)["nominal_L_q"]
+        r = {"variant": vname, "creep_share_log10tr": vs["shares"]["creep"], "kinetics_share": vs["shares"]["kinetics"], "heat_transfer_share": vs["shares"]["heat_transfer"],
+             "measurement_share": vs["shares"]["measurement"], "S1_log10tr_median": iv["log10_t_r"]["median"], "S1_log10tr_p05": iv["log10_t_r"]["p05"], "S1_log10tr_p95": iv["log10_t_r"]["p95"]}
+        for n in M_POINTS:
+            q = uq.intervals(M[n], M["S1_base"])["life_rate_per_kmol_H2_rel_base"]
+            r.update({f"{n}_median": q["median"], f"{n}_p05": q["p05"], f"{n}_p95": q["p95"]})
+        r.update({f"frac_{k}": v for k, v in rf.items()})
+        if kind == "consistent":
+            r["refit_vs_shift_max_dev_log10sigma"] = fam.max_shift_dev
+        rows.append(r)
+        log(f"M {vname:34s} creep share {r['creep_share_log10tr']:.3f}  S1 log tr [{r['S1_log10tr_p05']:.2f},{r['S1_log10tr_p95']:.2f}]  knee {r['RQ3_knee_median']:.3f} "
+            f"[{r['RQ3_knee_p05']:.3f},{r['RQ3_knee_p95']:.3f}]  S2<=S1 {rf['S2_life_per_kmol_le_S1']:.3f}")
+    df = pd.DataFrame(rows)
+    pub = summ["robustness_fractions"]["nominal_L_q"]
+    info["M0_vs_published_fractions"] = {k: [float(df.loc[0, f"frac_{k}"]), float(v)] for k, v in pub.items()}
+    info["M0_vs_published_creep_share"] = [float(df.loc[0, "creep_share_log10tr"]), float(summ["variance_shares_S1_base"]["log10_t_r"]["shares"]["creep"])]
+    info["scatter"] = {"normal_sigma": sig_n, "lower_band_decades": 1.645 * sig_n, "t_df": T_DF, "t_scale": 1.645 * sig_n / float(__import__("scipy").stats.t.ppf(0.95, T_DF))}
+    info["T_ref_K"] = {"sheet": T_REF_SHEET_K, "near_hot_spot": T_REF_NEAR_K}
+    df.to_csv(OUT / "creep_uq_alternatives.csv", index=False)
+    _dump("calc_M.json", {"rows": rows, **info})
+    log(f"M M0 reproduction: {info['M0_reproduction_max_abs_dev_log10tr']:.2e}; fractions vs published {info['M0_vs_published_fractions']}")
+    return df
+
+
+# ---------------------------------------------------------------------------
+# Report tables, package 3
+# ---------------------------------------------------------------------------
+def report_tables_pkg3() -> Dict[str, str]:
+    t: Dict[str, str] = {}
+    w = pd.read_csv(OUT / "walltemp_error_propagation.csv")
+    for tab, key in (("Table 2", "I2"), ("Table 3", "I3")):
+        g = w[w.table == tab].pivot(index="item", columns="variant", values="rel_life_cost")
+        order = [x for x in (TABLE2_LABELS.values() if tab == "Table 2" else TABLE3_REGIMES) if x in g.index]
+        cols = ["none (v3)", "a: dT = -18 K", "a: dT = -12 K", "a: dT = +12 K", "a: dT = +18 K", "b: w*e_u(load), sign as is", "b: -w*e_u(load), reversed", "b: 1*e_u(load), w = 1"]
+        g = g.loc[order, cols].reset_index().rename(columns={"item": "строка"})
+        t[key] = _md(g, {c: ".3f" for c in cols})
+    ij = json.loads((OUT / "calc_I.json").read_text())
+    t["I_nd"] = _md(pd.DataFrame([{"вариант": k, "недоминируемых из 198": v["n_nondominated"], "потеряли статус": v["lost"], "приобрели": v["gained"],
+                                   "knee — тот же член, что в v3": "да" if v["knee_same_as_v3"] else "нет", "knee: load / S/C / EA / firing":
+                                   f"{v['knee']['feed_per_tube_fraction']:.3f} / {v['knee']['steam_to_carbon']:.2f} / {v['knee']['excess_air']:.1f} / {v['knee']['specific_firing_factor']:.3f}",
+                                   "rel life knee": v["knee_rel_life"]} for k, v in ij["nondominance_and_knee"].items()]), {"rel life knee": ".3f"})
+    t["I_e"] = _md(pd.DataFrame([{"load": k, "e_u (K)": v, "dT_hot = w e_u (K)": W_HOT * v} for k, v in ij["e_u_line"]["e_u_at_load"].items()]), {"e_u (K)": "+.1f", "dT_hot = w e_u (K)": "+.1f"})
+    for name, key, free in (("flame_length_sweep.csv", "J", ("F_gt", "f_htg")), ("htc_sweep.csv", "K", ("F_gt", "L_q"))):
+        d = pd.read_csv(OUT / name)
+        fit = pd.DataFrame({"фикс.": d.value, **{k: [f"{a:.4f} [{b}]" for a, b in zip(d[f"fit_{k}"], d[f"ci95_{k}"])] for k in free},
+                            "χ²/dof": [f"{a:.1f}/{b} = {c:.2f}" for a, b, c in zip(d.chi2, d.dof, d.reduced_chi2)], "на границе": d.any_at_bound.map({True: "да", False: "нет"}),
+                            "A ΔT_w,u/l": [f"{a:+.1f}/{b:+.1f}" for a, b in zip(d.Plant_A_dTw_u, d.Plant_A_dTw_l)],
+                            "B ΔT_w,u/l": [f"{a:+.1f}/{b:+.1f}" for a, b in zip(d.Plant_B_dTw_u, d.Plant_B_dTw_l)],
+                            "C2 ΔT_w,u/l": [f"{a:+.1f}/{b:+.1f}" for a, b in zip(d.Plant_C2_dTw_u, d.Plant_C2_dTw_l)],
+                            "C1 восст. ΔT_out/ΔT_w,u/ΔT_w,l": [f"{a:+.1f}/{b:+.1f}/{c:+.1f}" for a, b, c in zip(d.C1_out_T_K_err, d.C1_TWT_upper_K_err, d.C1_TWT_lower_K_err)]})
+        t[key + "1"] = _md(fit, {"фикс.": "g"})
+        rat = pd.DataFrame({"фикс.": d.value, "T_wo,max база (K)": d.base_T_wo_max_K, "z/L": d.base_z_frac_T_wo_max, "T_out база (K)": d.base_T_out_K,
+                            **{n: d[f"rel_{n}"] for n in TABLE3_REGIMES}, "S5 slip y4/S1": d.rel_S5_slip_y4, "S/C 2.5/S1": d["rel_S6_SC2.5"], "S/C 3.5/S1": d["rel_S6_SC3.5"],
+                            "firing S1": d.S1_firing_phys, "firing на границе": d.n_firing_saturated})
+        t[key + "2"] = _md(rat, {"фикс.": "g", "T_wo,max база (K)": ".1f", "z/L": ".3f", "T_out база (K)": ".1f", **{n: ".3f" for n in TABLE3_REGIMES},
+                                 "S5 slip y4/S1": ".3f", "S/C 2.5/S1": ".3f", "S/C 3.5/S1": ".3f", "firing S1": ".4f", "firing на границе": ".0f"})
+    kj = json.loads((OUT / "calc_K.json").read_text())
+    t["K_corr"] = _md(pd.DataFrame([{"пара": k, "корреляция": v} for k, v in kj["correlations_adopted_fit"].items()]), {"корреляция": "+.3f"})
+    ch = pd.read_csv(OUT / "htc_chain_terms.csv")
+    piv = ch.pivot(index="term", columns="case", values="value").reindex(ch.term.drop_duplicates())
+    meta = ch.drop_duplicates("term").set_index("term")
+    tab = pd.DataFrame({"член": piv.index, "Xu-Froment 1989": [("—" if pd.isna(v) else f"{v:.5g}") for v in piv["Xu-Froment 1989"]],
+                        "Plant A": [("—" if pd.isna(v) else f"{v:.5g}") for v in piv["Plant A"]], "ед.": meta.loc[piv.index, "unit"].fillna("").to_numpy(),
+                        "формула / определение": [str(ch[(ch.term == k)].formula_or_definition.iloc[-1] if k.startswith(("alpha_i, back", "alpha_i, cal", "d_p")) and False else meta.loc[k, "formula_or_definition"]) for k in piv.index],
+                        "код": meta.loc[piv.index, "code_ref"].fillna("").to_numpy()})
+    t["K_chain"] = _md(tab, {})
+    t["K_chain_notes"] = "\n".join(f"- {r.case}, {r.term}: {r.formula_or_definition}" + (f" ({r.code_ref})" if isinstance(r.code_ref, str) and r.code_ref else "")
+                                   for r in ch.itertuples() if r.term in ("d_p equivalent", "alpha_i, back-calculated", "alpha_i, calibrated"))
+    l = pd.read_csv(OUT / "flex_magnitude_vs_p_holdTout.csv")
+    t["L"] = _md(l[["statement", "p", "firing_0.70", "firing_0.85", "T_wo_max_0.70_K", "T_wo_max_0.85_K", "nominal", "median", "p05", "p95", "fraction_le_1"]]
+                 .rename(columns={"p05": "5 %", "p95": "95 %", "fraction_le_1": "доля ≤ 1", "T_wo_max_0.70_K": "T_wo,max 0.70 (K)", "T_wo_max_0.85_K": "T_wo,max 0.85 (K)"}),
+                 {"p": "g", "firing_0.70": ".4f", "firing_0.85": ".4f", "T_wo,max 0.70 (K)": ".1f", "T_wo,max 0.85 (K)": ".1f", "nominal": ".4f", "median": ".4f", "5 %": ".4f", "95 %": ".4f", "доля ≤ 1": ".3f"})
+    b = pd.read_csv(OUT / "flex_magnitude_vs_p.csv")
+    cmp_ = l[["statement", "p", "median", "fraction_le_1"]].merge(b[["statement", "p", "median", "fraction_le_1"]], on=["statement", "p"], suffixes=(" (T_out удерживается)", " (Table 6, firing p=0)"))
+    t["L_cmp"] = _md(cmp_, {"p": "g", "median (T_out удерживается)": ".4f", "fraction_le_1 (T_out удерживается)": ".3f", "median (Table 6, firing p=0)": ".4f", "fraction_le_1 (Table 6, firing p=0)": ".3f"})
+    m = pd.read_csv(OUT / "creep_uq_alternatives.csv")
+    m1 = pd.DataFrame({"вариант": m.variant, "доля creep (log10 t_r)": m.creep_share_log10tr, "kinetics": m.kinetics_share, "heat transfer": m.heat_transfer_share,
+                       "measurement": m.measurement_share, "S1 log10 t_r: медиана [5, 95 %]": [f"{a:.2f} [{b:.2f}, {c:.2f}]" for a, b, c in zip(m.S1_log10tr_median, m.S1_log10tr_p05, m.S1_log10tr_p95)]})
+    t["M1"] = _md(m1, {c: ".3f" for c in ("доля creep (log10 t_r)", "kinetics", "heat transfer", "measurement")})
+    labs = {"RQ3_knee": "knee", "RQ3_min_life_iso_H2": "min life iso-H2", "S5_y4_holdslip_end": "S5 y4", "S6_SC2.5": "S/C 2.5", "S6_SC3.5": "S/C 3.5", "load_0.70": "load 0.70", "load_0.85": "load 0.85"}
+    m2 = pd.DataFrame({"вариант": m.variant, **{lab: [f"{a:.3f} [{b:.3f}, {c:.3f}]" for a, b, c in zip(m[f"{n}_median"], m[f"{n}_p05"], m[f"{n}_p95"])] for n, lab in labs.items()}})
+    t["M2"] = _md(m2, {})
+    fr = [c for c in m.columns if c.startswith("frac_")]
+    t["M3"] = _md(m[["variant"] + fr].rename(columns={c: c[5:] for c in fr}), {c[5:]: ".3f" for c in fr})
+    return t
+
+
 # ---------------------------------------------------------------------------
 # Report tables, package 2
 # ---------------------------------------------------------------------------
@@ -960,7 +1526,7 @@ def report_tables_pkg2() -> Dict[str, str]:
 # ---------------------------------------------------------------------------
 def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--calc", nargs="+", default=["A", "B", "C", "D"], choices=list("ABCDEFGH"))
+    ap.add_argument("--calc", nargs="+", default=["A", "B", "C", "D"], choices=list("ABCDEFGHIJKLM"))
     ap.add_argument("--n-d", type=int, default=512)
     ap.add_argument("--n-jobs", type=int, default=-1)
     a = ap.parse_args(argv)
@@ -970,7 +1536,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     for c in a.calc:
         {"A": lambda: calc_A(log=log), "B": lambda: calc_B(log=log), "C": lambda: calc_C(log=log),
          "D": lambda: calc_D(a.n_d, a.n_jobs, log=log), "E": lambda: calc_E(log=log), "F": lambda: calc_F(log=log),
-         "G": lambda: calc_G(log=log), "H": lambda: calc_H(log=log)}[c]()
+         "G": lambda: calc_G(log=log), "H": lambda: calc_H(log=log), "I": lambda: calc_I(log=log), "J": lambda: calc_J(log=log),
+         "K": lambda: calc_K(log=log), "L": lambda: calc_L(a.n_d, a.n_jobs, log=log), "M": lambda: calc_M(log=log)}[c]()
     return 0
 
 
