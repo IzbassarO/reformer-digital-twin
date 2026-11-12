@@ -1,0 +1,230 @@
+{
+  "settings": {
+    "pop": 200,
+    "gens": 300,
+    "seed": 0,
+    "T_wo_limit_K": 1193.0,
+    "T_out_limit_K": 1125.0,
+    "slip_limit_pct": 7.81372102120694,
+    "excess_air_base": 21.64128020288727
+  },
+  "base_reference": {
+    "H2": 14.81510339468536,
+    "fuel": 158.37863724198897,
+    "slip": 7.81372102120694,
+    "T_wo_max": 1146.712500081438
+  },
+  "variants": {
+    "F0": {
+      "bounds": {
+        "feed_per_tube_fraction": [
+          0.6,
+          1.1
+        ],
+        "steam_to_carbon": [
+          2.5,
+          4.0
+        ],
+        "inlet_T": [
+          800.0,
+          900.0
+        ],
+        "excess_air": [
+          5.0,
+          25.0
+        ],
+        "specific_firing_factor": [
+          0.85,
+          1.15
+        ]
+      },
+      "n_pareto": 200,
+      "n_feasible_phys": 198,
+      "n_dominating_base": 37,
+      "n_iso_band": 2,
+      "wall_time_s": 19.28415129100904,
+      "max_disc_life": 0.028653295147260782,
+      "max_abs_diff_vs_pareto_v3": 3.552713678800501e-15
+    },
+    "F1": {
+      "bounds": {
+        "feed_per_tube_fraction": [
+          0.6,
+          1.1
+        ],
+        "steam_to_carbon": [
+          2.5,
+          3.5
+        ],
+        "inlet_T": [
+          800.0,
+          900.0
+        ],
+        "excess_air": [
+          5.0,
+          25.0
+        ],
+        "specific_firing_factor": [
+          0.85,
+          1.15
+        ]
+      },
+      "n_pareto": 200,
+      "n_feasible_phys": 197,
+      "n_dominating_base": 20,
+      "n_iso_band": 3,
+      "wall_time_s": 18.75188466697,
+      "max_disc_life": 0.033289769719205164
+    },
+    "F2": {
+      "bounds": {
+        "feed_per_tube_fraction": [
+          0.6,
+          1.1
+        ],
+        "steam_to_carbon": [
+          2.5,
+          3.0
+        ],
+        "inlet_T": [
+          800.0,
+          900.0
+        ],
+        "excess_air": [
+          5.0,
+          25.0
+        ],
+        "specific_firing_factor": [
+          0.85,
+          1.15
+        ]
+      },
+      "n_pareto": 200,
+      "n_feasible_phys": 198,
+      "n_dominating_base": 7,
+      "n_iso_band": 7,
+      "wall_time_s": 13.970836208900437,
+      "max_disc_life": 0.214423532055117
+    },
+    "F3": {
+      "bounds": {
+        "feed_per_tube_fraction": [
+          0.6,
+          1.0
+        ],
+        "steam_to_carbon": [
+          2.5,
+          4.0
+        ],
+        "inlet_T": [
+          800.0,
+          900.0
+        ],
+        "excess_air": [
+          5.0,
+          25.0
+        ],
+        "specific_firing_factor": [
+          0.85,
+          1.15
+        ]
+      },
+      "n_pareto": 200,
+      "n_feasible_phys": 197,
+      "n_dominating_base": 28,
+      "n_iso_band": 2,
+      "wall_time_s": 16.703902082983404,
+      "max_disc_life": 0.013422714354685561
+    },
+    "F4": {
+      "bounds": {
+        "feed_per_tube_fraction": [
+          0.6,
+          1.1
+        ],
+        "steam_to_carbon": [
+          2.5,
+          4.0
+        ],
+        "inlet_T": [
+          800.0,
+          900.0
+        ],
+        "excess_air": [
+          10.0,
+          25.0
+        ],
+        "specific_firing_factor": [
+          0.85,
+          1.15
+        ]
+      },
+      "n_pareto": 200,
+      "n_feasible_phys": 198,
+      "n_dominating_base": 58,
+      "n_iso_band": 4,
+      "wall_time_s": 13.183847959036939,
+      "max_disc_life": 0.03600851724653642
+    },
+    "F5": {
+      "bounds": {
+        "feed_per_tube_fraction": [
+          0.6,
+          1.0
+        ],
+        "steam_to_carbon": [
+          2.5,
+          3.5
+        ],
+        "inlet_T": [
+          800.0,
+          900.0
+        ],
+        "excess_air": [
+          10.0,
+          25.0
+        ],
+        "specific_firing_factor": [
+          0.85,
+          1.15
+        ]
+      },
+      "n_pareto": 200,
+      "n_feasible_phys": 200,
+      "n_dominating_base": 19,
+      "n_iso_band": 6,
+      "wall_time_s": 12.465021917014383,
+      "max_disc_life": 0.038813801448292606
+    },
+    "F6": {
+      "bounds": {
+        "feed_per_tube_fraction": [
+          0.6,
+          1.0
+        ],
+        "steam_to_carbon": [
+          2.5,
+          3.0
+        ],
+        "inlet_T": [
+          800.0,
+          900.0
+        ],
+        "excess_air": [
+          10.0,
+          25.0
+        ],
+        "specific_firing_factor": [
+          0.85,
+          1.15
+        ]
+      },
+      "n_pareto": 200,
+      "n_feasible_phys": 198,
+      "n_dominating_base": 2,
+      "n_iso_band": 12,
+      "wall_time_s": 10.204090957995504,
+      "max_disc_life": 0.22726079656351006
+    }
+  }
+}

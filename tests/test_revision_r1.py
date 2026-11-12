@@ -23,3 +23,19 @@ def test_make_bins_conserves_hours_and_separates_events():
     h["dD"] = 1e-7; h.loc[:4, "dD"] = 1e-6; h["T_wo_add_K"] = 0.0; h.loc[:4, "T_wo_add_K"] = 40.0
     b = r1.make_bins(h, 6)
     assert len(b) == 2 and b.hours.sum() == n and sorted(b.T_wo_add_K) == [0.0, 40.0]
+
+
+def test_activity_profiles():
+    a = r1.activity_profile("E0"); assert len(a) == 4 * 8760 and np.isclose(a[0], 0.30) and abs(a[-1] - 0.10) < 1e-4
+    e3 = r1.activity_profile("E3"); i6 = int(0.5 * 8760)
+    assert np.isclose(e3[i6 - 1], 0.18, atol=1e-3) and np.isclose(e3[i6], 0.18, atol=1e-3) and abs(e3[-1] - 0.10) < 1e-4
+    assert len(r1.activity_profile("E4")) == 3 * 8760 and len(r1.activity_profile("E5")) == 5 * 8760
+
+
+def test_c1_restored_feed_closes_balances():
+    from rdt import latham_cases as lc
+    c = lc.load_cases().set_index("case")
+    b = r1.atom_balance(c.loc["Plant_C1"])
+    assert abs(b["feed_from_C_balance_kmol_h"] - 7190) < 10
+    b2 = r1.atom_balance(c.loc["Plant_C1"], b["feed_from_C_balance_kmol_h"])
+    assert abs(b2["C_closure_out_over_in"] - 1) < 1e-12 and abs(b2["H_closure_out_over_in"] - 1) < 1e-3
