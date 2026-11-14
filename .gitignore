@@ -54,3 +54,7 @@ data/creep_derived/datasheets/*.pdf
 # Overleaf export: derived from paper/, regenerated on demand
 paper/overleaf_export/
 paper/overleaf_export.zip
+
+# Excerpts of the Xu & Froment (1989, Part II) article used to check the transcription of the
+# heat-transfer equations; kept locally, NOT redistributed (same rule as literature/).
+data/revision_r1b/xf_part2_equations/

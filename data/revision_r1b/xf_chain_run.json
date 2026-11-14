@@ -1,0 +1,83 @@
+{
+  "verdict": "identical",
+  "chain_terms_max_rel_dev_vs_revision_r1": 8.881784197001252e-16,
+  "plantA_ratio_chain_over_calibrated": {
+    "min": 0.9994880036332868,
+    "z_frac_min": 1.0,
+    "max": 1.4388794549874644,
+    "z_frac_max": 0.0,
+    "n_nodes": 201
+  },
+  "midheight": {
+    "Xu-Froment 1989": {
+      "chain": 3358.1319405654544,
+      "leva_grummer_f1": 1255.815393992511,
+      "back_calculated": 351.326006650703,
+      "calibrated": NaN
+    },
+    "Plant A": {
+      "chain": 1562.8277742680032,
+      "leva_grummer_f1": 805.9350445692208,
+      "back_calculated": NaN,
+      "calibrated": 1478.5257590071813
+    }
+  },
+  "quoted_alternative_form_not_in_XF_W_m2K": {
+    "Xu-Froment 1989": 1630.373360535417,
+    "Plant A": 1164.5060541259757
+  },
+  "xf_runs": {
+    "xu_froment": {
+      "rmse_x_CH4": 0.23986443031259064,
+      "rmse_dx_increment": 0.22024790783503273,
+      "rmse_T_gas_K": 114.35777265183523,
+      "rmse_T_wi_K": 50.66118502528727,
+      "rmse_p_bar": 0.12931595810204646,
+      "T_gas_model_minus_digitised_K": {
+        "min": 40.16564156714662,
+        "max": 125.04311160913767,
+        "n": 350
+      },
+      "x_CH4_model_minus_digitised": {
+        "min": 0.008565475698127573,
+        "max": 0.2998596111650905,
+        "n": 418
+      },
+      "z_range_m": [
+        0.3,
+        11.12
+      ],
+      "alpha_i_W_m2K": {
+        "z_0": 3093.7256120754555,
+        "z_5.56": 3596.583438500491,
+        "z_11": 3719.675016500652
+      }
+    },
+    "leva_grummer": {
+      "rmse_x_CH4": 0.15985387790550284,
+      "rmse_dx_increment": 0.16690102956436276,
+      "rmse_T_gas_K": 75.40668334308833,
+      "rmse_T_wi_K": 37.50654660171155,
+      "rmse_p_bar": 0.044771712500042825,
+      "T_gas_model_minus_digitised_K": {
+        "min": 15.703023446233033,
+        "max": 85.22878061727442,
+        "n": 350
+      },
+      "x_CH4_model_minus_digitised": {
+        "min": -0.008663133002528342,
+        "max": 0.2182611862964008,
+        "n": 418
+      },
+      "z_range_m": [
+        0.3,
+        11.12
+      ],
+      "alpha_i_W_m2K": {
+        "z_0": 941.0546062985472,
+        "z_5.56": 1428.6577796871352,
+        "z_11": 1582.5377844084926
+      }
+    }
+  }
+}

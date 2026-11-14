@@ -1,0 +1,47 @@
+case,term,value,unit,formula_or_definition,code_ref
+Xu-Froment 1989,z (mid heated length),5.550000000000001,m,node nearest L_heated/2,
+Xu-Froment 1989,T_gas,904.1009311175195,K,1-D model state,
+Xu-Froment 1989,P,27.91460521671228,bar,1-D model state,
+Xu-Froment 1989,d_t inner,0.1016,m,tube internal diameter,src/rdt/reactor1d.py:105
+Xu-Froment 1989,d_p equivalent,0.00944,m,"9.44 mm from the stage-A pressure-drop fit (STAGE_A_BED, used in the runs); the 6V/S ring definition (ring_equivalent_diameter, 17.3/8.4/10 mm) gives 9.24 mm",src/rdt/validate_xf1989.py:219; src/rdt/reactor1d.py:307
+Xu-Froment 1989,voidage,0.526,-,bed voidage,
+Xu-Froment 1989,G (superficial mass velocity),14.827142412952039,kg m-2 s-1,G = m_dot / (pi d_t^2 / 4),src/rdt/reactor1d.py:539
+Xu-Froment 1989,mu_g,3.240394764584616e-05,Pa s,Cantera gri30 mixture-averaged viscosity,src/rdt/reactor1d.py:422
+Xu-Froment 1989,lambda_g,0.14653832095465152,W m-1 K-1,Cantera gri30 mixture-averaged conductivity,src/rdt/reactor1d.py:423
+Xu-Froment 1989,cp_g,2630.4605698261294,J kg-1 K-1,Cantera cp_mass,src/rdt/reactor1d.py:425
+Xu-Froment 1989,Re_p,4319.480635755492,-,Re_p = d_p G / mu,src/rdt/reactor1d.py:505
+Xu-Froment 1989,Pr,0.5816724665180688,-,Pr = cp mu / lambda_g,src/rdt/reactor1d.py:506
+Xu-Froment 1989,"lambda_er0 (static, Kunii-Smith)",1.2033286203349636,W m-1 K-1,"Kunii-Smith 1960 with lambda_s = 1.0, emissivity 0.8, beta 1, gamma 2/3; radiation h_rv, h_rs ~ 4 sigma T^3",src/rdt/reactor1d.py:455
+Xu-Froment 1989,lambda_er dynamic part,51.54532533578518,W m-1 K-1,0.14 lambda_g Re_p Pr (Yagi-Kunii form),src/rdt/reactor1d.py:509
+Xu-Froment 1989,lambda_er total,52.748653956120144,W m-1 K-1,lambda_er0 + 0.14 lambda_g Re_p Pr,src/rdt/reactor1d.py:509
+Xu-Froment 1989,"alpha_w0 (static, De Wasch-Froment)",220.67117363765274,W m-2 K-1,8.694 lambda_er0 / d_t^(4/3),src/rdt/reactor1d.py:507
+Xu-Froment 1989,alpha_w dynamic part,17316.982785327342,W m-2 K-1,0.444 Re_p Pr lambda_g / d_p,src/rdt/reactor1d.py:508
+Xu-Froment 1989,alpha_w total,17537.653958964995,W m-2 K-1,alpha_w0 + 0.444 Re_p Pr lambda_g / d_p,src/rdt/reactor1d.py:508
+Xu-Froment 1989,"alpha_i, Xu-Froment chain",3358.1319405654544,W m-2 K-1,1/alpha_i = 1/alpha_w + d_t/(8 lambda_er),src/rdt/reactor1d.py:510
+Xu-Froment 1989,"alpha_i, Leva-Grummer (f_htg = 1)",1255.815393992511,W m-2 K-1,0.813 (lambda_g/d_t) exp(-6 d_p/d_t) Re_p^0.9,src/rdt/reactor1d.py:441
+Xu-Froment 1989,"alpha_i, back-calculated",351.326006650703,W m-2 K-1,"q_i/(T_wi - T_gas) from digitised Fig. 3, lambda_tube 29.6; at z = 5.60 m (median over 0.5-11 m: 348)",src/rdt/validate_xf1989.py:303
+Xu-Froment 1989,"alpha_i, calibrated",,W m-2 K-1,not applicable (Xu-Froment case is not calibrated with f_htg),
+Xu-Froment 1989,ratio chain / Leva-Grummer,2.674064959411925,-,,
+Plant A,z (mid heated length),6.25,m,node nearest L_heated/2,
+Plant A,T_gas,1026.9457772075016,K,1-D model state,
+Plant A,P,29.36366579224742,bar,1-D model state,
+Plant A,d_t inner,0.11599999999999999,m,tube internal diameter,src/rdt/reactor1d.py:105
+Plant A,d_p equivalent,0.0054,m,thesis pellet equivalent diameter 5.40 mm (LathamParams.d_p_m),src/rdt/latham_cases.py:43
+Plant A,voidage,0.607,-,bed voidage,
+Plant A,G (superficial mass velocity),10.972403324551884,kg m-2 s-1,G = m_dot / (pi d_t^2 / 4),src/rdt/reactor1d.py:539
+Plant A,mu_g,3.603457575330342e-05,Pa s,Cantera gri30 mixture-averaged viscosity,src/rdt/reactor1d.py:422
+Plant A,lambda_g,0.19390630343736265,W m-1 K-1,Cantera gri30 mixture-averaged conductivity,src/rdt/reactor1d.py:423
+Plant A,cp_g,2928.2486129036124,J kg-1 K-1,Cantera cp_mass,src/rdt/reactor1d.py:425
+Plant A,Re_p,1644.2812691404706,-,Re_p = d_p G / mu,src/rdt/reactor1d.py:505
+Plant A,Pr,0.5441710485717465,-,Pr = cp mu / lambda_g,src/rdt/reactor1d.py:506
+Plant A,"lambda_er0 (static, Kunii-Smith)",1.121435907700085,W m-1 K-1,"Kunii-Smith 1960 with lambda_s = 1.0, emissivity 0.8, beta 1, gamma 2/3; radiation h_rv, h_rs ~ 4 sigma T^3",src/rdt/reactor1d.py:455
+Plant A,lambda_er dynamic part,24.290223160395563,W m-1 K-1,0.14 lambda_g Re_p Pr (Yagi-Kunii form),src/rdt/reactor1d.py:509
+Plant A,lambda_er total,25.41165906809565,W m-1 K-1,lambda_er0 + 0.14 lambda_g Re_p Pr,src/rdt/reactor1d.py:509
+Plant A,"alpha_w0 (static, De Wasch-Froment)",172.33894951135753,W m-2 K-1,8.694 lambda_er0 / d_t^(4/3),src/rdt/reactor1d.py:507
+Plant A,alpha_w dynamic part,14265.68661801009,W m-2 K-1,0.444 Re_p Pr lambda_g / d_p,src/rdt/reactor1d.py:508
+Plant A,alpha_w total,14438.025567521447,W m-2 K-1,alpha_w0 + 0.444 Re_p Pr lambda_g / d_p,src/rdt/reactor1d.py:508
+Plant A,"alpha_i, Xu-Froment chain",1562.8277742680032,W m-2 K-1,1/alpha_i = 1/alpha_w + d_t/(8 lambda_er),src/rdt/reactor1d.py:510
+Plant A,"alpha_i, Leva-Grummer (f_htg = 1)",805.9350445692208,W m-2 K-1,0.813 (lambda_g/d_t) exp(-6 d_p/d_t) Re_p^0.9,src/rdt/reactor1d.py:441
+Plant A,"alpha_i, back-calculated",,W m-2 K-1,not applicable (no inner-wall measurement); the calibrated value is the next row,
+Plant A,"alpha_i, calibrated",1478.5257590071813,W m-2 K-1,alpha_i of the calibrated run = f_htg * LG = 1.8345 * 805.9; check 1478.5,src/rdt/reactor1d.py:556
+Plant A,ratio chain / Leva-Grummer,1.939148551485744,-,,

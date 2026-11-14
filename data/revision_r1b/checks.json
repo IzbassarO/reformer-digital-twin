@@ -1,0 +1,317 @@
+{
+  "timing": {
+    "stored": {
+      "physics_model_s_per_run": 0.13672829200004344,
+      "best_T_wo_surrogate_s_per_run": 2.9019203750003727e-05,
+      "speedup_factor": 4711.648644047508,
+      "physics_base_case_T_wo_max_K": 1146.712500081438,
+      "surrogate_base_case_T_wo_max_K": 1146.7180568479985,
+      "file": "data/design/surrogate_metrics_v3.json",
+      "key": "speed (written by pipeline.py:72)",
+      "surrogate": "gp__physics",
+      "all_predict_us": {
+        "T_wo_max_K": {
+          "gp__physics": 29.019203750003726
+        },
+        "z_frac_T_wo_max": {
+          "mlp__base": 0.7018695900023886
+        },
+        "T_out_K": {
+          "gp__physics": 20.586499999999432
+        },
+        "P_out_bar": {
+          "gp__base": 22.628303750007035
+        },
+        "CH4_slip_dry_pct": {
+          "gp__physics": 22.075041670004794
+        },
+        "H2_net_kmol_h": {
+          "gp__base": 13.364412079999965
+        },
+        "duty_W": {
+          "gp__base": 18.57027291999657
+        },
+        "log10_t_r_hot": {
+          "gp__base": 13.56229416000133
+        }
+      }
+    },
+    "measured_now": {
+      "physics_s_per_run_median": 0.14798777049873024,
+      "physics_s_min": 0.14056724996771663,
+      "physics_s_max": 0.19154241599608213,
+      "n": 20,
+      "surrogate_s_per_prediction_batch_1e5": 4.382367833983153e-05,
+      "speedup": 3376.890669723256
+    }
+  },
+  "overfiring": {
+    "S4a_mild_overfire": {
+      "event_hours_summary": 48.0,
+      "hours_above_S1_rate": 48,
+      "damage_rate_factor_summary": 2.0560297553456284,
+      "damage_rate_factor_mean_over_elevated_hours": 2.0560297568377104,
+      "damage_rate_factor_peak": 2.056029757561235,
+      "share_of_annual_damage_in_elevated_hours_pct": 1.1201101699363376,
+      "excess_over_S1_share_of_annual_damage_pct": 0.5753173885035147,
+      "rel_life_cost": 1.0055564415064582
+    },
+    "S4b_severe_overfire": {
+      "event_hours_summary": 6.0,
+      "hours_above_S1_rate": 6,
+      "damage_rate_factor_summary": 4.931568040161491,
+      "damage_rate_factor_mean_over_elevated_hours": 4.931568043740386,
+      "damage_rate_factor_peak": 4.931568043740386,
+      "share_of_annual_damage_in_elevated_hours_pct": 0.33687148712359144,
+      "excess_over_S1_share_of_annual_damage_pct": 0.2685622832024376,
+      "rel_life_cost": 1.0026264689991282
+    },
+    "S4c_hot_band": {
+      "event_hours_summary": 24.0,
+      "hours_above_S1_rate": 24,
+      "damage_rate_factor_summary": 7.4151121287097,
+      "damage_rate_factor_mean_over_elevated_hours": 7.415112134090959,
+      "damage_rate_factor_peak": 7.415112135384819,
+      "share_of_annual_damage_in_elevated_hours_pct": 1.9964486882302432,
+      "excess_over_S1_share_of_annual_damage_pct": 1.7272081626621472,
+      "rel_life_cost": 1.01757564968258
+    }
+  },
+  "table_S20": {
+    "line_points": [
+      [
+        0.99,
+        -12.8
+      ],
+      [
+        0.71,
+        18.2
+      ]
+    ],
+    "slope_K_per_unit_load": -110.71428571428571,
+    "w": 0.647814910025707,
+    "w_formula": "(0.682 - 0.43) / (0.682 - 0.293)",
+    "e_u_at_load": {
+      "0.60": 30.378571428571423,
+      "0.62": 28.164285714285715,
+      "0.70": 19.30714285714286,
+      "0.71": 18.200000000000003,
+      "0.85": 2.700000000000001,
+      "0.97": -10.585714285714285,
+      "0.99": -12.8,
+      "1.00": -13.907142857142858,
+      "1.10": -24.97857142857144
+    },
+    "stored_calc_I": {
+      "e_u_line": {
+        "points": [
+          [
+            0.99,
+            -12.8
+          ],
+          [
+            0.71,
+            18.2
+          ]
+        ],
+        "slope_K_per_load": -110.71428571428571,
+        "e_u_at_load": {
+          "0.60": 30.378571428571423,
+          "0.70": 19.30714285714286,
+          "0.85": 2.700000000000001,
+          "0.97": -10.585714285714285,
+          "1.00": -13.907142857142858,
+          "1.10": -24.97857142857144
+        }
+      },
+      "w": 0.647814910025707
+    },
+    "table3_shift_range_K": {
+      "b: -w*e_u(load), reversed": [
+        -19.67853841651098,
+        16.18146388444598
+      ],
+      "b: 1*e_u(load), w = 1": [
+        -24.97852956765669,
+        30.3767914445348
+      ],
+      "b: w*e_u(load), sign as is": [
+        -16.18146388444598,
+        19.67853841651098
+      ]
+    }
+  },
+  "table2_physics": {
+    "S1_steady": {
+      "steam_to_carbon": 2.892248062015504,
+      "firing": 0.9780688344271171,
+      "H2_net_kmol_h": 14.67213490185413,
+      "annual_H2_kmol_per_tube": 128527.90174024219,
+      "annual_damage_D": 0.0006310281513751978,
+      "T_wo_max_K": 1143.4238368522078,
+      "rate_per_kmol": 4.909658858747418e-09,
+      "surrogate": {
+        "annual_H2_kmol_per_tube": 128523.36223173072,
+        "annual_damage_D": 0.0006300408618039,
+        "rel_life_cost": 1.0,
+        "firing": 0.9780424587994436
+      },
+      "rel_life_cost": 1.0
+    },
+    "S6_SC2.5": {
+      "steam_to_carbon": 2.5,
+      "firing": 0.8973654539380677,
+      "H2_net_kmol_h": 13.682649191833077,
+      "annual_H2_kmol_per_tube": 119860.00692045776,
+      "annual_damage_D": 0.0006729474286991704,
+      "T_wo_max_K": 1144.3081190730904,
+      "rate_per_kmol": 5.614445101323546e-09,
+      "surrogate": {
+        "annual_H2_kmol_per_tube": 119860.8936040535,
+        "annual_damage_D": 0.0006741833610338,
+        "rel_life_cost": 1.1473974494607786,
+        "firing": 0.8973752289333217
+      },
+      "rel_life_cost": 1.1435509600265665
+    },
+    "S6_SC3.5": {
+      "steam_to_carbon": 3.5,
+      "firing": 1.0916033239311533,
+      "H2_net_kmol_h": 15.956985853798901,
+      "annual_H2_kmol_per_tube": 139783.19607927836,
+      "annual_damage_D": 0.0005699905115555728,
+      "T_wo_max_K": 1142.1294018148517,
+      "rate_per_kmol": 4.0776754827690546e-09,
+      "surrogate": {
+        "annual_H2_kmol_per_tube": 139775.98646637384,
+        "annual_damage_D": 0.0005804009387563,
+        "rel_life_cost": 0.847049717075021,
+        "firing": 1.09151247292956
+      },
+      "rel_life_cost": 0.8305415101303751
+    }
+  },
+  "adopted_row_S18_S19": {
+    "adopted": {
+      "f_htg": 1.834547050621761,
+      "L_q": 0.45596009221697514,
+      "F_gt": 0.32343568209185497
+    },
+    "exact_row": {
+      "fixed": "f_htg",
+      "value": 1.834547050621761,
+      "fit_F_gt": 0.32343568209185497,
+      "fit_L_q": 0.45596009221697514,
+      "ci95_F_gt": "0.3089-0.3380",
+      "ci95_L_q": "0.4431-0.4688",
+      "chi2": 34.938977556874455,
+      "dof": 25,
+      "reduced_chi2": 1.3975591022749783,
+      "any_at_bound": false,
+      "Plant_A_dTw_u": -8.366981702209387,
+      "Plant_A_dTw_l": 0.19368520011676083,
+      "Plant_A_dT_out": 3.646026902704989,
+      "Plant_B_dTw_u": -3.592773622646064,
+      "Plant_B_dTw_l": -1.0699535096880481,
+      "Plant_B_dT_out": 2.176803723862804,
+      "Plant_C2_dTw_u": 12.219358322176276,
+      "Plant_C2_dTw_l": -0.48894580714613767,
+      "Plant_C2_dT_out": 3.8555670569840004,
+      "C1_out_T_K_err": 4.488311189465776,
+      "C1_TWT_upper_K_err": -2.00215984467809,
+      "C1_TWT_lower_K_err": -4.9497599364012785,
+      "C1_flue_out_T_K_err": 5.388923071766385,
+      "base_T_wo_max_K": 1146.712500081438,
+      "base_z_frac_T_wo_max": 0.43,
+      "base_T_out_K": 1109.196026902705,
+      "rel_min_life_iso_H2": 0.12256367188164068,
+      "rel_knee": 0.2809535261370888,
+      "rel_max_H2": 3.2197730447740094,
+      "rel_min_fuel_overall": 0.5749861342877227,
+      "rel_min_life_overall": 0.08383581356672203,
+      "rel_S5_slip_y4": 1.9518547587461066,
+      "rel_S6_SC2.5": 1.1435509600265665,
+      "rel_S6_SC3.5": 0.8305415101303751,
+      "S1_firing_phys": 0.9780688344271171,
+      "n_firing_saturated": 0
+    },
+    "printed_rows": {
+      "S18 (f_htg = 1.83)": {
+        "fixed": "f_htg",
+        "value": 1.83,
+        "fit_F_gt": 0.3234141129927801,
+        "fit_L_q": 0.456298968475387,
+        "ci95_F_gt": "0.3086-0.3383",
+        "ci95_L_q": "0.4433-0.4693",
+        "chi2": 34.944250770936335,
+        "dof": 25,
+        "reduced_chi2": 1.3977700308374534,
+        "any_at_bound": false,
+        "Plant_A_dTw_u": -8.357478966415783,
+        "Plant_A_dTw_l": 0.2666460616005679,
+        "Plant_A_dT_out": 3.612757467299843,
+        "Plant_B_dTw_u": -3.580999210390928,
+        "Plant_B_dTw_l": -0.9974890549490284,
+        "Plant_B_dT_out": 2.144600898152021,
+        "Plant_C2_dTw_u": 12.252450200702016,
+        "Plant_C2_dTw_l": -0.4288884496561422,
+        "Plant_C2_dT_out": 3.8273482513300223,
+        "C1_out_T_K_err": 4.453386605792957,
+        "C1_TWT_upper_K_err": -1.981028832784432,
+        "C1_TWT_lower_K_err": -4.880609447769757,
+        "C1_flue_out_T_K_err": 5.4868095573744995,
+        "base_T_wo_max_K": 1146.873735648902,
+        "base_z_frac_T_wo_max": 0.43,
+        "base_T_out_K": 1109.1627574672998,
+        "rel_min_life_iso_H2": 0.12237119515312,
+        "rel_knee": 0.2805330926160269,
+        "rel_max_H2": 3.216070320295526,
+        "rel_min_fuel_overall": 0.5740508462942715,
+        "rel_min_life_overall": 0.0837574945517748,
+        "rel_S5_slip_y4": 1.954359801861147,
+        "rel_S6_SC2.5": 1.1453881621817104,
+        "rel_S6_SC3.5": 0.8315993374226824,
+        "S1_firing_phys": 0.9782666212826268,
+        "n_firing_saturated": 0
+      },
+      "S19 (L_q = 0.456)": {
+        "fixed": "L_q",
+        "value": 0.456,
+        "fit_F_gt": 0.3234202638860767,
+        "fit_f_htg": 1.833767833834539,
+        "ci95_F_gt": "0.3108-0.3360",
+        "ci95_f_htg": "1.7078-1.9598",
+        "chi2": 34.940890603461085,
+        "dof": 25,
+        "reduced_chi2": 1.3976356241384431,
+        "any_at_bound": false,
+        "Plant_A_dTw_u": -8.359296440089793,
+        "Plant_A_dTw_l": 0.2039250003435881,
+        "Plant_A_dT_out": 3.639029438086936,
+        "Plant_B_dTw_u": -3.584861684471889,
+        "Plant_B_dTw_l": -1.0598225609076053,
+        "Plant_B_dT_out": 2.169867264484992,
+        "Plant_C2_dTw_u": 12.231107832555836,
+        "Plant_C2_dTw_l": -0.4794775070417927,
+        "Plant_C2_dT_out": 3.85095115776744,
+        "C1_out_T_K_err": 4.4815617666918115,
+        "C1_TWT_upper_K_err": -1.992225743883864,
+        "C1_TWT_lower_K_err": -4.939528157534141,
+        "C1_flue_out_T_K_err": 5.4093688953810215,
+        "base_T_wo_max_K": 1146.737527329379,
+        "base_z_frac_T_wo_max": 0.43,
+        "base_T_out_K": 1109.189029438087,
+        "rel_min_life_iso_H2": 0.1225385035511155,
+        "rel_knee": 0.2809019307639914,
+        "rel_max_H2": 3.219238389802164,
+        "rel_min_fuel_overall": 0.5749119170974607,
+        "rel_min_life_overall": 0.0838292331214608,
+        "rel_S5_slip_y4": 1.9518759633103069,
+        "rel_S6_SC2.5": 1.1436285693459711,
+        "rel_S6_SC3.5": 0.8305288785530145,
+        "S1_firing_phys": 0.9781061026806804,
+        "n_firing_saturated": 0
+      }
+    }
+  }
+}
