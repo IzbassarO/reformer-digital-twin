@@ -18,9 +18,15 @@ costs:
   temperature from the RQ4 campaign, applied as a uniform offset to the profile: the campaign stores
   scalars per sample, not profiles, so the band states the spread of the peak and must be read that
   way rather than as a per-elevation envelope.
-* **Panel 3** -- life consumption per kmol H2 relative to the base, with 5--95\\% whiskers, for five
-  operating points of the RQ4 table (``uq_summary_<tag>.json``, field
-  ``life_rate_per_kmol_H2_rel_base``).
+* **Panel 3** -- life consumption per kmol H2 relative to the base S1, with 5--95\\% whiskers. The two
+  optimized regimes are operating points of the RQ4 table (``uq_summary_<tag>.json``, field
+  ``life_rate_per_kmol_H2_rel_base``); daily load-following and the fourth aging year are the annual
+  scenarios of Fig.~7 of the revised manuscript (``data/revision_r1/scenario_intervals.csv``, paired
+  Monte Carlo through the physics model). A bar whose interval contains one is drawn in grey: its
+  sign is not resolved. For load-following the dashed whisker and the printed range are those of the
+  load-dependent wall-temperature error of Table S20 (``walltemp_error_propagation.csv``, variants
+  (b), scenarios S2 and S3), which is wider than the parametric interval and is the reason the cost
+  is reported as unresolved.
 
 Design constraints of the journal: single row at 13 x 5 cm, sans-serif, nothing below 8 pt at that
 size, no title, no author names, no logos. The colours are those of Figs.~5 and 8 --- the Okabe-Ito
@@ -54,15 +60,23 @@ MIN_PX = (1328, 531)
 BLUE, VERMILLION = P.PALETTE[0], P.PALETTE[1]
 GREY = "0.55"
 
-#: the five operating points of panel 3, keyed as they appear in uq_summary_<tag>.json
-BARS: Tuple[Tuple[str, str], ...] = (
-    ("RQ3_min_life_iso_H2", "min life, iso-H$_2$"),
-    ("RQ3_knee", "knee"),
-    ("S1_base", "base"),
-    ("load_0.70", "load-following"),
-    ("S5_y4_holdslip_end", "aging year 4"),
+#: revision R1: paired scenario Monte Carlo behind Fig. 7 of the revised manuscript
+REV_INTERVALS = C.ROOT / "data" / "revision_r1" / "scenario_intervals.csv"
+
+#: the five bars of panel 3: (source, key, label). "uq" keys are those of uq_summary_<tag>.json,
+#: "rev" keys are the ``scenario`` column of REV_INTERVALS
+BARS: Tuple[Tuple[str, str, str], ...] = (
+    ("uq", "RQ3_min_life_iso_H2", "min life, iso-H$_2$"),
+    ("uq", "RQ3_knee", "knee"),
+    ("uq", "S1_base", "base"),
+    ("rev", "S2_daily", "load-following"),
+    ("rev", "S5_hold_CH4_slip_ageing_y4", "aging year 4"),
 )
-CAPTION = "Aging costs more tube life than flexibility"
+CAPTION = "Aging cost resolved; load-following cost not"
+#: revision R1: life ratios under a load-dependent wall-temperature error (Table S20 of the supplement)
+REV_WALLTEMP = C.ROOT / "data" / "revision_r1" / "walltemp_error_propagation.csv"
+#: the bar that carries the structural range, and the rows of REV_WALLTEMP it is taken from
+RANGE_BAR, RANGE_ITEMS = "load-following", ("S2 daily", "S3 renewable")
 
 
 # ---------------------------------------------------------------------------
@@ -87,6 +101,24 @@ def uq_intervals(cfg: C.RunConfig) -> Dict[str, Dict[str, float]]:
     return {k: v["life_rate_per_kmol_H2_rel_base"] for k, v in d.items()}
 
 
+def scenario_intervals() -> Dict[str, Dict[str, float]]:
+    """Fig. 7 of the revised manuscript: median and 5--95\\% interval of the annual scenarios, paired to S1."""
+    import pandas as pd
+
+    df = pd.read_csv(REV_INTERVALS).set_index("scenario")
+    return {k: {"median": float(r.mc_median), "p05": float(r.mc_p05), "p95": float(r.mc_p95)}
+            for k, r in df.iterrows()}
+
+
+def load_error_range() -> Tuple[float, float]:
+    """Table S20: span of the load-following ratios (S2, S3) over the load-dependent error variants (b)."""
+    import pandas as pd
+
+    d = pd.read_csv(REV_WALLTEMP)
+    v = d[d.variant.str.startswith("b:") & d["item"].isin(RANGE_ITEMS)].rel_life_cost
+    return float(v.min()), float(v.max())
+
+
 def hotspot_band(cfg: C.RunConfig) -> Dict[str, float]:
     """5--95\\% Monte Carlo interval of the hot-spot temperature at the base point."""
     t = json.loads(Path(cfg.uq_summary).read_text())["intervals"]["S1_base"]["T_wo_max_K"]
@@ -96,12 +128,12 @@ def hotspot_band(cfg: C.RunConfig) -> Dict[str, float]:
 def collect(cfg: C.RunConfig) -> Dict[str, object]:
     prof = wall_profile()
     band = hotspot_band(cfg)
-    iv = uq_intervals(cfg)
-    missing = [k for k, _ in BARS if k not in iv]
+    src = {"uq": uq_intervals(cfg), "rev": scenario_intervals()}
+    missing = [(s, k) for s, k, _ in BARS if k not in src[s]]
     if missing:
-        raise KeyError(f"{cfg.uq_summary} has no interval for {missing}")
-    return {"profile": prof, "band": band, "intervals": iv,
-            "bars": [(lab, iv[k]) for k, lab in BARS]}
+        raise KeyError(f"no interval for {missing}")
+    return {"profile": prof, "band": band, "intervals": src["uq"],
+            "bars": [(lab, src[s][k]) for s, k, lab in BARS], "range": load_error_range()}
 
 
 # ---------------------------------------------------------------------------
@@ -142,7 +174,7 @@ def _furnace(ax) -> None:
     for i, lab in enumerate(("load", "S/C", "excess air", "firing", "activity")):
         y = 8.05 - 1.62 * i
         ax.text(0.0, y, lab, ha="left", va="center", fontsize=MIN_PT)
-        ax.add_patch(FancyArrow(4.6, y, 1.0, 0.0, width=0.05, head_width=0.36, head_length=0.36,
+        ax.add_patch(FancyArrow(4.95, y, 0.75, 0.0, width=0.05, head_width=0.36, head_length=0.36,
                                 length_includes_head=True, fc="k", ec="k", lw=0))
 
 
@@ -170,14 +202,15 @@ def _profile(ax, prof, band) -> None:
             fontsize=MIN_PT, clip_on=False)
 
 
-def _bars(ax, bars) -> None:
+def _bars(ax, bars, rng=None) -> None:
     labels = [b[0] for b in bars]
     med = np.array([b[1]["median"] for b in bars], float)
     lo = np.array([b[1]["p05"] for b in bars], float)
     hi = np.array([b[1]["p95"] for b in bars], float)
     y = np.arange(len(bars))[::-1]
-    colours = [GREY if lab == "base" else (VERMILLION if m > 1.0 else BLUE)
-               for lab, m in zip(labels, med)]
+    # grey: the base, and any bar whose 5--95 % interval contains one (sign not resolved)
+    colours = [GREY if (lab == "base" or l < 1.0 < h) else (VERMILLION if m > 1.0 else BLUE)
+               for lab, m, l, h in zip(labels, med, lo, hi)]
     ax.barh(y, med, height=0.60, color=colours, alpha=0.9, lw=0)
     paired = np.isclose(lo, hi)                       # the base is paired: no interval to draw
     ax.errorbar(med[~paired], y[~paired],
@@ -187,10 +220,19 @@ def _bars(ax, bars) -> None:
     ax.set_xscale("log")
     ax.set_yticks(y); ax.set_yticklabels(labels, fontsize=MIN_PT)
     ax.set_ylim(-0.7, len(bars) - 0.3)
-    ax.set_xlim(0.72 * lo.min(), 3.1 * hi.max())
+    # room on the right for the numbers; the dashed range label is the widest of them
+    ax.set_xlim(0.72 * lo.min(), 3.1 * hi.max() if rng is None else 6.0 * max(hi.max(), rng[1]))
     ax.set_xticks([0.1, 1.0]); ax.set_xticklabels(["0.1", "1"])
-    for yy, m, h in zip(y, med, hi):
-        ax.text(h * 1.26, yy, f"{m:.2f}", ha="left", va="center", fontsize=MIN_PT)
+    white = dict(fc="white", ec="none", pad=0.6)        # keeps the unity line out of the numbers
+    for lab, yy, m, h in zip(labels, y, med, hi):
+        if rng is not None and lab == RANGE_BAR:
+            # structural range (Table S20), dashed: wider than the parametric whisker
+            ax.plot(rng, [yy, yy], color="k", lw=0.8, ls=(0, (2.2, 1.6)), zorder=4)
+            ax.plot(rng, [yy, yy], "|", color="k", ms=4.5, mew=0.8, zorder=4)
+            ax.text(rng[1] * 1.26, yy, f"{rng[0]:.1f}–{rng[1]:.1f}", ha="left", va="center",
+                    fontsize=MIN_PT, bbox=white)
+        else:
+            ax.text(h * 1.26, yy, f"{m:.2f}", ha="left", va="center", fontsize=MIN_PT, bbox=white)
     P.tidy(ax, "Life per kmol H$_2$, rel. base (–)", None)
     # the label is wider than this panel at 8 pt; shift it left so it stays on the canvas
     ax.xaxis.set_label_coords(0.26, -0.17)
@@ -211,7 +253,7 @@ def build(cfg: C.RunConfig, out_dir: Optional[Path] = None) -> Dict[str, object]
         fig = plt.figure(figsize=(WIDTH_CM * P.CM, HEIGHT_CM * P.CM))
         _furnace(fig.add_axes(AXES_RECTS["furnace"]))
         _profile(fig.add_axes(AXES_RECTS["profile"]), data["profile"], data["band"])
-        _bars(fig.add_axes(AXES_RECTS["bars"]), data["bars"])
+        _bars(fig.add_axes(AXES_RECTS["bars"]), data["bars"], data.get("range"))
         # the caption belongs under panel 3; at 8 pt it is wider than that panel alone, so it is
         # centred on the right-hand part of the figure rather than clipped at the edge
         fig.text(0.68, 0.035, CAPTION, ha="center", va="bottom", fontsize=MIN_PT, style="italic")
@@ -283,11 +325,14 @@ def verify(cfg: C.RunConfig, data: Dict[str, object]) -> str:
     p("  the band is the spread of the PEAK applied as a uniform offset: the RQ4 campaign stores")
     p("  scalars per sample, not profiles, so it is not a per-elevation envelope")
     p("")
-    p("PANEL 3 -- relative life cost, 5-95 % (the RQ4 table)")
-    p(f"  source            {Path(cfg.uq_summary).name}, intervals.*.life_rate_per_kmol_H2_rel_base")
+    p("PANEL 3 -- relative life cost, 5-95 %")
+    p(f"  source  uq        {Path(cfg.uq_summary).name}, intervals.*.life_rate_per_kmol_H2_rel_base")
+    p(f"  source  rev       {REV_INTERVALS.name} (Fig. 7 of the revised manuscript), mc_median/mc_p05/mc_p95")
     p(f"  {'bar':<22} {'median':>8} {'5 %':>8} {'95 %':>8}   key")
-    for (key, lab), (_, iv) in zip(BARS, data["bars"]):
-        p(f"  {lab:<22} {iv['median']:8.4f} {iv['p05']:8.4f} {iv['p95']:8.4f}   {key}")
+    for (s, key, lab), (_, iv) in zip(BARS, data["bars"]):
+        p(f"  {lab:<22} {iv['median']:8.4f} {iv['p05']:8.4f} {iv['p95']:8.4f}   {s}:{key}")
+    p(f"  {RANGE_BAR} dashed range {data['range'][0]:.3f} to {data['range'][1]:.3f}   "
+      f"{REV_WALLTEMP.name}, variants (b), items {', '.join(RANGE_ITEMS)}")
     p("")
     p("PANEL 1 -- schematic only, carries no number")
     p("  fig01_schematic.pdf was committed as a rendered artefact with no source in the repository,")
