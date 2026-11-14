@@ -1134,4 +1134,4 @@ verification_matched_alpha:
       hyp_0.444_0.014: 514.6135060482337
       static_only: 81.42550475177065
   decision: Xu & Froment case = verification with matched alpha_i; Latham plant data = validation of alpha_i; alpha_i range [300, 3000]
-    W/(m2 K) carried into the uncertainty analysis (see paper/notes/heat_transfer_discrepancy.md)
+    W/(m2 K) carried into the uncertainty analysis

@@ -14,7 +14,7 @@ derived.
 |---|---|---|---|
 | `xu_froment_1989_industrial.yaml` | Xu & Froment (1989) Part II, *AIChE J.* 35:97-103, Table 2 (p. 100) and Figs. 3-7 (pp. 101-102). Key `xu1989b`. | Single-tube industrial **simulation** case: inlet 793.15 K, 29 bar, feed per tube, natural-gas analysis, tube ID/OD 0.1016/0.1322 m, heated length 11.12 m, ring catalyst dimensions, tortuosity 3.54. Result profiles exist only as plots. | Table 2 verified from page image. Figures need digitising. |
 | `latham2011_cases.yaml` | Latham et al. (2011), *Fuel Process. Technol.* 92:1574-1586. Key `latham2011`. | Table 1 specs, Table 8 inputs (99 % and 75 % cases), Tables 5/9 tube-wall statistics (**shifted**), Tables 7/10 sim-minus-measured, Tables 4/6 adjustable parameters, model assumptions, and a cross-check against the thesis. | Transcribed from text layer. |
-| (planned) `latham2008_appendixH.csv` | Latham (2008) thesis Appendix H, Tables 29-31, pp. 239-242 | Four absolute inlet/outlet states (Plants A, B, C1, C2). | Not yet transcribed; see `paper/notes/latham2008_thesis.md`. |
+| (planned) `latham2008_appendixH.csv` | Latham (2008) thesis Appendix H, Tables 29-31, pp. 239-242 | Four absolute inlet/outlet states (Plants A, B, C1, C2). | Not written as a separate file; the four cases are in `latham2008_plant_cases.csv`. |
 
 Kinetic constants (Xu & Froment Part I) live in `../kinetics/xu_froment_1989.yaml`, checked by
 `tests/test_kinetics_data.py`.

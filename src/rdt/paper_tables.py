@@ -1,10 +1,19 @@
 """Generate booktabs tables and number macros from the v3 result files.
 
 ``python -c "from rdt import paper_tables as T; T.make_all()"`` writes ``paper/tables/*.tex`` and
-``paper/tables/numbers.tex`` (git-ignored). The numbers are those of the paper: the plant cases and the
-calibration, the verification against Xu & Froment, the scenario, regime, uncertainty, sensitivity,
-surrogate and steam-credit tables. Captions and layout are those of an earlier draft and are not
-maintained. Nothing under ``data/`` is modified.
+``paper/tables/numbers.tex`` (git-ignored). Nothing under ``data/`` is modified.
+
+Tables of the paper whose numbers are regenerated here:
+
+* main Table 1 (plant cases and calibration errors), rows Plant A, B and C2. The Plant C1 row of the
+  paper (feed reconstructed from the carbon balance, held-out errors) is not included; it is in
+  ``data/revision_r1/c1_heldout.csv``;
+* main Table 2 (annual scenarios), Table 3 (regimes of the Pareto set), Table 4 (Monte Carlo intervals);
+* Table S5 (verification against Xu & Froment) and Table S6 (calibrated parameters).
+
+The module also writes Sobol, variance-decomposition, robustness, surrogate and steam-credit tables from
+the same result files; these have not been compared entry by entry with the tables of the paper. Captions
+and layout differ from the paper: the captions here are short neutral titles followed by the source file.
 """
 
 from __future__ import annotations
@@ -67,9 +76,9 @@ def table_xf_verification() -> str:
     for k, lab in (("alpha_const_median__eta_0.1", f"matched $\\alpha_i$ = {v['alpha_i_back_calculated']['median_W_m2K']:.0f} W m$^{{-2}}$ K$^{{-1}}$, $\\eta=0.1$"),
                    ("alpha_const_median__eta_latham_inlet", "matched $\\alpha_i$, $\\eta$ = 0.05 / 0.1 (adopted)"), ("alpha_profile_pchip__eta_latham_inlet", "matched $\\alpha_i(z)$ profile, $\\eta$ = 0.05 / 0.1")):
         r = runs[k]; rows.append(row(lab, r["metrics"], r["x_CH4_increment"]))
-    cap = ("Verification of the tube model against the digitised Fig.~3 of Xu and Froment \\cite{xu1989b}: RMSE of methane conversion $x_{\\mathrm{CH_4}}$, of the conversion increment "
-           "$x(z)-x(0.5\\,\\mathrm{m})$, of the process-gas and inner-wall temperatures ($z\\ge0.3$~m) and of pressure. Source: \\texttt{data/literature\\_validation/xf1989\\_fit.yaml} (verification\\_matched\\_alpha).")
-    return _table(rows, ["Configuration", "RMSE $x_{\\mathrm{CH_4}}$", "RMSE $\\Delta x$", "RMSE $T_g$ (K)", "RMSE $T_{wi}$ (K)", "RMSE $p$ (bar)"], cap, "tab:xf", note="Back-calculated $\\alpha_i$: median 348, interquartile range 313--363 W m$^{-2}$ K$^{-1}$ over 0.5--11 m.")
+    cap = ("Verification of the tube model against the digitized Fig.~3 of Xu and Froment. "
+           "Source: \\texttt{data/literature\\_validation/xf1989\\_fit.yaml} (verification\\_matched\\_alpha).")
+    return _table(rows, ["Configuration", "RMSE $x_{\\mathrm{CH_4}}$", "RMSE $\\Delta x$", "RMSE $T_g$ (K)", "RMSE $T_{wi}$ (K)", "RMSE $p$ (bar)"], cap, "tab:xf")
 
 
 def table_latham_cases() -> str:
@@ -81,11 +90,10 @@ def table_latham_cases() -> str:
         rows.append([c.replace("_", " "), f"{int(r.plant_rate_pct)}", f(r.T_in_K, 1), f(r.P_in_Pa / 1e5, 2), f(r.feed_per_tube_kmol_h, 1), f(r.steam_to_carbon_derived, 2), f(r.out_T_K, 1), f(r.TWT_upper_K, 1), f(r.TWT_lower_K, 1),
                      (f"{e['out_T_K']:+.1f}" if e else "--"), (f"{e['TWT_upper_K']:+.1f}" if e else "--"), (f"{e['TWT_lower_K']:+.1f}" if e else "--"),
                      (f"{h['TWT_upper_K']:+.1f}" if h else "--"), (f"{h['TWT_lower_K']:+.1f}" if h else "--")])
-    cap = ("Latham plant cases (thesis Appendix H, absolute temperatures) and calibration results: measured inlet and outlet conditions, model errors (predicted minus measured) of the "
-           "all-cases fit with $\\alpha_{top}$ fixed, and leave-one-case-out held-out errors. Plant C1 is excluded from the fit (inconsistent feed flow). "
+    cap = ("Plant cases and calibration errors (predicted minus measured), fitted and held out. "
            "Source: \\texttt{latham2008\\_plant\\_cases.csv}, \\texttt{latham\\_fit.yaml} (calibration\\_alpha\\_top\\_fixed).")
     hdr = ["Case", "Rate (\\%)", "$T_{in}$ (K)", "$p_{in}$ (bar)", "Feed (kmol h$^{-1}$)", "S/C", "$T_{out}$ (K)", "$T_{w,u}$ (K)", "$T_{w,l}$ (K)", "$\\Delta T_{out}$", "$\\Delta T_{w,u}$", "$\\Delta T_{w,l}$", "CV $\\Delta T_{w,u}$", "CV $\\Delta T_{w,l}$"]
-    return _table(rows, hdr, cap, "tab:latham", colspec="lrrrrrrrrrrrrr", note="Per-tube feed; S/C on total hydrocarbon carbon; upper/lower wall temperatures at 3.66 and 8.53 m of 12.5 m; thesis uncertainties: 2~K outlet, 3~K wall, 8~K flue gas.")
+    return _table(rows, hdr, cap, "tab:latham", colspec="lrrrrrrrrrrrrr", note="Per-tube feed; S/C on total hydrocarbon carbon.")
 
 
 def table_calibration() -> str:
@@ -96,8 +104,8 @@ def table_calibration() -> str:
         for k in b["params"]:
             rows.append([lab, f"${{{k}}}$".replace("F_gt", "F_{gt}").replace("L_q", "L_q").replace("alpha_top", "\\alpha_{top}").replace("f_htg", "f_{htg}"), g(b["params"][k], 3), f"[{cov['ci95'][k][0]:.3f}, {cov['ci95'][k][1]:.3f}]", g(cov["se"][k], 2)])
         rows.append([lab, "$\\chi^2$ / dof", g(b["chi2"], 3), f"{cov['dof']}", f"reduced {cov['reduced_chi2']:.2f}"])
-    cap = ("Calibrated furnace and heat-transfer parameters on Plants A, B and C2 with 95\\,\\% $t$-intervals from the Jacobian covariance. The four-parameter fit has $\\alpha_{top}$ at its bound with "
-           "$r(L_q,\\alpha_{top})=0.985$; the adopted fit fixes $\\alpha_{top}=0.182$. Source: \\texttt{latham\\_fit.yaml}.")
+    cap = ("Calibrated furnace and heat-transfer parameters with 95\\,\\% intervals. "
+           "Source: \\texttt{latham\\_fit.yaml}.")
     return _table(rows, ["Fit", "Parameter", "Value", "95\\,\\% interval", "s.e."], cap, "tab:cal", colspec="llrlr")
 
 
@@ -110,7 +118,7 @@ def table_sobol() -> str:
         for y in ("T_wo_max_K", "log10_t_r_hot", "CH4_slip_dry_pct"):
             o = s["outputs"][y]; r += [f"{o['S1'][k]:.2f} $\\pm$ {o['S1_conf'][k]:.2f}", f"{o['ST'][k]:.2f} $\\pm$ {o['ST_conf'][k]:.2f}"]
         rows.append(r)
-    cap = (f"Sobol first-order ($S_1$) and total-effect ($S_T$) indices with 95\\,\\% confidence half-widths from a Saltelli design ($N={s['N']}$, {s['n_runs']} physics runs) over the v2 operating space. "
+    cap = ("Sobol first-order and total-effect indices. "
            f"Source: \\texttt{{{_tex(str(cfg.sobol_json.relative_to(C.ROOT)))}}} ({cfg.tag}).")
     hdr = ["Input", "$S_1$ ($T_{wo,max}$)", "$S_T$ ($T_{wo,max}$)", "$S_1$ ($\\log_{10}t_r$)", "$S_T$ ($\\log_{10}t_r$)", "$S_1$ (CH$_4$ slip)", "$S_T$ (CH$_4$ slip)"]
     return _table(rows, hdr, cap, "tab:sobol")
@@ -124,8 +132,7 @@ def table_scenarios() -> str:
     rows = []
     for k in order:
         r = d.loc[k]; rows.append([labels[k], f(r.annual_H2_kmol_per_tube / 1e3, 1), g(r.annual_damage_D, 3), f(r.life_consumption_per_kmol_H2_rel_S1, 3), f(r.avg_condition_error, 3), f(r.T_wo_max_mean_K, 0), f(r.T_wo_max_max_K, 0), f(r.firing_mean, 3)])
-    cap = (f"RQ2 scenario summary for one year (8760 h) of the Plant A twin at {meta['excess_air_pct']:.1f}\\,\\% excess air: hydrogen per tube, Robinson damage $D$, life consumption per kmol H$_2$ relative to S1, "
-           "ratio of the annual-mean-condition damage estimate to the hourly-accumulated damage, mean and maximum hot-spot temperature and mean firing factor. Life uses the Yeh Manaurite XM placeholder curve. "
+    cap = ("Annual scenarios. "
            f"Source: \\texttt{{{_tex(str(cfg.scenarios_summary.relative_to(C.ROOT)))}}}.")
     hdr = ["Scenario", "H$_2$ (10$^3$ kmol)", "$D$ (--)", "Rel.\\ life cost", "Avg.-cond.\\ ratio", "$\\bar T_{wo,max}$ (K)", "max $T_{wo,max}$ (K)", "Firing"]
     return _table(rows, hdr, cap, "tab:scen")
@@ -138,8 +145,7 @@ def table_regimes() -> str:
         if k not in reg.index: continue
         r = reg.loc[k]
         rows.append([k.replace("_", " "), f(r.feed_per_tube_fraction, 2), f(r.steam_to_carbon, 2), f(r.inlet_T, 0), f(r.excess_air, 1), f(r.specific_firing_factor, 3), f(r.H2_net_kmol_h_phys, 2), f(r.fuel_MJ_per_kmol_H2_phys, 1), f(r.life_rate_per_kmol_H2_rel_base_phys, 3), f(r.T_wo_max_K_phys, 0), f(r.CH4_slip_dry_pct_phys, 2)])
-    cap = (f"RQ3 representative regimes (physics-verified) from the NSGA-II Pareto set ({m['settings']['pop']} $\\times$ {m['settings']['gens']} generations; {m['n_feasible_phys']} of {m['n_pareto']} members feasible under the physics model). "
-           "Fuel = firebox fuel per kmol H$_2$; life = consumption rate per kmol H$_2$ relative to the base (Yeh placeholder curve). "
+    cap = ("Representative regimes of the Pareto set. "
            f"Source: \\texttt{{{_tex(str(cfg.regimes_csv.relative_to(C.ROOT)))}}}.")
     hdr = ["Regime", "Load", "S/C", "$T_{in}$ (K)", "Excess air (\\%)", "Firing", "H$_2$ (kmol h$^{-1}$)", "Fuel (MJ kmol$^{-1}$)", "Rel.\\ life cost", "$T_{wo,max}$ (K)", "CH$_4$ slip (\\%)"]
     return _table(rows, hdr, cap, "tab:regimes", colspec="lrrrrrrrrrr")
@@ -152,8 +158,8 @@ def table_steam() -> str:
         for lab in ("min_life", "knee", "min_fuel"):
             if lab in p:
                 r = p[lab]; rows.append([f"{a:.2f}", lab.replace("_", " "), f(r["steam_to_carbon"], 2), f(r["load"], 2), f(r["firing"], 3), f(r["excess_air"], 1), f(r["life_rel_base"], 3), f"{r['fuel_total_rel_base_pct']:+.1f}", f(r["T_wo_max_K"], 0)])
-    cap = ("Steam-credit sweep of the iso-production (H$_2$ = base $\\pm$1\\,\\%) life--fuel front: $\\alpha=1$ counts firebox fuel only, $\\alpha=0$ charges steam raising and feed preheat in full. "
-           f"Physics-verified. Source: \\texttt{{{_tex(str(cfg.steam_credit_json.relative_to(C.ROOT)))}}}.")
+    cap = ("Steam-credit sweep of the iso-production life--fuel front. "
+           f"Source: \\texttt{{{_tex(str(cfg.steam_credit_json.relative_to(C.ROOT)))}}}.")
     return _table(rows, ["$\\alpha$", "Regime", "S/C", "Load", "Firing", "Excess air (\\%)", "Rel.\\ life cost", "Total fuel vs base (\\%)", "$T_{wo,max}$ (K)"], cap, "tab:steam", colspec="llrrrrrrr")
 
 
@@ -163,22 +169,22 @@ def table_uq() -> str:
     for n, lab in labels.items():
         i = S["intervals"][n]; t = i["T_wo_max_K"]; l = i["log10_t_r"]; r = i["life_rate_per_kmol_H2_rel_base"]
         rows.append([lab, f"{t['median']:.0f} [{t['p05']:.0f}, {t['p95']:.0f}]", f"{l['median']:.2f} [{l['p05']:.2f}, {l['p95']:.2f}]", f"{r['median']:.3f} [{r['p05']:.3f}, {r['p95']:.3f}]"])
-    cap = (f"RQ4 Monte Carlo (scrambled Sobol design, $N={S['N']}$, all uncertainty groups) through the physics model: median and 5--95\\,\\% interval of the hot-spot temperature, of $\\log_{{10}}t_r$ and of the paired "
-           f"life consumption per kmol H$_2$ relative to the base. Source: \\texttt{{{_tex(str(cfg.uq_summary.relative_to(C.ROOT)))}}}.")
+    cap = ("Monte Carlo medians and 5--95\\,\\% intervals at the operating points. "
+           f"Source: \\texttt{{{_tex(str(cfg.uq_summary.relative_to(C.ROOT)))}}}.")
     t1 = _table(rows, ["Operating point", "$T_{wo,max}$ (K)", "$\\log_{10}t_r$ (h)", "Rel.\\ life cost"], cap, "tab:uq", colspec="llll")
     vs = S["variance_shares_S1_base"]; sob = S.get("sobol_on_surrogate_S1_base", {}); rows2 = []
     for gname in ("kinetics", "heat_transfer", "creep", "measurement"):
         rows2.append([gname.replace("_", " "), f"{vs['log10_t_r']['shares'][gname]:.3f}", f"{sob.get('log10_t_r', {}).get('group_ST', {}).get(gname, float('nan')):.3f}", f"{vs['T_wo_max_K']['shares'][gname]:.3f}", f"{sob.get('T_wo_max_K', {}).get('group_ST', {}).get(gname, float('nan')):.3f}"])
     rows2.append(["sum / interaction residual", f"{vs['log10_t_r']['sum_of_shares']:.3f} / {vs['log10_t_r']['interaction_residual']:+.3f}", "", f"{vs['T_wo_max_K']['sum_of_shares']:.3f} / {vs['T_wo_max_K']['interaction_residual']:+.3f}", ""])
-    cap2 = ("Variance decomposition at the S1 base point: one-group-at-a-time share of the joint variance ($N=1024$ per group) and group total-effect Sobol index from a Gaussian-process surrogate of the joint sample. "
-            f"Source: \\texttt{{{_tex(str(cfg.uq_summary.relative_to(C.ROOT)))}}}.")
+    cap2 = ("Variance decomposition at the base point. "
+           f"Source: \\texttt{{{_tex(str(cfg.uq_summary.relative_to(C.ROOT)))}}}.")
     t2 = _table(rows2, ["Group", "share $\\log_{10}t_r$", "$S_T$ $\\log_{10}t_r$", "share $T_{wo,max}$", "$S_T$ $T_{wo,max}$"], cap2, "tab:var", colspec="lrrrr")
     rf = S["robustness_fractions"]; rows3 = []
     labels3 = {"S5y4_life_gt_2x_S1": "ageing year 4 costs $>2\\times$ S1 life per kmol", "knee_life_lt_0.5_base": "knee regime $<0.5\\times$ base", "SC3.5_less_life_per_kmol_than_SC2.5": "S/C 3.5 cheaper in life than S/C 2.5", "S2_life_per_kmol_le_S1": "S2 daily $\\le$ S1", "S3_life_per_kmol_le_S1": "S3 renewable $\\le$ S1"}
     for k, lab in labels3.items():
         rows3.append([lab, f"{rf['nominal_L_q'][k]:.3f}", f"{rf['load_dependent_L_q'][k]:.3f}"])
-    cap3 = ("Robustness of the RQ2/RQ3 conclusions: fraction of paired Monte Carlo samples supporting each statement, with the calibrated flame length $L_q$ and with the structural variant $L_q\\,\\mathrm{load}^{0.5}$. "
-            f"Source: \\texttt{{{_tex(str(cfg.uq_summary.relative_to(C.ROOT)))}}}.")
+    cap3 = ("Robustness fractions. "
+           f"Source: \\texttt{{{_tex(str(cfg.uq_summary.relative_to(C.ROOT)))}}}.")
     t3 = _table(rows3, ["Statement", "nominal $L_q$", "$L_q \\propto \\mathrm{load}^{0.5}$"], cap3, "tab:robust", colspec="lrr")
     return t1 + "\n" + t2 + "\n" + t3
 
@@ -189,7 +195,7 @@ def table_surrogate() -> str:
     for t, rt in M["targets"].items():
         b = rt["models"][rt["best"]]; c = M["conformal"][t]["levels"]["0.9"]
         rows.append([t.replace("_", "\\_"), units[t], rt["best"].replace("_", "\\_"), g(b["test"]["r2"], 4), g(b["test"]["rmse"], 3), g(b["cv5"]["rmse"], 3), f"{c['picp']:.3f}", g(c["mpiw"], 3)])
-    cap = (f"Best surrogate per target ($N_{{train}}$ = {M['n_train']} LHS, $N_{{test}}$ = {M['n_test']} Saltelli points), test $R^2$ and RMSE, 5-fold CV RMSE, and empirical coverage (PICP) and mean width (MPIW) of the nominal 90\\,\\% CV+ conformal interval. "
+    cap = ("Best surrogate per target. "
            f"Source: \\texttt{{{_tex(str(cfg.surrogate_metrics.relative_to(C.ROOT)))}}}.")
     return _table(rows, ["Target", "Unit", "Model", "$R^2$", "RMSE", "CV RMSE", "PICP$_{90}$", "MPIW$_{90}$"], cap, "tab:surr", colspec="lllrrrrr")
 
