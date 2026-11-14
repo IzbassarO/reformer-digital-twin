@@ -3,8 +3,7 @@
 # Source: Fuel Processing Technology 92(8), 1574-1586. doi:10.1016/j.fuproc.2011.04.001
 #         BibTeX key: latham2011. Local copy: literature/ (Fuel Processing Technology ... .pdf),
 #         PDF page n = journal page 1573 + n.
-# Companion: Latham (2008) M.Sc.E. thesis, key latham2008, literature/latham2008_msce_thesis.pdf,
-#         summarised in paper/notes/latham2008_thesis.md.
+# Companion: Latham (2008) M.Sc.E. thesis, key latham2008, literature/latham2008_msce_thesis.pdf.
 # Transcribed 2026-09-04. Values not in the source are null with a comment.
 #
 # !!! IMPORTANT: every tube-wall temperature in this paper is SHIFTED by an undisclosed constant.

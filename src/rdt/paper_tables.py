@@ -1,10 +1,10 @@
-"""Generate the booktabs tables and number macros of the *archived* sectioned draft from the v2 results.
+"""Generate booktabs tables and number macros from the v3 result files.
 
-The manuscript under ``paper/`` is now the consolidated Overleaf pair, which carries its numbers
-inline rather than through ``\\input{numbers}``. This generator therefore writes into
-``paper/archive/draft_step21/`` -- it still reproduces the draft it was written for, and it can no
-longer drop stale ``tables/`` and ``numbers.tex`` files next to the current source of truth. Nothing
-under ``data/`` is modified.
+``python -c "from rdt import paper_tables as T; T.make_all()"`` writes ``paper/tables/*.tex`` and
+``paper/tables/numbers.tex`` (git-ignored). The numbers are those of the paper: the plant cases and the
+calibration, the verification against Xu & Froment, the scenario, regime, uncertainty, sensitivity,
+surrogate and steam-credit tables. Captions and layout are those of an earlier draft and are not
+maintained. Nothing under ``data/`` is modified.
 """
 
 from __future__ import annotations
@@ -19,10 +19,9 @@ import yaml
 
 from rdt import config as C
 
-DRAFT = C.ROOT / "paper" / "archive" / "draft_step21"
-TAB = DRAFT / "tables"
-NUMBERS = DRAFT / "numbers.tex"
-cfg = C.V2
+TAB = C.ROOT / "paper" / "tables"
+NUMBERS = TAB / "numbers.tex"
+cfg = C.V3
 LV = C.DATA / "literature_validation"
 
 

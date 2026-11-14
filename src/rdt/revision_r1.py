@@ -1,4 +1,4 @@
-"""Revision R1 of HE-D-26-14265, calculation package 1.
+"""Revision R1 of the paper, calculation package 1.
 
 ``python -m rdt.revision_r1 [--calc A B C D] [--n-d 512] [--n-jobs -1]``
 
@@ -463,7 +463,7 @@ def fig_D(df: pd.DataFrame, summ: pd.DataFrame) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Report tables (the prose of REPORT_pkg1.md is written around these)
+# Report tables
 # ---------------------------------------------------------------------------
 def _md(df: pd.DataFrame, fmt: Dict[str, str]) -> str:
     cols = list(df.columns)

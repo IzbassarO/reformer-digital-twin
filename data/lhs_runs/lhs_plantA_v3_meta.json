@@ -10,7 +10,7 @@
   "n_converged": 2000,
   "n_failed": 0,
   "convergence_rate": 1.0,
-  "ranges_file": "/Users/izbassar/Documents/Projects/reformer-digital-twin/data/design/parameter_ranges_v2.csv",
+  "ranges_file": "data/design/parameter_ranges_v2.csv",
   "ranges": {
     "steam_to_carbon": {
       "min": 2.5,

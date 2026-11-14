@@ -58,3 +58,39 @@ paper/overleaf_export.zip
 # Excerpts of the Xu & Froment (1989, Part II) article used to check the transcription of the
 # heat-transfer equations; kept locally, NOT redistributed (same rule as literature/).
 data/revision_r1b/xf_part2_equations/
+
+# Cleanup audit (working file)
+CLEANUP_AUDIT.md
+
+# ---------------------------------------------------------------------------
+# Working material: stays in the authors' folders, not part of the repository
+# ---------------------------------------------------------------------------
+# manuscript, drafts, notes, submission files
+paper/*.tex
+paper/*.pdf
+paper/archive/
+paper/notes/
+paper/scope_brief.md
+paper/submission_ijhe/
+paper/tables/
+/main_revised.pdf
+/response_to_reviewers.pdf
+/revision_package*.zip
+/CHANGES_v*.md
+/smr-revision-*.md
+# working reports of the revision
+/REVISION_R1B_REPORT.md
+data/revision_r1/REPORT_pkg*.md
+# task and assistant files
+/CLAUDE*.md
+.claude/
+AGENTS.md
+# figures of the v1 and v2 campaigns (regenerate with the figures stage)
+paper/figures/v1/
+paper/figures/*.pdf
+paper/figures/*.png
+!paper/figures/fig01_schematic.pdf
+!paper/figures/fig01_schematic.png
+!paper/figures/graphical_abstract.pdf
+!paper/figures/graphical_abstract.png
+app/

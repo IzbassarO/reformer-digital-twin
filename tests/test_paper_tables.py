@@ -1,4 +1,4 @@
-"""Smoke test: manuscript tables and number macros are generated from the v2 result files."""
+"""Smoke test: manuscript tables and number macros are generated from the v3 result files."""
 
 import re
 
@@ -14,8 +14,8 @@ def test_tables_and_numbers_generate(tmp_path, monkeypatch):
 
     monkeypatch.setattr(T, "TAB", tmp_path / "tables")
     monkeypatch.setattr(T, "NUMBERS", tmp_path / "numbers.tex")
-    if not C.V2.uq_summary.exists():
-        pytest.skip("v2 results not present")
+    if not C.V3.uq_summary.exists():
+        pytest.skip("v3 results not present")
     out = T.make_all()
     assert len(out) == 10
     for name, p in out.items():

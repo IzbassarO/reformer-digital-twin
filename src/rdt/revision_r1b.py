@@ -1,4 +1,4 @@
-"""Revision R1 of HE-D-26-14265, final checks (CLAUDE_CODE_TASK.md).
+"""Revision R1 of the paper, final checks.
 
 ``python -m rdt.revision_r1b [--calc chain curves checks]``
 
@@ -41,10 +41,10 @@ def _dump(name: str, obj) -> None:
 # Task 1: the Xu-Froment chain (identical to the print; 1.4 b, c, d)
 # ---------------------------------------------------------------------------
 def quoted_alternative_form(lam_g, Re, Pr, d_p, d_ti, lam_er0) -> float:
-    """The form quoted in CLAUDE_CODE_TASK.md from papers citing De Wasch & Froment (1972).
+    """A form of the dynamic terms found in papers that cite De Wasch & Froment (1972).
 
     NOT what Xu & Froment print (p. 100 of Part II) and not used by the package; evaluated here only
-    to reproduce the 1640 / 1170 W m-2 K-1 of the task description from the Table S17 inputs.
+    to show what it would give with the Table S17 inputs (about 1630 and 1165 W m-2 K-1).
     """
     lam_er = lam_er0 + 0.111 * lam_g * Re * Pr ** (1 / 3) / (1 + 46 * (d_p / d_ti) ** 2)
     alpha_w = 8.694 * lam_er0 / d_ti ** (4 / 3) + 0.512 * lam_g * d_ti * Re * Pr ** (1 / 3) / d_p

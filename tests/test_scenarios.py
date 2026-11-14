@@ -13,8 +13,8 @@ SUMMARY = sc.OUT_DIR / "summary_v1.csv"
 
 @pytest.fixture(scope="module")
 def tw():
-    if not sc.sg.METRICS_JSON.exists():
-        pytest.skip("surrogates not trained")
+    if not sc.sg.METRICS_JSON.exists() or not any(sc.sg.MODELS_DIR.glob("*.joblib")):
+        pytest.skip("surrogates not trained (python -m rdt.pipeline --stage surrogate --version v3)")
     return sc.TwinSurrogate()
 
 
